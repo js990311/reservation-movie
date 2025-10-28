@@ -1,0 +1,62 @@
+package com.rejs.reservation.domain.theater.entity;
+
+import com.rejs.reservation.domain.reservation.entity.ReservationSeat;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Entity
+@Table(name = "seats")
+public class Seat {
+    @Id
+    @GeneratedValue
+    @Column(name = "seat_id")
+    private Long id;
+
+    @Column
+    private Integer rowNum;
+
+    @Column
+    private Integer colNum;
+
+    /* # 관계 - Theater */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "theater_id")
+    private Theater theater;
+
+    void mapTheater(Theater theater){
+        this.theater = theater;
+    }
+
+    public void assignTheater(Theater theater){
+        if(this.theater != null){
+            theater.removeSeats(this);
+        }
+
+        if(theater!=null){
+            theater.addSeats(this);
+        }
+    }
+
+    /* # 관계 ReservationSeat */
+    @OneToMany(mappedBy = "seat")
+    private List<ReservationSeat> reservationSeats = new ArrayList<>();
+
+    public void addReservationSeat(ReservationSeat reservationSeat) {
+        reservationSeats.add(reservationSeat);
+        reservationSeat.mapSeat(this);
+    }
+
+    public void removeReservationSeat(ReservationSeat reservationSeat) {
+        reservationSeats.remove(reservationSeat);
+        reservationSeat.mapSeat(null);
+    }
+}

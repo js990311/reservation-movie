@@ -1,0 +1,36 @@
+package com.rejs.reservation.domain.theater.entity;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Entity
+@Table(name = "theaters")
+public class Theater {
+    @Id
+    @GeneratedValue
+    @Column(name = "theater_id")
+    private Long id;
+
+    /* # 관계 - Seat */
+    @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Seat> seats = new ArrayList<>();
+
+    public void addSeats(Seat seat) {
+        this.seats.add(seat);
+        seat.mapTheater(this);
+    }
+
+    public void removeSeats(Seat seat) {
+        this.seats.remove(seat);
+        seat.mapTheater(null);
+    }
+}
