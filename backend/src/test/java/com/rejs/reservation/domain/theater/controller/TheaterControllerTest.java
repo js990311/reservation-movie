@@ -61,4 +61,42 @@ class TheaterControllerTest {
                 .andExpect(jsonPath("$.data.seats.elements[0].col").isNumber())
         ;
     }
+
+    @Test
+    @DisplayName("GEt theatersById - 200 ")
+    void readTheaterById() throws Exception{
+        String name = "theater-name";
+        Integer rowSize = 10;
+        Integer colSize = 10;
+
+        Theater theater = Theater.create(name, rowSize, colSize);
+        theater = theaterRepository.save(theater);
+        Long id = theater.getId();
+
+        ResultActions result = mockMvc.perform(get("/theaters/{id}", id));
+
+        result
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.theaterId").value(id))
+                .andExpect(jsonPath("$.data.name").value(name))
+                .andExpect(jsonPath("$.data.seats.count").value(rowSize * colSize))
+                .andExpect(jsonPath("$.data.seats.elements").isArray())
+                .andExpect(jsonPath("$.data.seats.elements[0].seatId").isNumber())
+                .andExpect(jsonPath("$.data.seats.elements[0].theaterId").value(id))
+                .andExpect(jsonPath("$.data.seats.elements[0].row").isNumber())
+                .andExpect(jsonPath("$.data.seats.elements[0].col").isNumber())
+        ;
+    }
+
+    @Test
+    @DisplayName("GEt theatersById - 404")
+    void readTheaterById_404() throws Exception{
+        ResultActions result = mockMvc.perform(get("/theaters/{id}", 0));
+
+        result
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.data").isEmpty())
+        ;
+    }
+
 }

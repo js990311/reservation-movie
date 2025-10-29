@@ -5,10 +5,7 @@ import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
 import com.rejs.reservation.domain.theater.service.TheaterService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,5 +17,11 @@ public class TheaterController {
     public BaseResponse<TheaterDto> createTheater(@RequestBody TheaterCreateRequest request){
         TheaterDto theater = theaterService.createTheater(request);
         return BaseResponse.of(201, theater);
+    }
+
+    @GetMapping("{id}")
+    public BaseResponse<TheaterDto> readTheaterById(@PathVariable("id") Long id){
+        TheaterDto theaterDto = theaterService.readById(id);
+        return BaseResponse.of(200, theaterDto);
     }
 }
