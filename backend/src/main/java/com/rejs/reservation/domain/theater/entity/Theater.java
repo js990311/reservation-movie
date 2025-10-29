@@ -20,6 +20,9 @@ public class Theater {
     @Column(name = "theater_id")
     private Long id;
 
+    @Column
+    private String name;
+
     /* # 관계 - Seat */
     @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
@@ -32,5 +35,12 @@ public class Theater {
     public void removeSeats(Seat seat) {
         this.seats.remove(seat);
         seat.mapTheater(null);
+    }
+
+    // 생성
+
+
+    public Theater(String name) {
+        this.name = name;
     }
 }
