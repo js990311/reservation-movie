@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @Service
 public class MoviceService {
@@ -22,6 +24,15 @@ public class MoviceService {
                 .duration(request.getDuration())
                 .build();
         movie = movieRepository.save(movie);
+        return MovieDto.from(movie);
+    }
+
+    // READ
+
+    @Transactional
+    public MovieDto readById(Long id){
+        Optional<Movie> opt = movieRepository.findById(id);
+        Movie movie = opt.orElseThrow();
         return MovieDto.from(movie);
     }
 }

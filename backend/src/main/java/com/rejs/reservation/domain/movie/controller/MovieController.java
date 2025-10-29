@@ -5,10 +5,7 @@ import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MoviceService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -20,5 +17,11 @@ public class MovieController {
     public BaseResponse<MovieDto> createMovie(@RequestBody MovieCreateRequest request){
         MovieDto movie = moviceService.createMovie(request);
         return BaseResponse.of(200, movie);
+    }
+
+    @GetMapping("/{id}")
+    public BaseResponse<MovieDto> readMovieById(@PathVariable("id") Long id){
+        MovieDto movieDto = moviceService.readById(id);
+        return BaseResponse.of(200, movieDto);
     }
 }

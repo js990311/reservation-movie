@@ -79,12 +79,12 @@ class MovieControllerTest {
         );
 
         ResultActions result = mockMvc.perform(
-                get("/api/movies/{id}", id)
+                get("/movies/{id}", id)
         );
 
         result
-                .andExpect(jsonPath("$.status").value(id))
-                .andExpect(jsonPath("$.data.movieId").isNumber())
+                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.data.movieId").value(id))
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
         ;
