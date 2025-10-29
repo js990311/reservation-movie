@@ -46,7 +46,7 @@ class MovieControllerTest {
         );
 
         ResultActions result = mockMvc.perform(
-                post("/api/movies")
+                post("/movies")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
         );
