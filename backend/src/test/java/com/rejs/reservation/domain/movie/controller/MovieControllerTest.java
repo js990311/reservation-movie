@@ -90,4 +90,34 @@ class MovieControllerTest {
         ;
     }
 
+    @Test
+    @DisplayName("GET /movie/:id - 404")
+    void getMovieById_404() throws Exception{
+
+        String movieName = "some-movie";
+        Integer duration = 106;
+
+        Movie movie = Movie.builder()
+                .title(movieName)
+                .duration(duration)
+                .build();
+        movie = movieRepository.save(movie);
+        Long id = 0L;
+
+        Map<String, Object> request = Map.of(
+                "title", movieName,
+                "duration", duration
+        );
+
+        ResultActions result = mockMvc.perform(
+                get("/movies/{id}", id)
+        );
+
+        result
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.data").isEmpty())
+        ;
+    }
+
+
 }

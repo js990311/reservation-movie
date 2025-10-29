@@ -4,7 +4,9 @@ import com.rejs.reservation.domain.movie.dto.MovieDto;
 import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
+import com.rejs.reservation.global.exception.GlobalBaseException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +34,8 @@ public class MoviceService {
     @Transactional
     public MovieDto readById(Long id){
         Optional<Movie> opt = movieRepository.findById(id);
-        Movie movie = opt.orElseThrow();
+        Movie movie = opt.orElseThrow(
+                ()-> new GlobalBaseException(HttpStatus.NOT_FOUND));
         return MovieDto.from(movie);
     }
 }
