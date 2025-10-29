@@ -32,6 +32,10 @@ public class Seat {
     @JoinColumn(name = "theater_id")
     private Theater theater;
 
+    public Long getTheaterId(){
+        return theater != null ? theater.getId() : null;
+    }
+
     void mapTheater(Theater theater){
         this.theater = theater;
     }
@@ -58,5 +62,12 @@ public class Seat {
     public void removeReservationSeat(ReservationSeat reservationSeat) {
         reservationSeats.remove(reservationSeat);
         reservationSeat.mapSeat(null);
+    }
+
+    // 생성
+
+    public Seat(Integer rowNum, Integer colNum) {
+        this.rowNum = rowNum;
+        this.colNum = colNum;
     }
 }

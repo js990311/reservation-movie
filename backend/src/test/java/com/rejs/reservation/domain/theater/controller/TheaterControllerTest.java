@@ -54,9 +54,11 @@ class TheaterControllerTest {
                 .andExpect(jsonPath("$.data.theaterId").isNumber())
                 .andExpect(jsonPath("$.data.name").value(name))
                 .andExpect(jsonPath("$.data.seats.count").value(rowSize * colSize))
-                .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
+                .andExpect(jsonPath("$.data.seats.elements").isArray())
+                .andExpect(jsonPath("$.data.seats.elements[0].seatId").isNumber())
+                .andExpect(jsonPath("$.data.seats.elements[0].theaterId").isNumber())
+                .andExpect(jsonPath("$.data.seats.elements[0].row").isNumber())
+                .andExpect(jsonPath("$.data.seats.elements[0].col").isNumber())
         ;
     }
 }

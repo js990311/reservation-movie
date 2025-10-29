@@ -39,8 +39,18 @@ public class Theater {
 
     // 생성
 
-
     public Theater(String name) {
         this.name = name;
+    }
+
+    public static Theater create(String name, Integer rowSize, Integer colSize){
+        Theater theater = new Theater(name);
+        for(int row=1;row<=rowSize;row++){
+            for(int col=1;col<=colSize;col++){
+                Seat seat = new Seat(row, col);
+                theater.addSeats(seat);
+            }
+        }
+        return theater;
     }
 }
