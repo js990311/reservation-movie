@@ -7,6 +7,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -25,6 +26,7 @@ public class Movie {
     private Integer duration;
 
     /* 관계 - screening */
+    @Builder.Default
     @OneToMany(mappedBy = "movie")
     private List<Screening> screenings = new ArrayList<>();
 
