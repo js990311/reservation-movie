@@ -16,7 +16,8 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(value = RuntimeException.class)
     public ResponseEntity<BaseResponse<?>> handleBaseException(RuntimeException ex){
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        return new ResponseEntity<>(BaseResponse.exception(status), status);
     }
 
 }

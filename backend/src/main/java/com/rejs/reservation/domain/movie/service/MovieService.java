@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class MoviceService {
+public class MovieService {
     private final MovieRepository movieRepository;
 
     // CREATE
@@ -31,7 +31,7 @@ public class MoviceService {
 
     // READ
 
-    @Transactional
+    @Transactional(readOnly = true)
     public MovieDto readById(Long id){
         Optional<Movie> opt = movieRepository.findById(id);
         Movie movie = opt.orElseThrow(

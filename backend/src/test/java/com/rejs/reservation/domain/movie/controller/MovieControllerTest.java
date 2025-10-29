@@ -52,7 +52,7 @@ class MovieControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.status").value(201))
                 .andExpect(jsonPath("$.data.movieId").isNumber())
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
