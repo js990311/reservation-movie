@@ -20,6 +20,9 @@ public class Theater {
     @Column(name = "theater_id")
     private Long id;
 
+    @Column
+    private String name;
+
     /* # 관계 - Seat */
     @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
@@ -32,5 +35,22 @@ public class Theater {
     public void removeSeats(Seat seat) {
         this.seats.remove(seat);
         seat.mapTheater(null);
+    }
+
+    // 생성
+
+    public Theater(String name) {
+        this.name = name;
+    }
+
+    public static Theater create(String name, Integer rowSize, Integer colSize){
+        Theater theater = new Theater(name);
+        for(int row=1;row<=rowSize;row++){
+            for(int col=1;col<=colSize;col++){
+                Seat seat = new Seat(row, col);
+                theater.addSeats(seat);
+            }
+        }
+        return theater;
     }
 }
