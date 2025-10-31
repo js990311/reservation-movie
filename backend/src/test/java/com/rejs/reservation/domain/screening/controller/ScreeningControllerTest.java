@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ class ScreeningControllerTest {
     private Long theaterId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @BeforeEach
     void setUp(){
@@ -68,7 +70,7 @@ class ScreeningControllerTest {
         Theater theater = Theater.create(name, rowSize, colSize);
         theater = theaterRepository.save(theater);
         theaterId = theater.getId();
-        startTime = LocalDateTime.now();
+        startTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
         endTime = startTime.plusMinutes(duration);
     }
 
@@ -88,8 +90,8 @@ class ScreeningControllerTest {
                 .andExpect(jsonPath("$.data.screeningId").isNumber())
                 .andExpect(jsonPath("$.data.theaterId").value(theaterId))
                 .andExpect(jsonPath("$.data.movieId").value(movieId))
-                .andExpect(jsonPath("$.data.startTime").value(startTime))
-                .andExpect(jsonPath("$.data.endTime").value(endTime))
+                .andExpect(jsonPath("$.data.startTime").value(startTime.format(formatter)))
+                .andExpect(jsonPath("$.data.endTime").value(endTime.format(formatter)))
         ;
     }
 }

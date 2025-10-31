@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.theater.entity;
 
+import com.rejs.reservation.domain.screening.entity.Screening;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,22 @@ public class Theater {
         this.seats.remove(seat);
         seat.mapTheater(null);
     }
+
+
+    // # 관계 - Screening
+    @OneToMany(mappedBy = "theater")
+    private List<Screening> screenings = new ArrayList<>();
+
+    public void addScreenings(Screening screening){
+        this.screenings.add(screening);
+        screening.mapTheater(this);
+    }
+
+    public void removeScreenings(Screening screening){
+        this.screenings.remove(screening);
+        screening.mapTheater(null);
+    }
+
 
     // 생성
 
