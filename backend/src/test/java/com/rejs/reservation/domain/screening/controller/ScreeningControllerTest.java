@@ -7,6 +7,7 @@ import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
+import com.rejs.reservation.domain.theater.service.TheaterService;
 import jdk.jfr.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +27,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -45,16 +47,21 @@ class ScreeningControllerTest {
     @Autowired
     private TheaterRepository theaterRepository;
 
+
+    @Autowired
+    private TheaterService theaterService;
+
     private Long movieId;
     private Long theaterId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Integer duration = 120;
+
     private DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @BeforeEach
     void setUp(){
         String movieName = "some-movie";
-        Integer duration = 106;
 
         Movie movie = Movie.builder()
                 .title(movieName)
@@ -94,4 +101,68 @@ class ScreeningControllerTest {
                 .andExpect(jsonPath("$.data.endTime").value(endTime.format(formatter)))
         ;
     }
+
+    @Test
+    @DisplayName("create screening duplication - 500")
+    void createScreeningDuplication() throws Exception {
+        Map<String, Object> request = Map.of(
+                "theaterId", theaterId,
+                "movieId", movieId,
+                "startTime", startTime
+        );
+        // 미리 시간표 생성
+        mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+
+        // 겹치게 시간표 생성
+        startTime = startTime.plusMinutes(duration / 2);
+        request = Map.of(
+                "theaterId", theaterId,
+                "movieId", movieId,
+                "startTime", startTime
+        );
+
+        ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+        result
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.data").isEmpty())
+        ;
+    }
+
+    @Test
+    @DisplayName("createScreeningInvalidTheaterId - 400")
+    void createScreeningInvalidTheaterId() throws Exception {
+        Map<String, Object> request = Map.of(
+                "theaterId", 0,
+                "movieId", movieId,
+                "startTime", startTime
+        );
+
+        ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+
+        result
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.data").isEmpty())
+        ;
+    }
+
+    @Test
+    @DisplayName("createScreeningInvalidMovieId - 400")
+    void createScreeningInvalidMovieId() throws Exception {
+        Map<String, Object> request = Map.of(
+                "theaterId", theaterId,
+                "movieId", 0,
+                "startTime", startTime
+        );
+
+        ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+
+        result
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.data").isEmpty())
+        ;
+    }
+
 }

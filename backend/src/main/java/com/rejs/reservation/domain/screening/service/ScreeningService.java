@@ -5,6 +5,8 @@ import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.screening.exception.DuplicationScreeningTimeException;
+import com.rejs.reservation.domain.screening.exception.InvalidForeignKeyException;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
@@ -23,13 +25,13 @@ public class ScreeningService {
 
     @Transactional
     public ScreeningDto createScreening(CreateScreeningRequest request){
-        Movie movie = movieRepository.findById(request.getMovieId()).orElseThrow();
-        Theater theater = theaterRepository.findById(request.getTheaterId()).orElseThrow();
+        Movie movie = movieRepository.findById(request.getMovieId()).orElseThrow(InvalidForeignKeyException::new);
+        Theater theater = theaterRepository.findById(request.getTheaterId()).orElseThrow(InvalidForeignKeyException::new);
         Screening screening = Screening.of(request.getStartTime(), theater, movie);
         boolean isExists = screeningRepository.existsByScreeningTime(screening.getTheaterId(), screening.getStartTime(), screening.getEndTime());
 
         if(isExists){
-            throw new RuntimeException();
+            throw new DuplicationScreeningTimeException();
         }
 
         screening = screeningRepository.save(screening);
