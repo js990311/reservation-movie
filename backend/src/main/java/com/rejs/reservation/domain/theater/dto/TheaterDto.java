@@ -1,7 +1,6 @@
 package com.rejs.reservation.domain.theater.dto;
 
 import com.rejs.reservation.domain.theater.entity.Theater;
-import com.rejs.reservation.global.dto.ListDto;
 import lombok.Getter;
 
 import java.util.List;
@@ -10,9 +9,9 @@ import java.util.List;
 public class TheaterDto {
     private Long theaterId;
     private String name;
-    private ListDto<SeatDto> seats;
+    private List<SeatDto> seats;
 
-    public TheaterDto(Long theaterId, String name, ListDto<SeatDto> seats) {
+    public TheaterDto(Long theaterId, String name, List<SeatDto> seats) {
         this.theaterId = theaterId;
         this.name = name;
         this.seats = seats;
@@ -22,7 +21,7 @@ public class TheaterDto {
         return new TheaterDto(
                 theater.getId(),
                 theater.getName(),
-                ListDto.from(theater.getSeats().stream().map(SeatDto::from).toList())
+                theater.getSeats().stream().map(SeatDto::from).toList()
         );
     }
 }

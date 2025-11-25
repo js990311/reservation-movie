@@ -3,9 +3,12 @@ package com.rejs.reservation.domain.screening.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.movie.entity.Movie;
+import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
+import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.theater.entity.Theater;
+import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.domain.theater.service.TheaterService;
 import jdk.jfr.ContentType;
@@ -93,7 +96,7 @@ class ScreeningControllerTest {
         ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         result
-                .andExpect(jsonPath("$.status").value(201))
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.screeningId").isNumber())
                 .andExpect(jsonPath("$.data.theaterId").value(theaterId))
                 .andExpect(jsonPath("$.data.movieId").value(movieId))
@@ -122,15 +125,24 @@ class ScreeningControllerTest {
         );
 
         ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+
+
         result
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.type").isString())
+                .andExpect(jsonPath("$.type").value(ScreeningExceptionCode.SCREENING_TIME_CONFLICT.getType()))
+                .andExpect(jsonPath("$.title").isString())
+                .andExpect(jsonPath("$.title").value(ScreeningExceptionCode.SCREENING_TIME_CONFLICT.getTitle()))
+                .andExpect(jsonPath("$.status").isNumber())
+                .andExpect(jsonPath("$.status").value(ScreeningExceptionCode.SCREENING_TIME_CONFLICT.getStatus().value()))
+                .andExpect(jsonPath("$.instance").isString())
+                .andExpect(jsonPath("$.instance").value("/screenings"))
+                .andExpect(jsonPath("$.detail").isString())
         ;
     }
 
     @Test
-    @DisplayName("createScreeningInvalidTheaterId - 400")
+    @DisplayName("createScreeningInvalidTheaterId - 404")
     void createScreeningInvalidTheaterId() throws Exception {
         Map<String, Object> request = Map.of(
                 "theaterId", 0,
@@ -141,14 +153,21 @@ class ScreeningControllerTest {
         ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         result
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").isString())
+                .andExpect(jsonPath("$.type").value(TheaterExceptionCode.THEATER_NOT_FOUND.getType()))
+                .andExpect(jsonPath("$.title").isString())
+                .andExpect(jsonPath("$.title").value(TheaterExceptionCode.THEATER_NOT_FOUND.getTitle()))
+                .andExpect(jsonPath("$.status").isNumber())
+                .andExpect(jsonPath("$.status").value(TheaterExceptionCode.THEATER_NOT_FOUND.getStatus().value()))
+                .andExpect(jsonPath("$.instance").isString())
+                .andExpect(jsonPath("$.instance").value("/screenings"))
+                .andExpect(jsonPath("$.detail").isString())
         ;
     }
 
     @Test
-    @DisplayName("createScreeningInvalidMovieId - 400")
+    @DisplayName("createScreeningInvalidMovieId - 404")
     void createScreeningInvalidMovieId() throws Exception {
         Map<String, Object> request = Map.of(
                 "theaterId", theaterId,
@@ -159,9 +178,16 @@ class ScreeningControllerTest {
         ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         result
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").isString())
+                .andExpect(jsonPath("$.type").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getType()))
+                .andExpect(jsonPath("$.title").isString())
+                .andExpect(jsonPath("$.title").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getTitle()))
+                .andExpect(jsonPath("$.status").isNumber())
+                .andExpect(jsonPath("$.status").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getStatus().value()))
+                .andExpect(jsonPath("$.instance").isString())
+                .andExpect(jsonPath("$.instance").value("/screenings"))
+                .andExpect(jsonPath("$.detail").isString())
         ;
     }
 

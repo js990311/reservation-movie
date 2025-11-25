@@ -5,6 +5,7 @@ import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
 import com.rejs.reservation.domain.theater.service.TheaterService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,15 +14,16 @@ import org.springframework.web.bind.annotation.*;
 public class TheaterController {
     private final TheaterService theaterService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public BaseResponse<TheaterDto> createTheater(@RequestBody TheaterCreateRequest request){
         TheaterDto theater = theaterService.createTheater(request);
-        return BaseResponse.of(201, theater);
+        return BaseResponse.of(theater);
     }
 
     @GetMapping("{id}")
     public BaseResponse<TheaterDto> readTheaterById(@PathVariable("id") Long id){
         TheaterDto theaterDto = theaterService.readById(id);
-        return BaseResponse.of(200, theaterDto);
+        return BaseResponse.of(theaterDto);
     }
 }

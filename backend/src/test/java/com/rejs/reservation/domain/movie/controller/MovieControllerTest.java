@@ -2,6 +2,7 @@ package com.rejs.reservation.domain.movie.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.movie.entity.Movie;
+import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,7 +54,7 @@ class MovieControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(201))
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.movieId").isNumber())
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
@@ -83,7 +85,7 @@ class MovieControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.movieId").value(id))
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
@@ -114,8 +116,16 @@ class MovieControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").isString())
+                .andExpect(jsonPath("$.type").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getType()))
+                .andExpect(jsonPath("$.title").isString())
+                .andExpect(jsonPath("$.title").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getTitle()))
+                .andExpect(jsonPath("$.status").isNumber())
+                .andExpect(jsonPath("$.status").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getStatus().value()))
+                .andExpect(jsonPath("$.instance").isString())
+                .andExpect(jsonPath("$.instance").value("/movies/" + id))
+                .andExpect(jsonPath("$.detail").isString())
         ;
     }
 

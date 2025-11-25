@@ -5,6 +5,7 @@ import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -13,15 +14,16 @@ import org.springframework.web.bind.annotation.*;
 public class MovieController {
     private final MovieService movieService;
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public BaseResponse<MovieDto> createMovie(@RequestBody MovieCreateRequest request){
         MovieDto movie = movieService.createMovie(request);
-        return BaseResponse.of(201, movie);
+        return BaseResponse.of(movie);
     }
 
     @GetMapping("/{id}")
     public BaseResponse<MovieDto> readMovieById(@PathVariable("id") Long id){
         MovieDto movieDto = movieService.readById(id);
-        return BaseResponse.of(200, movieDto);
+        return BaseResponse.of(movieDto);
     }
 }
