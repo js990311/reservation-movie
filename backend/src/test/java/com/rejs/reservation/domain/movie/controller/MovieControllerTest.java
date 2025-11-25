@@ -2,6 +2,7 @@ package com.rejs.reservation.domain.movie.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.movie.entity.Movie;
+import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -115,7 +116,15 @@ class MovieControllerTest {
 
         result
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.type").isString())
+                .andExpect(jsonPath("$.type").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getType()))
+                .andExpect(jsonPath("$.title").isString())
+                .andExpect(jsonPath("$.title").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getTitle()))
+                .andExpect(jsonPath("$.status").isNumber())
+                .andExpect(jsonPath("$.status").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getStatus().value()))
+                .andExpect(jsonPath("$.instance").isString())
+                .andExpect(jsonPath("$.instance").value("/movies/" + id))
+                .andExpect(jsonPath("$.detail").isString())
         ;
     }
 

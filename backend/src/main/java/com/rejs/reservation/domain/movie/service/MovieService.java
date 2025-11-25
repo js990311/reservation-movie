@@ -3,8 +3,9 @@ package com.rejs.reservation.domain.movie.service;
 import com.rejs.reservation.domain.movie.dto.MovieDto;
 import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.entity.Movie;
+import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
-import com.rejs.reservation.global.exception.GlobalBaseException;
+import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class MovieService {
     public MovieDto readById(Long id){
         Optional<Movie> opt = movieRepository.findById(id);
         Movie movie = opt.orElseThrow(
-                ()-> new GlobalBaseException(HttpStatus.NOT_FOUND));
+                ()-> BusinessException.of(MovieBusinessExceptionCode.MOVIE_NOT_FOUND, id + " NOT FOUND"));
         return MovieDto.from(movie);
     }
 }

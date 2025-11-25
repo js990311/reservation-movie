@@ -3,6 +3,7 @@ package com.rejs.reservation.domain.theater.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.theater.entity.Theater;
+import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -94,8 +95,16 @@ class TheaterControllerTest {
         ResultActions result = mockMvc.perform(get("/theaters/{id}", 0));
 
         result
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.data").isEmpty())
+                .andExpect(jsonPath("$.status").value(TheaterExceptionCode.THEATER_NOT_FOUND.getStatus().value()))
+                .andExpect(jsonPath("$.type").isString())
+                .andExpect(jsonPath("$.type").value(TheaterExceptionCode.THEATER_NOT_FOUND.getType()))
+                .andExpect(jsonPath("$.title").isString())
+                .andExpect(jsonPath("$.title").value(TheaterExceptionCode.THEATER_NOT_FOUND.getTitle()))
+                .andExpect(jsonPath("$.status").isNumber())
+                .andExpect(jsonPath("$.status").value(TheaterExceptionCode.THEATER_NOT_FOUND.getStatus().value()))
+                .andExpect(jsonPath("$.instance").isString())
+                .andExpect(jsonPath("$.instance").value("/theaters/" + 0))
+                .andExpect(jsonPath("$.detail").isString())
         ;
     }
 

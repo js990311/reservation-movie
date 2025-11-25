@@ -1,0 +1,20 @@
+package com.rejs.reservation.global.exception.code;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@AllArgsConstructor
+public enum AuthenticationExceptionCode implements BusinessExceptionCode{
+    // 인증 관련
+    INVALID_TOKEN("INVALID_TOKEN", "잘못된 토큰입니다", HttpStatus.UNAUTHORIZED),
+    ACCESS_DENIED("ACCESS_DENIED", "권한이 없습니다", HttpStatus.FORBIDDEN),
+    USER_INFO_MISMATCH("USER_INFO_MISMATCH", "유저정보가 맞지 않습니다", HttpStatus.UNAUTHORIZED),
+    REFRESH_TOKEN_REQUIRED("REFRESH_TOKEN_REQUIRED", "REFRESH TOKEN이 필요합니다.", HttpStatus.UNAUTHORIZED)
+    ;
+
+    private String type;
+    private String title;
+    private HttpStatus status;
+}
