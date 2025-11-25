@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -53,7 +54,7 @@ class MovieControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(201))
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.movieId").isNumber())
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
@@ -84,7 +85,7 @@ class MovieControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.movieId").value(id))
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
@@ -115,7 +116,7 @@ class MovieControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type").isString())
                 .andExpect(jsonPath("$.type").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getType()))
                 .andExpect(jsonPath("$.title").isString())

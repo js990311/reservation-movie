@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -51,15 +52,14 @@ class TheaterControllerTest {
         );
 
         result
-                .andExpect(jsonPath("$.status").value(201))
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.theaterId").isNumber())
                 .andExpect(jsonPath("$.data.name").value(name))
-                .andExpect(jsonPath("$.data.seats.count").value(rowSize * colSize))
-                .andExpect(jsonPath("$.data.seats.elements").isArray())
-                .andExpect(jsonPath("$.data.seats.elements[0].seatId").isNumber())
-                .andExpect(jsonPath("$.data.seats.elements[0].theaterId").isNumber())
-                .andExpect(jsonPath("$.data.seats.elements[0].row").isNumber())
-                .andExpect(jsonPath("$.data.seats.elements[0].col").isNumber())
+                .andExpect(jsonPath("$.data.seats").isArray())
+                .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].theaterId").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
     }
 
@@ -77,15 +77,14 @@ class TheaterControllerTest {
         ResultActions result = mockMvc.perform(get("/theaters/{id}", id));
 
         result
-                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.theaterId").value(id))
                 .andExpect(jsonPath("$.data.name").value(name))
-                .andExpect(jsonPath("$.data.seats.count").value(rowSize * colSize))
-                .andExpect(jsonPath("$.data.seats.elements").isArray())
-                .andExpect(jsonPath("$.data.seats.elements[0].seatId").isNumber())
-                .andExpect(jsonPath("$.data.seats.elements[0].theaterId").value(id))
-                .andExpect(jsonPath("$.data.seats.elements[0].row").isNumber())
-                .andExpect(jsonPath("$.data.seats.elements[0].col").isNumber())
+                .andExpect(jsonPath("$.data.seats").isArray())
+                .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].theaterId").value(id))
+                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
     }
 

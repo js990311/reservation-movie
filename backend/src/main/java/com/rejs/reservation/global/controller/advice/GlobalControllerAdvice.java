@@ -1,15 +1,17 @@
 package com.rejs.reservation.global.controller.advice;
 
-import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.dto.response.BusinessExceptionResponse;
 import com.rejs.reservation.global.exception.BusinessException;
-import com.rejs.reservation.global.exception.GlobalBaseException;
+import com.rejs.reservation.global.exception.code.BusinessExceptionCode;
+import com.rejs.reservation.global.exception.code.InternalServerExceptionCode;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalControllerAdvice {
 
@@ -17,16 +19,14 @@ public class GlobalControllerAdvice {
     public ResponseEntity<BusinessExceptionResponse> handleBusinessException(BusinessException ex, HttpServletRequest request){
         return ResponseEntity.status(ex.getCode().getStatus()).body(new BusinessExceptionResponse(ex.getCode(), request.getRequestURI(), ex.getDetail()));    }
 
-    @Deprecated
-    @ExceptionHandler(value = GlobalBaseException.class)
-    public ResponseEntity<BaseResponse<?>> handleBaseException(GlobalBaseException ex){
-       return new ResponseEntity<>(BaseResponse.exception(ex.getStatus()), ex.getStatus());
-    }
-
     @ExceptionHandler(value = RuntimeException.class)
-    public ResponseEntity<BaseResponse<?>> handleBaseException(RuntimeException ex){
-        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        return new ResponseEntity<>(BaseResponse.exception(status), status);
+    public ResponseEntity<BusinessExceptionResponse> handleBaseException(RuntimeException ex, HttpServletRequest request){
+        BusinessExceptionCode code = InternalServerExceptionCode.INTERNAL_SERVER_ERROR;
+        String instance = request.getRequestURI();
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(instance).append("] ").append(ex.getMessage());
+        log.warn(sb.toString());
+        return ResponseEntity.status(code.getStatus()).body(new BusinessExceptionResponse(code, instance, null));
     }
 
 }
