@@ -11,7 +11,12 @@ import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.domain.theater.service.TheaterService;
+import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.repository.UserRepository;
+import com.rejs.reservation.global.security.jwt.token.Tokens;
+import com.rejs.reservation.global.security.service.LoginService;
 import jdk.jfr.ContentType;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,6 +67,26 @@ class ScreeningControllerTest {
 
     private DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+    private String accessToken;
+
+    @Autowired
+    private LoginService loginService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeEach
+    void setToken(){
+        Tokens tokens = loginService.signup(new LoginRequest("id", "pw"));
+        accessToken = tokens.getAccessToken();
+    }
+
+    @AfterEach
+    void clearToken(){
+        userRepository.deleteAll();;
+    }
+
+
     @BeforeEach
     void setUp(){
         String movieName = "some-movie";
@@ -93,7 +118,11 @@ class ScreeningControllerTest {
                 "startTime", startTime
         );
 
-        ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(
+                post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + accessToken)
+
+        );
 
         result
                 .andExpect(status().isCreated())
@@ -114,7 +143,9 @@ class ScreeningControllerTest {
                 "startTime", startTime
         );
         // 미리 시간표 생성
-        mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+        mockMvc.perform(post("/screenings")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         // 겹치게 시간표 생성
         startTime = startTime.plusMinutes(duration / 2);
@@ -124,7 +155,9 @@ class ScreeningControllerTest {
                 "startTime", startTime
         );
 
-        ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(post("/screenings")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
 
         result
@@ -150,7 +183,9 @@ class ScreeningControllerTest {
                 "startTime", startTime
         );
 
-        ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(post("/screenings")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         result
                 .andExpect(status().isNotFound())
@@ -175,7 +210,9 @@ class ScreeningControllerTest {
                 "startTime", startTime
         );
 
-        ResultActions result = mockMvc.perform(post("/screenings").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
+        ResultActions result = mockMvc.perform(post("/screenings")
+                .header("Authorization", "Bearer " + accessToken)
+                .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         result
                 .andExpect(status().isNotFound())

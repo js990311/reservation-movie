@@ -21,7 +21,7 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Column
+    @Column(unique = true)
     private String username;
 
     @Column
@@ -42,4 +42,10 @@ public class User {
         reservation.mapUser(null);
     }
 
+    // # 생성
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 }

@@ -1,8 +1,10 @@
 package com.rejs.reservation.global.security.service;
 
-import com.rejs.reservation.domain.user.repository.UserRepository;
-import com.rejs.reservation.global.security.exception.AuthenticationExceptionCode;
+import com.rejs.reservation.domain.user.dto.UserDto;
+import com.rejs.reservation.domain.user.exception.UserBusinessExceptionCode;
+import com.rejs.reservation.domain.user.service.UserService;
 import com.rejs.reservation.global.exception.BusinessException;
+import com.rejs.reservation.global.security.exception.AuthenticationExceptionCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -16,11 +18,21 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @Service
 public class UserDetailServiceImpl implements UserDetailsService {
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        com.rejs.reservation.domain.user.entity.User user = userRepository.findByUsername(username).orElseThrow(() -> BusinessException.of(AuthenticationExceptionCode.USER_INFO_MISMATCH));
-        return new User(user.getId().toString(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority("USER")));
+        UserDto user;
+        try {
+            user = userService.findByUsername(username);
+        }catch (BusinessException ex){
+            if(ex.getCode().equals(UserBusinessExceptionCode.USER_NOT_FOUND)){
+                throw new UsernameNotFoundException("USER NOT FOUND : NAME : " + username);
+            }else {
+                throw ex;
+            }
+        }
+        return new User(user.getUserId().toString(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority("USER")));
     }
+
 }
