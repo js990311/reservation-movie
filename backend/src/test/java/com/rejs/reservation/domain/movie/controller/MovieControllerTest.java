@@ -4,6 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
+import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.repository.UserRepository;
+import com.rejs.reservation.global.security.jwt.token.Tokens;
+import com.rejs.reservation.global.security.service.LoginService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +42,25 @@ class MovieControllerTest {
     @Autowired
     private MovieRepository movieRepository;
 
+    private String accessToken;
+
+    @Autowired
+    private LoginService loginService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeEach
+    void setup(){
+        Tokens tokens = loginService.signup(new LoginRequest("id", "pw"));
+        accessToken = tokens.getAccessToken();
+    }
+
+    @AfterEach
+    void clear(){
+        userRepository.deleteAll();;
+    }
+
     @Test
     @DisplayName("POST /movie - 200")
     void createMovie() throws Exception{
@@ -51,6 +76,7 @@ class MovieControllerTest {
                 post("/movies")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
+                        .header("Authorization", "Bearer " + accessToken)
         );
 
         result
@@ -82,6 +108,7 @@ class MovieControllerTest {
 
         ResultActions result = mockMvc.perform(
                 get("/movies/{id}", id)
+                        .header("Authorization", "Bearer " + accessToken)
         );
 
         result
@@ -113,6 +140,7 @@ class MovieControllerTest {
 
         ResultActions result = mockMvc.perform(
                 get("/movies/{id}", id)
+                        .header("Authorization", "Bearer " + accessToken)
         );
 
         result

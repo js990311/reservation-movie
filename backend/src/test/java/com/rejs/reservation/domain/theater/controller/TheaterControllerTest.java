@@ -5,6 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
+import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.repository.UserRepository;
+import com.rejs.reservation.global.security.jwt.token.Tokens;
+import com.rejs.reservation.global.security.service.LoginService;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +40,25 @@ class TheaterControllerTest {
     @Autowired
     private TheaterRepository theaterRepository;
 
+    private String accessToken;
+
+    @Autowired
+    private LoginService loginService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeEach
+    void setToken(){
+        Tokens tokens = loginService.signup(new LoginRequest("id", "pw"));
+        accessToken = tokens.getAccessToken();
+    }
+
+    @AfterEach
+    void clearToken(){
+        userRepository.deleteAll();;
+    }
+
     @Test
     @DisplayName("POST theaters - 201")
     void createTheater() throws Exception {
@@ -48,6 +73,7 @@ class TheaterControllerTest {
 
         ResultActions result = mockMvc.perform(post("/theaters")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("Authorization", "Bearer " + accessToken)
                 .content(objectMapper.writeValueAsString(request))
         );
 
@@ -74,7 +100,8 @@ class TheaterControllerTest {
         theater = theaterRepository.save(theater);
         Long id = theater.getId();
 
-        ResultActions result = mockMvc.perform(get("/theaters/{id}", id));
+        ResultActions result = mockMvc.perform(get("/theaters/{id}", id)                        .header("Authorization", "Bearer " + accessToken)
+        );
 
         result
                 .andExpect(status().isOk())
@@ -91,7 +118,8 @@ class TheaterControllerTest {
     @Test
     @DisplayName("GEt theatersById - 404")
     void readTheaterById_404() throws Exception{
-        ResultActions result = mockMvc.perform(get("/theaters/{id}", 0));
+        ResultActions result = mockMvc.perform(get("/theaters/{id}", 0)                        .header("Authorization", "Bearer " + accessToken)
+        );
 
         result
                 .andExpect(jsonPath("$.status").value(TheaterExceptionCode.THEATER_NOT_FOUND.getStatus().value()))

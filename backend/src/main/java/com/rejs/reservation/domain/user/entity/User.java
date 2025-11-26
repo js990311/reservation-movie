@@ -21,6 +21,12 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
+    @Column(unique = true)
+    private String username;
+
+    @Column
+    private String password;
+
     /* 관계 - Reservation */
     @OneToMany(mappedBy = "user")
     private List<Reservation> reservations = new ArrayList<>();
@@ -36,4 +42,10 @@ public class User {
         reservation.mapUser(null);
     }
 
+    // # 생성
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 }
