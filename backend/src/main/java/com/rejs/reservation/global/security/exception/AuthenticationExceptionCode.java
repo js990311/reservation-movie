@@ -1,12 +1,13 @@
-package com.rejs.reservation.global.exception.code;
+package com.rejs.reservation.global.security.exception;
 
+import com.rejs.reservation.global.exception.code.BusinessExceptionCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum AuthenticationExceptionCode implements BusinessExceptionCode{
+public enum AuthenticationExceptionCode implements BusinessExceptionCode {
     // 인증 관련
     INVALID_TOKEN("INVALID_TOKEN", "잘못된 토큰입니다", HttpStatus.UNAUTHORIZED),
     ACCESS_DENIED("ACCESS_DENIED", "권한이 없습니다", HttpStatus.FORBIDDEN),

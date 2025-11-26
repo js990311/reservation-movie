@@ -21,6 +21,12 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
+    @Column
+    private String username;
+
+    @Column
+    private String password;
+
     /* 관계 - Reservation */
     @OneToMany(mappedBy = "user")
     private List<Reservation> reservations = new ArrayList<>();
