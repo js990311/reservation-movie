@@ -78,23 +78,6 @@ public class Screening {
         }
     }
 
-
-    /* # 관계 - Reservation */
-
-    @OneToMany(mappedBy = "screening")
-    private List<Reservation> reservations = new ArrayList<>();
-
-
-    public void addReservation(Reservation reservation){
-        this.reservations.add(reservation);
-        reservation.mapScreening(this);
-    }
-
-    public void removeScreening(Reservation reservation){
-        reservations.remove(reservation);
-        reservation.mapScreening(null);
-    }
-
     // 로직
     public void updateScreeningTime(LocalDateTime startTime){
         this.startTime = startTime.truncatedTo(ChronoUnit.MINUTES);

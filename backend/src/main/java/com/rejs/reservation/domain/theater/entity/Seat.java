@@ -50,20 +50,6 @@ public class Seat {
         }
     }
 
-    /* # 관계 ReservationSeat */
-    @OneToMany(mappedBy = "seat")
-    private List<ReservationSeat> reservationSeats = new ArrayList<>();
-
-    public void addReservationSeat(ReservationSeat reservationSeat) {
-        reservationSeats.add(reservationSeat);
-        reservationSeat.mapSeat(this);
-    }
-
-    public void removeReservationSeat(ReservationSeat reservationSeat) {
-        reservationSeats.remove(reservationSeat);
-        reservationSeat.mapSeat(null);
-    }
-
     // 생성
 
     public Seat(Integer rowNum, Integer colNum) {

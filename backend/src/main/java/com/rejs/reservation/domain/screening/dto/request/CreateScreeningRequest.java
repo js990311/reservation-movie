@@ -10,4 +10,10 @@ public class CreateScreeningRequest {
     private Long theaterId;
     private Long movieId;
     private LocalDateTime startTime;
+
+    public CreateScreeningRequest(Long theaterId, Long movieId, LocalDateTime startTime) {
+        this.theaterId = theaterId;
+        this.movieId = movieId;
+        this.startTime = startTime;
+    }
 }

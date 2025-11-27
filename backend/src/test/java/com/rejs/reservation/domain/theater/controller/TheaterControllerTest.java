@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -50,7 +51,7 @@ class TheaterControllerTest {
 
     @BeforeEach
     void setToken(){
-        Tokens tokens = loginService.signup(new LoginRequest("id", "pw"));
+        Tokens tokens = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
         accessToken = tokens.getAccessToken();
     }
 
