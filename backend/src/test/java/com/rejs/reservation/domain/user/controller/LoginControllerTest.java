@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,7 +45,7 @@ class LoginControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    private String alreadyUsername = "alreadyUsername";
+    private String alreadyUsername = UUID.randomUUID().toString();
     private String alreadyPassword = "alreadyPassword";
 
     @BeforeEach
@@ -116,7 +118,7 @@ class LoginControllerTest {
 
     @Test
     void signup() throws Exception {
-        String username = "username";
+        String username = UUID.randomUUID().toString();
         String password = "password";
         Map<String , String> request = Map.of("username", username, "password", password);
 

@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,7 +53,7 @@ class MovieControllerTest {
 
     @BeforeEach
     void setup(){
-        Tokens tokens = loginService.signup(new LoginRequest("id", "pw"));
+        Tokens tokens = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
         accessToken = tokens.getAccessToken();
     }
 

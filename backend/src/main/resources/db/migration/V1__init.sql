@@ -52,49 +52,49 @@ ALTER TABLE `seats` ADD CONSTRAINT `FK_theaters_TO_seats_1` FOREIGN KEY (
     )
     REFERENCES `theaters` (
                            `theater_id`
-        );
+        ) ON DELETE CASCADE ;
 
 ALTER TABLE `reservations` ADD CONSTRAINT `FK_screenings_TO_reservations_1` FOREIGN KEY (
                                                                                          `screening_id`
     )
     REFERENCES `screenings` (
                              `screening_id`
-        );
+        ) ON DELETE CASCADE ;
 
 ALTER TABLE `reservations` ADD CONSTRAINT `FK_users_TO_reservations_1` FOREIGN KEY (
                                                                                     `user_id`
     )
     REFERENCES `users` (
                         `user_id`
-        );
+        ) ON DELETE CASCADE ;
 
 ALTER TABLE `screenings` ADD CONSTRAINT `FK_theaters_TO_screenings_1` FOREIGN KEY (
                                                                                    `theater_id`
     )
     REFERENCES `theaters` (
                            `theater_id`
-        );
+        ) ON DELETE CASCADE ;
 
 ALTER TABLE `screenings` ADD CONSTRAINT `FK_movies_TO_screenings_1` FOREIGN KEY (
                                                                                  `movie_id`
     )
     REFERENCES `movies` (
                          `movie_id`
-        );
+        ) ON DELETE CASCADE ;
 
 ALTER TABLE `reservation_seats` ADD CONSTRAINT `FK_reservations_TO_reservation_seats_1` FOREIGN KEY (
                                                                                                      `reservation_id`
     )
     REFERENCES `reservations` (
                                `reservation_id`
-        );
+        ) ON DELETE CASCADE ;
 
 ALTER TABLE `reservation_seats` ADD CONSTRAINT `FK_seats_TO_reservation_seats_1` FOREIGN KEY (
                                                                                               `seat_id`
     )
     REFERENCES `seats` (
                         `seat_id`
-        );
+        ) ON DELETE CASCADE ;
 
 ALTER TABLE `reservation_seats` ADD CONSTRAINT `UNIQUE_reservation_seats` UNIQUE (
                                                                                   `reservation_id`, `seat_id`
@@ -102,4 +102,4 @@ ALTER TABLE `reservation_seats` ADD CONSTRAINT `UNIQUE_reservation_seats` UNIQUE
 
 ALTER TABLE `seats` ADD CONSTRAINT `UNIQUE_seats` UNIQUE (
                                                           `row_num`, `col_num`, `theater_id`
-    );
+    ) ;

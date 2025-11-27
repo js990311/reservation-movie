@@ -33,7 +33,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String token = authorization.substring(7);
                 boolean isAccessToken = jwtUtils.validateAccessToken(token);
                 if(isAccessToken){
-                    Authentication authentication = createAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(createAuthentication(token));
                 }
             }
