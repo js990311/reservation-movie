@@ -47,7 +47,14 @@ public class ReservationSeat {
             this.reservation.removeReservationSeat(this);
         }
         if(reservation!= null){
+            this.reservation = reservation;
             this.reservation.addReservationSeat(this);
         }
+    }
+
+    // # 생성
+
+    public ReservationSeat(Long seatId) {
+        this.seatId = seatId;
     }
 }

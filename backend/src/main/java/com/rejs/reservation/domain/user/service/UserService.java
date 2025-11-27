@@ -20,7 +20,7 @@ public class UserService {
     // # CREATE
     @Transactional
     public UserDto createUser(String username, String password) {
-        if(userRepository.existsByUsername(username)) {
+        if(userRepository.existsByEmail(username)) {
             throw BusinessException.of(UserBusinessExceptionCode.USERNAME_ALREADY_EXISTS);
         }
         User user = new User(username, password);
@@ -30,7 +30,7 @@ public class UserService {
 
     // # READ
     public UserDto findByUsername(String username) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> BusinessException.of(UserBusinessExceptionCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(username).orElseThrow(() -> BusinessException.of(UserBusinessExceptionCode.USER_NOT_FOUND));
         return UserDto.of(user);
     }
 

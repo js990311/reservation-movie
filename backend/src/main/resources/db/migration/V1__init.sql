@@ -23,7 +23,8 @@ CREATE TABLE `reservations` (
 
 CREATE TABLE `screenings` (
                               `screening_id`	BIGINT	NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-                              `start_at`	TIMESTAMP	NOT NULL,
+                              `start_time`	TIMESTAMP	NOT NULL,
+                              `end_time` TIMESTAMP NOT NULL,
                               `theater_id`	BIGINT	NOT NULL,
                               `movie_id`	BIGINT	NOT NULL
 );

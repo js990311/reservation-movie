@@ -6,16 +6,16 @@ import lombok.Getter;
 @Getter
 public class UserDto {
     private Long userId;
-    private String username;
+    private String email;
     private String password;
 
-    public UserDto(Long userId, String username, String password) {
+    public UserDto(Long userId, String email, String password) {
         this.userId = userId;
-        this.username = username;
+        this.email = email;
         this.password = password;
     }
 
     public static UserDto of(User user){
-        return new UserDto(user.getId(), user.getUsername(), user.getPassword());
+        return new UserDto(user.getId(), user.getEmail(), user.getPassword());
     }
 }

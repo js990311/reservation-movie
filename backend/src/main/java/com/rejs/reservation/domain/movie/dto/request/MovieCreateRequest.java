@@ -6,4 +6,9 @@ import lombok.Getter;
 public class MovieCreateRequest {
     private String title;
     private Integer duration;
+
+    public MovieCreateRequest(String title, Integer duration) {
+        this.title = title;
+        this.duration = duration;
+    }
 }

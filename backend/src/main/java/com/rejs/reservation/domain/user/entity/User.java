@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,30 +23,26 @@ public class User {
     private Long id;
 
     @Column(unique = true)
-    private String username;
+    private String email;
+
+    private String name;
 
     @Column
     private String password;
 
-    /* 관계 - Reservation */
-    @OneToMany(mappedBy = "user")
-    private List<Reservation> reservations = new ArrayList<>();
+    @Column
+    private String role;
 
-
-    public void addReservation(Reservation reservation){
-        this.reservations.add(reservation);
-        reservation.mapUser(this);
-    }
-
-    public void removeScreening(Reservation reservation){
-        reservations.remove(reservation);
-        reservation.mapUser(null);
-    }
+    @Column
+    private LocalDateTime createAt;
 
     // # 생성
 
-    public User(String username, String password) {
-        this.username = username;
+    public User(String email, String password) {
+        this.email = email;
+        this.name = email;
         this.password = password;
+        this.role = "USER";
+        this.createAt = LocalDateTime.now();
     }
 }
