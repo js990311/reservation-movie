@@ -1,10 +1,13 @@
-package com.rejs.reservation.domain.reservation.repository;
+package com.rejs.reservation.domain.reservation.service;
 
 import com.rejs.reservation.domain.movie.dto.MovieDto;
 import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
+import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
+import com.rejs.reservation.domain.reservation.repository.ReservationFacade;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
@@ -12,11 +15,11 @@ import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.SeatDto;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
 import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
-import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.service.TheaterService;
 import com.rejs.reservation.domain.user.dto.UserDto;
 import com.rejs.reservation.domain.user.entity.User;
 import com.rejs.reservation.domain.user.repository.UserRepository;
+import com.rejs.reservation.global.exception.BusinessException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @Transactional
 @SpringBootTest
-class ReservationFacadeTest {
+class ReservationServiceTest {
     @Autowired
     private MovieService movieService;
 
@@ -46,13 +49,13 @@ class ReservationFacadeTest {
     private UserRepository userRepository;
 
     @Autowired
-    private ReservationFacade reservationFacade;
-
-    @Autowired
     private ReservationRepository reservationRepository;
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private ReservationService reservationService;
 
     private MovieDto movie;
     private TheaterDto theater;
@@ -78,18 +81,18 @@ class ReservationFacadeTest {
         user = UserDto.of(usere);
     }
 
+
     @Test
-    void 예약된좌석없음() {
+    void reservationScreening() {
         List<SeatDto> seats = theater.getSeats();
         ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
 
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
-                reservationRequest.getSeats(),
-                screening.getTheaterId(),
-                screening.getScreeningId()
-        );
+        ReservationDto reservationDto = reservationService.reservationScreening(reservationRequest, user.getUserId());
 
-        assertEquals(seats.size(), availableSeats.size());
+        assertNotNull(reservationDto);
+        assertEquals(reservationRequest.getScreeningId(), reservationDto.getScreeningId());
+        assertEquals(user.getUserId(), reservationDto.getUserId());
+        assertEquals(seats.size(), reservationDto.getReservationSeats().size());
     }
 
     @Test
@@ -102,13 +105,12 @@ class ReservationFacadeTest {
 
         entityManager.flush();
 
-        //
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
-                seats.stream().map(SeatDto::getSeatId).toList(),
-                screening.getTheaterId(),
-                screening.getScreeningId()
+        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        BusinessException businessException = assertThrows(
+                BusinessException.class,
+                () -> reservationService.reservationScreening(reservationRequest, user.getUserId())
         );
-        assertEquals(seats.size() - reservationSeatCount, availableSeats.size());
+        assertEquals(ReservationExceptionCode.INVALID_OR_UNAVAILABLE_SEATS, businessException.getCode());
     }
 
     @Test
@@ -120,13 +122,12 @@ class ReservationFacadeTest {
 
         entityManager.flush();
 
-        //
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
-                seats.stream().map(SeatDto::getSeatId).toList(),
-                screening.getTheaterId(),
-                screening.getScreeningId()
+        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        BusinessException businessException = assertThrows(
+                BusinessException.class,
+                () -> reservationService.reservationScreening(reservationRequest, user.getUserId())
         );
-        assertEquals(0, availableSeats.size());
+        assertEquals(ReservationExceptionCode.INVALID_OR_UNAVAILABLE_SEATS, businessException.getCode());
     }
 
     @Test
@@ -142,13 +143,13 @@ class ReservationFacadeTest {
 
         entityManager.flush();
 
-        // 다른 상영표는 모두 예매 가능
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
-                seats.stream().map(SeatDto::getSeatId).toList(),
-                screening2.getTheaterId(),
-                screening2.getScreeningId()
-        );
-        assertEquals(seats.size(), availableSeats.size());
+        ReservationRequest reservationRequest = new ReservationRequest(screening2.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        ReservationDto reservationDto = reservationService.reservationScreening(reservationRequest, user.getUserId());
 
+        assertNotNull(reservationDto);
+        assertEquals(reservationRequest.getScreeningId(), reservationDto.getScreeningId());
+        assertEquals(user.getUserId(), reservationDto.getUserId());
+        assertEquals(seats.size(), reservationDto.getReservationSeats().size());
     }
+
 }

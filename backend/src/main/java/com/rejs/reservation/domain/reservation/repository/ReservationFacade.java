@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.reservation.repository;
 
+import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationSeatRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,9 @@ public class ReservationFacade {
                 .addValue("screeningId", screeningId)
         ;
         return jdbcTemplate.queryForList(FIND_AVAILABLE_SEAT, param, Long.class);
+    }
+
+    public Reservation save(Reservation reservation) {
+        return reservationRepository.save(reservation);
     }
 }
