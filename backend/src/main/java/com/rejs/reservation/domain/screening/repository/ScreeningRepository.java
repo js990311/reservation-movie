@@ -1,7 +1,9 @@
 package com.rejs.reservation.domain.screening.repository;
 
 import com.rejs.reservation.domain.screening.entity.Screening;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -21,4 +23,12 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
             AND sc.endTime > :startTime
    """)
     boolean existsByScreeningTime(@Param("theaterId") Long theaterId, @Param("startTime")LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT sc
+        FROM  Screening sc
+        WHERE sc.id = :screeningId
+    """)
+    Screening findWithLock(@Param("screeningId") Long screeningId);
 }

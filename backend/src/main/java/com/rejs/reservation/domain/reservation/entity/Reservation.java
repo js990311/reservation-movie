@@ -86,11 +86,11 @@ public class Reservation {
 
     public void addReservationSeat(ReservationSeat reservationSeat){
         this.reservationSeats.add(reservationSeat);
-        reservationSeat.mapResrvation(this);
+        reservationSeat.mapReservation(this);
     }
 
     public void removeReservationSeat(ReservationSeat reservationSeat){
         reservationSeats.remove(reservationSeat);
-        reservationSeat.mapResrvation(null);
+        reservationSeat.mapReservation(null);
     }
 }

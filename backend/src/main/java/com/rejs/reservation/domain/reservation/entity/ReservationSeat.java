@@ -1,7 +1,5 @@
 package com.rejs.reservation.domain.reservation.entity;
 
-import com.rejs.reservation.domain.theater.entity.Seat;
-import com.rejs.reservation.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,6 +17,14 @@ public class ReservationSeat {
     @Column(name = "reservation_seat_id")
     private Long id;
 
+    // # 관계 - seat : DDD 기반을 위해서 어그리게이트 외부에 있는 seat과의 연결 제외
+    @Column(name = "seat_id")
+    private Long seatId;
+
+    public void assignSeat(Long seatId) {
+        this.seatId = seatId;
+    }
+
     /* # 관계 - reservation */
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,7 +38,7 @@ public class ReservationSeat {
     /**
      * 패키지 내부에서만 사용
      */
-    void mapResrvation(Reservation reservation) {
+    void mapReservation(Reservation reservation) {
         this.reservation = reservation;
     }
 
@@ -44,31 +50,4 @@ public class ReservationSeat {
             this.reservation.addReservationSeat(this);
         }
     }
-
-    /* # 관계 - Seat */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seat_id")
-    private Seat seat;
-
-    public Long getSeatId(){
-        return this.seat != null ? seat.getId() : null;
-    }
-
-    /**
-     * @deprecated 의존관계 매핑을 위한 헬퍼 메서드에서만 사용하십시오. {@link #assignSeat(Seat)}를 대신 사용하십시오
-     */
-    @Deprecated
-    public void mapSeat(Seat seat){
-        this.seat = seat;
-    }
-
-    public void assignSeat(Seat seat){
-        if(this.seat != null){
-            this.seat.removeReservationSeat(this);
-        }
-        if(seat != null){
-            seat.addReservationSeat(this);
-        }
-    }
-
 }
