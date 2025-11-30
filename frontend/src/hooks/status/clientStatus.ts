@@ -1,0 +1,1 @@
+type RequestStatus = 'PENDING' | 'LOADING' | 'SUCCESS' | 'FAIL';

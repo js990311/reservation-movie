@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
     private final LoginService loginService;
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public Tokens login(@RequestBody LoginRequest request){
         Tokens tokens = loginService.login(request);
         return tokens;
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("signup")
+    @PostMapping("/signup")
     public ResponseEntity<Tokens> signup(@RequestBody LoginRequest request){
         Tokens tokens = loginService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(tokens);
