@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.7'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.epages.restdocs-api-spec' version '0.18.2'
 }
 
 group = 'com.rejs.reservation'
@@ -46,8 +47,35 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-mysql'
 
+	// springdoc 연계를 위해
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'com.epages:restdocs-api-spec-mockmvc:0.18.2'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+openapi3{
+	server  = 'http://localhost:8080/api'
+	title = "reservation"
+	description = "영화예매시스템"
+	version="1.0.0"
+	format = "yaml"
+}
+
+
+tasks.register('docs', Copy) {
+	doFirst {
+		delete file('src/main/resources/docs/openapi3.yaml')
+	}
+	from file('build/api-spec/openapi3.yaml')
+	into file('src/main/resources/docs/.')
+	dependsOn tasks.named('openapi3')
+
+	dependsOn tasks.named('processResources')
+	doLast{
+		delete file('build/generated-snippets')
+	}
 }

@@ -2,11 +2,16 @@ package com.rejs.reservation.domain.theater.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rejs.reservation.controller.AbstractControllerTest;
+import com.rejs.reservation.controller.docs.BaseResponseDocs;
+import com.rejs.reservation.domain.theater.controller.docs.CreateTheaterRequestDocs;
+import com.rejs.reservation.domain.theater.controller.docs.TheaterDtoDocs;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
 import com.rejs.reservation.domain.user.repository.UserRepository;
+import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import com.rejs.reservation.global.security.service.LoginService;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +28,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.epages.restdocs.apispec.ResourceDocumentation.parameterWithName;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,13 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class TheaterControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+class TheaterControllerTest extends AbstractControllerTest {
     @Autowired
     private TheaterRepository theaterRepository;
 
@@ -88,6 +88,17 @@ class TheaterControllerTest {
                 .andExpect(jsonPath("$.data.seats[0].row").isNumber())
                 .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
+
+        result
+                .andDo(
+                        document((docs) -> docs
+                                .requestHeaders(authorizationHeader())
+                                .requestSchema(CreateTheaterRequestDocs.schema())
+                                .requestFields(CreateTheaterRequestDocs.fields())
+                                .responseSchema(TheaterDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.baseFields(TheaterDtoDocs.fields()))
+                        )
+                );
     }
 
     @Test
@@ -114,6 +125,16 @@ class TheaterControllerTest {
                 .andExpect(jsonPath("$.data.seats[0].row").isNumber())
                 .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
+
+        result
+                .andDo(
+                        document((docs) -> docs
+                                .requestHeaders(authorizationHeader())
+                                .pathParameters(parameterWithName("id").description("영화관 id"))
+                                .responseSchema(TheaterDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.baseFields(TheaterDtoDocs.fields()))
+                        )
+                );
     }
 
     @Test
@@ -134,6 +155,13 @@ class TheaterControllerTest {
                 .andExpect(jsonPath("$.instance").value("/theaters/" + 0))
                 .andExpect(jsonPath("$.detail").isString())
         ;
-    }
 
+        result
+                .andDo(
+                        documentWithException((docs) -> docs
+                                .requestHeaders(authorizationHeader())
+                                .pathParameters(parameterWithName("id").description("영화관 id"))
+                        )
+                );
+    }
 }

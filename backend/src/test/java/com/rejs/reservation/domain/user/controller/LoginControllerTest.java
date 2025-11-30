@@ -1,7 +1,12 @@
 package com.rejs.reservation.domain.user.controller;
 
+import com.epages.restdocs.apispec.FieldDescriptors;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rejs.reservation.controller.AbstractControllerTest;
+import com.rejs.reservation.controller.docs.BusinessExceptionDocs;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
+import com.rejs.reservation.domain.user.controller.docs.LoginRequestDocs;
+import com.rejs.reservation.domain.user.controller.docs.TokenResponseDocs;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
 import com.rejs.reservation.domain.user.exception.UserBusinessExceptionCode;
 import com.rejs.reservation.domain.user.repository.UserRepository;
@@ -16,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -25,20 +31,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class LoginControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+class LoginControllerTest extends AbstractControllerTest {
     @Autowired
     private LoginService loginService;
 
@@ -71,6 +71,14 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.accessToken").isString())
                 .andExpect(jsonPath("$.refreshToken").isString())
         ;
+        result.andDo(
+                document((docs)->docs
+                        .requestSchema(LoginRequestDocs.schema())
+                        .requestFields(LoginRequestDocs.fields())
+                        .responseSchema(TokenResponseDocs.schema())
+                        .responseFields(TokenResponseDocs.fields())
+                )
+        );
     }
 
     @Test
@@ -92,6 +100,14 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.instance").value("/login"))
                 .andExpect(jsonPath("$.detail").isString())
         ;
+
+        result.andDo(
+            documentWithException((docs)->
+                    docs
+                            .requestSchema(LoginRequestDocs.schema())
+                            .requestFields(LoginRequestDocs.fields())
+            )
+        );
     }
 
     @Test
@@ -113,6 +129,15 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.instance").value("/login"))
                 .andExpect(jsonPath("$.detail").isString())
         ;
+
+        result.andDo(
+                documentWithException((docs)->
+                        docs
+                                .requestSchema(LoginRequestDocs.schema())
+                                .requestFields(LoginRequestDocs.fields())
+                )
+        );
+
     }
 
 
@@ -129,6 +154,15 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.accessToken").isString())
                 .andExpect(jsonPath("$.refreshToken").isString())
         ;
+
+        result.andDo(
+                document((docs)->docs
+                        .requestSchema(LoginRequestDocs.schema())
+                        .requestFields(LoginRequestDocs.fields())
+                        .responseSchema(TokenResponseDocs.schema())
+                        .responseFields(TokenResponseDocs.fields())
+                )
+        );
     }
 
     @Test
@@ -149,6 +183,17 @@ class LoginControllerTest {
                 .andExpect(jsonPath("$.instance").value("/signup"))
                 .andExpect(jsonPath("$.detail").isString())
         ;
-    }
 
+        result.andDo(
+                documentWithException((docs)->
+                        docs
+                                .requestSchema(
+                                        LoginRequestDocs.schema()
+                                )
+                                .requestFields(
+                                        LoginRequestDocs.fields()
+                                )
+                )
+        );
+    }
 }

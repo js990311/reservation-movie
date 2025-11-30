@@ -1,9 +1,13 @@
 package com.rejs.reservation.domain.reservation.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rejs.reservation.controller.AbstractControllerTest;
+import com.rejs.reservation.controller.docs.BaseResponseDocs;
 import com.rejs.reservation.domain.movie.dto.MovieDto;
 import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
+import com.rejs.reservation.domain.reservation.controller.docs.ReservationDtoDocs;
+import com.rejs.reservation.domain.reservation.controller.docs.ReservationRequestDocs;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
@@ -47,13 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class ReservationControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+class ReservationControllerTest extends AbstractControllerTest {
     @Autowired
     private MovieService movieService;
 
@@ -132,6 +130,16 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.data.screeningId").value(screeningId))
                 .andExpect(jsonPath("$.data.reservationSeats").isArray())
         ;
+
+        result
+                .andDo(document(
+                        docs -> docs
+                                .requestSchema(ReservationRequestDocs.schema())
+                                .requestFields(ReservationRequestDocs.fields())
+                                .responseSchema(ReservationDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.baseFields(ReservationDtoDocs.fields()))
+                ));
+
     }
     @Test
     void 일부좌석이예약() throws Exception{
@@ -161,6 +169,12 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.instance").isString())
                 .andExpect(jsonPath("$.instance").value("/reservations"))
                 .andExpect(jsonPath("$.detail").isString());
+        result
+                .andDo(documentWithException(
+                        docs -> docs
+                                .requestSchema(ReservationRequestDocs.schema())
+                                .requestFields(ReservationRequestDocs.fields())
+                ));
 
     }
 
@@ -191,6 +205,13 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.instance").isString())
                 .andExpect(jsonPath("$.instance").value("/reservations"))
                 .andExpect(jsonPath("$.detail").isString());
+
+        result
+                .andDo(documentWithException(
+                        docs -> docs
+                                .requestSchema(ReservationRequestDocs.schema())
+                                .requestFields(ReservationRequestDocs.fields())
+                ));
     }
 
     @Test
@@ -220,6 +241,15 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.data.screeningId").value(screening2.getScreeningId()))
                 .andExpect(jsonPath("$.data.reservationSeats").isArray())
         ;
+
+        result
+                .andDo(document(
+                        docs -> docs
+                                .requestSchema(ReservationRequestDocs.schema())
+                                .requestFields(ReservationRequestDocs.fields())
+                                .responseSchema(ReservationDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.baseFields(ReservationDtoDocs.fields()))
+                ));
     }
 
 }

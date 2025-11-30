@@ -1,11 +1,16 @@
 package com.rejs.reservation.domain.movie.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rejs.reservation.controller.AbstractControllerTest;
+import com.rejs.reservation.controller.docs.BaseResponseDocs;
+import com.rejs.reservation.domain.movie.controller.docs.CreateMovieRequestDocs;
+import com.rejs.reservation.domain.movie.controller.docs.MovieDtoDocs;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
 import com.rejs.reservation.domain.user.repository.UserRepository;
+import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import com.rejs.reservation.global.security.service.LoginService;
 import org.junit.jupiter.api.AfterEach;
@@ -16,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -26,6 +32,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -33,13 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class MovieControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+class MovieControllerTest extends AbstractControllerTest {
     @Autowired
     private MovieRepository movieRepository;
 
@@ -86,6 +87,17 @@ class MovieControllerTest {
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
         ;
+
+        result.andDo(
+                document((docs)->
+                        docs
+                                .requestSchema(CreateMovieRequestDocs.schema())
+                                .requestFields(CreateMovieRequestDocs.fields())
+                                .requestHeaders(authorizationHeader())
+                                .responseSchema(MovieDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.baseFields(MovieDtoDocs.fields()))
+                )
+        );
     }
 
     @Test
@@ -118,6 +130,16 @@ class MovieControllerTest {
                 .andExpect(jsonPath("$.data.title").value(movieName))
                 .andExpect(jsonPath("$.data.duration").value(duration))
         ;
+
+        result.andDo(
+                document((docs)->
+                        docs
+                                .pathParameters(parameterWithName("id").description("영화 고유번호").description(JsonFieldType.NUMBER))
+                                .requestHeaders(authorizationHeader())
+                                .responseSchema(MovieDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.baseFields(MovieDtoDocs.fields()))
+                )
+        );
     }
 
     @Test
@@ -133,11 +155,6 @@ class MovieControllerTest {
                 .build();
         movie = movieRepository.save(movie);
         Long id = 0L;
-
-        Map<String, Object> request = Map.of(
-                "title", movieName,
-                "duration", duration
-        );
 
         ResultActions result = mockMvc.perform(
                 get("/movies/{id}", id)
@@ -156,7 +173,13 @@ class MovieControllerTest {
                 .andExpect(jsonPath("$.instance").value("/movies/" + id))
                 .andExpect(jsonPath("$.detail").isString())
         ;
+
+        result.andDo(
+                documentWithException((docs)->
+                        docs
+                                .pathParameters(parameterWithName("id").description("영화 고유번호").description(JsonFieldType.NUMBER))
+                                .requestHeaders(authorizationHeader())
+                )
+        );
     }
-
-
 }

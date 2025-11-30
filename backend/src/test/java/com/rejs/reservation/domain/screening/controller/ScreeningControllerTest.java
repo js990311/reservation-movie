@@ -2,9 +2,13 @@ package com.rejs.reservation.domain.screening.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rejs.reservation.controller.AbstractControllerTest;
+import com.rejs.reservation.controller.docs.BaseResponseDocs;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
+import com.rejs.reservation.domain.screening.controller.docs.CreateScreeningRequestDocs;
+import com.rejs.reservation.domain.screening.controller.docs.ScreeningDtoDocs;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.theater.entity.Theater;
@@ -40,13 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
-class ScreeningControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
+class ScreeningControllerTest extends AbstractControllerTest {
     @Autowired
     private ScreeningRepository screeningRepository;
 
@@ -133,6 +131,15 @@ class ScreeningControllerTest {
                 .andExpect(jsonPath("$.data.startTime").value(startTime.format(formatter)))
                 .andExpect(jsonPath("$.data.endTime").value(endTime.format(formatter)))
         ;
+
+        result
+                .andDo(document((docs)->docs
+                        .requestHeaders(authorizationHeader())
+                        .requestSchema(CreateScreeningRequestDocs.schema())
+                        .requestFields(CreateScreeningRequestDocs.fields())
+                        .responseSchema(ScreeningDtoDocs.schema())
+                        .responseFields(BaseResponseDocs.baseFields(ScreeningDtoDocs.fields()))
+                ));
     }
 
     @Test
@@ -173,6 +180,15 @@ class ScreeningControllerTest {
                 .andExpect(jsonPath("$.instance").value("/screenings"))
                 .andExpect(jsonPath("$.detail").isString())
         ;
+
+        result
+                .andDo(
+                        documentWithException(docs->docs
+                                .requestHeaders(authorizationHeader())
+                                .requestSchema(CreateScreeningRequestDocs.schema())
+                                .requestFields(CreateScreeningRequestDocs.fields())
+                        )
+                );
     }
 
     @Test
@@ -200,6 +216,15 @@ class ScreeningControllerTest {
                 .andExpect(jsonPath("$.instance").value("/screenings"))
                 .andExpect(jsonPath("$.detail").isString())
         ;
+
+        result
+                .andDo(
+                        documentWithException(docs->docs
+                                .requestHeaders(authorizationHeader())
+                                .requestSchema(CreateScreeningRequestDocs.schema())
+                                .requestFields(CreateScreeningRequestDocs.fields())
+                        )
+                );
     }
 
     @Test
@@ -227,6 +252,15 @@ class ScreeningControllerTest {
                 .andExpect(jsonPath("$.instance").value("/screenings"))
                 .andExpect(jsonPath("$.detail").isString())
         ;
+
+        result
+                .andDo(
+                        documentWithException(docs->docs
+                                .requestHeaders(authorizationHeader())
+                                .requestSchema(CreateScreeningRequestDocs.schema())
+                                .requestFields(CreateScreeningRequestDocs.fields())
+                        )
+                );
     }
 
 }
