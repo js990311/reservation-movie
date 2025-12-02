@@ -4,9 +4,11 @@ import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
+import com.rejs.reservation.domain.screening.dto.ScreeningWithMovieDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
+import com.rejs.reservation.domain.screening.repository.ScreeningQueryRepository;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
@@ -18,9 +20,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class ScreeningService {
+    private final ScreeningQueryRepository screeningQueryRepository;
     private final ScreeningRepository screeningRepository;
     private final MovieRepository movieRepository;
     private final TheaterRepository theaterRepository;
@@ -47,8 +53,8 @@ public class ScreeningService {
         return screeningRepository.findAll(pageable).map(ScreeningDto::from);
     }
 
-    public Page<ScreeningDto> readScreeningsByTheaterId(Long id, Pageable pageable) {
-        return screeningRepository.findByTheaterId(id, pageable).map(ScreeningDto::from);
+    public List<ScreeningWithMovieDto> readScreeningsByTheaterId(Long id, LocalDate date) {
+        return screeningQueryRepository.findByTheaterId(id, date);
     }
 
     public Page<ScreeningDto> readScreeningsByMovieId(Long id, Pageable pageable) {

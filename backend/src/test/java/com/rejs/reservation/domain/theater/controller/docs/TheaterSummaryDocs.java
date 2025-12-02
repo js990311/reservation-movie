@@ -15,7 +15,9 @@ public class TheaterSummaryDocs {
     public static FieldDescriptors fields(){
         return new FieldDescriptors(
                 fieldWithPath("theaterId").description("영화관 고유번호").type(JsonFieldType.NUMBER),
-                fieldWithPath("name").description("영화관이름").type(JsonFieldType.STRING)
+                fieldWithPath("name").description("영화관이름").type(JsonFieldType.STRING),
+                fieldWithPath("rowSize").description("영화관의 row 사이즈").type(JsonFieldType.NUMBER),
+                fieldWithPath("colSize").description("영화관의 col 사이즈").type(JsonFieldType.NUMBER)
         );
     }
 }

@@ -2,9 +2,11 @@ import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
 import {PaginationResponse} from "@/src/type/response/pagination";
 import {Theater} from "@/src/type/theater/theater";
 import {BaseResponse} from "@/src/type/response/base";
-import {Screening} from "@/src/type/screening/screening";
+import {Screening, ScreeningWithMovie} from "@/src/type/screening/screening";
 import SeatMap from "@/src/components/theater/seatMap";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
+import DateSelector from "@/src/components/date/dateSelector";
+import TheaterScreeningList from "@/src/components/theater/theaterScreeningList";
 
 async function getTheaterById(id: string) {
     try {
@@ -19,21 +21,15 @@ async function getTheaterById(id: string) {
     }
 }
 
-async function getTheaterScreening(id: string) {
-    try {
-        const response = await new ProxyRequestBuilder(`/theaters/${id}/screenings`).withMethod("GET").execute();
-        if(!response.ok) {
-            return [];
-        }
-        const respData: PaginationResponse<Screening> = await response.json();
-        return respData.data;
-    }catch (error) {
-        return [];
-    }
+interface Props {
+    params : Promise<{id: string}>;
+    searchParams: Promise<{date: string}>;
 }
 
-export default async function TheaterIdPage({params} : {params : Promise<{id: string}>}){
+export default async function TheaterIdPage({params, searchParams} : Readonly<Props>){
     const {id} = await params;
+    const {date} = await searchParams;
+    const selectedDate = date ?? new Date().toISOString().split("T")[0];
     const theater = await getTheaterById(id);
 
     if(!theater) {
@@ -57,7 +53,7 @@ export default async function TheaterIdPage({params} : {params : Promise<{id: st
                         좌석 보기
                     </AccordionTrigger>
                     <AccordionContent>
-                        <SeatMap seats={theater.seats}></SeatMap>
+                        <SeatMap seats={theater.seats} rowSize={theater.rowSize} colSize={theater.colSize}></SeatMap>
                     </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value={"reservation"}>
@@ -65,6 +61,11 @@ export default async function TheaterIdPage({params} : {params : Promise<{id: st
                         상영하는 영화보기
                     </AccordionTrigger>
                     <AccordionContent>
+                        <DateSelector
+                            selectedDate={selectedDate}
+                            baseUrl={`/theaters/${id}`}
+                        />
+                        <TheaterScreeningList theaterId={id} selectedDate={selectedDate}/>
                     </AccordionContent>
                 </AccordionItem>
 

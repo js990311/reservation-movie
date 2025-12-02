@@ -27,7 +27,7 @@ export default function TheaterCard({theater}: Readonly<TheaterCardProps>) {
             <CardContent>
                 <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center text-sm text-muted-foreground">
-                        <Armchair className="mr-1 h-4 w-4" />
+                        <Armchair className="mr-1 h-4 w-4" /> {theater.rowSize * theater.colSize} 석
                     </div>
                     {/* 뱃지로 강조 */}
                     <Badge variant="secondary">

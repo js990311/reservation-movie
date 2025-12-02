@@ -7,6 +7,8 @@ import {useMemo} from "react";
 interface SeatMapProps{
     seats: Seat[];
     onSeatClick?: (seatId: number) => void;
+    rowSize: number;
+    colSize: number;
 }
 
 interface SeatProps {
@@ -16,17 +18,7 @@ interface SeatProps {
     disabled?: boolean;
 }
 
-export default function SeatMap({ seats, onSeatClick }: Readonly<SeatMapProps>) {
-    const {maxRow, maxCol } = useMemo(() => {
-        let maxRow = 0;
-        let maxCol = 0;
-        seats.forEach(seat => {
-            maxRow = Math.max(maxRow, seat.row);
-            maxCol = Math.max(maxCol, seat.col);
-        })
-        return {maxRow, maxCol};
-    }, [seats]);
-
+export default function SeatMap({ seats, onSeatClick, rowSize, colSize }: Readonly<SeatMapProps>) {
     return (
         <div className="w-full overflow-auto p-10 bg-slate-50 rounded-xl border">
             <div className="mb-12 w-full flex flex-col items-center gap-2">
@@ -39,8 +31,8 @@ export default function SeatMap({ seats, onSeatClick }: Readonly<SeatMapProps>) 
                 className="grid gap-2 mx-auto w-fit"
                 style={{
                     // CSS 변수로 그리드 크기 동적 할당
-                    gridTemplateRows: `repeat(${maxRow}, min-content)`,
-                    gridTemplateColumns: `repeat(${maxCol}, min-content)`
+                    gridTemplateRows: `repeat(${rowSize}, min-content)`,
+                    gridTemplateColumns: `repeat(${colSize}, min-content)`
                 }}
             >
                 {seats.map((seat) => (

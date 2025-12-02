@@ -1,7 +1,7 @@
 import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
 import {PaginationResponse} from "@/src/type/response/pagination";
 import {Theater} from "@/src/type/theater/theater";
-import TheaterCard from "@/src/components/theater/theaterCard";
+import TheaterCard from "@/src/components/theater/screenings/theaterCard";
 
 async function getTheaters(){
     try {
@@ -14,7 +14,6 @@ async function getTheaters(){
     }catch (error) {
         return [];
     }
-
 }
 
 export default async function TheaterPage(){

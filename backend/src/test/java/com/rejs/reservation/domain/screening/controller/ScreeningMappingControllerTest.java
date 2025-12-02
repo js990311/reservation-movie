@@ -6,6 +6,7 @@ import com.rejs.reservation.domain.movie.dto.MovieDto;
 import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.domain.screening.controller.docs.ScreeningDtoDocs;
+import com.rejs.reservation.domain.screening.controller.docs.ScreeningWithMovieDtoDocs;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
@@ -21,7 +22,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import static com.epages.restdocs.apispec.ResourceDocumentation.parameterWithName;
@@ -61,7 +64,7 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    void readTheaterScreening() throws Exception{
+    void readTheaterScreeningDateNull() throws Exception{
         TheaterDto theater = theaterService.createTheater(new TheaterCreateRequest(
                 UUID.randomUUID().toString(),
                 30,
@@ -82,8 +85,6 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
 
         ResultActions result = mockMvc.perform(get("/theaters/{id}/screenings", theater.getTheaterId())
                 .header("Authorization", "Bearer " + accessToken)
-                .queryParam("page", "0")
-                .queryParam("size", "10")
         );
 
         result
@@ -91,16 +92,64 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].screeningId").isNumber())
                 .andExpect(jsonPath("$.data[0].theaterId").isNumber())
-                .andExpect(jsonPath("$.data[0].movieId").isNumber())
                 .andExpect(jsonPath("$.data[0].startTime").isString())
                 .andExpect(jsonPath("$.data[0].endTime").isString())
-
+                .andExpect(jsonPath("$.data[0].movieId").isNumber())
+                .andExpect(jsonPath("$.data[0].title").isString())
+                .andExpect(jsonPath("$.data[0].duration").isNumber())
                 .andExpect(jsonPath("$.pagination.count").isNumber())
-                .andExpect(jsonPath("$.pagination.requestNumber").isNumber())
-                .andExpect(jsonPath("$.pagination.requestSize").isNumber())
-                .andExpect(jsonPath("$.pagination.hasNextPage").isBoolean())
-                .andExpect(jsonPath("$.pagination.totalPage").isNumber())
-                .andExpect(jsonPath("$.pagination.totalElements").isNumber())
+        ;
+
+        result
+                .andDo(
+                        document(docs->docs
+                                .requestHeaders(authorizationHeader())
+                                .responseFields(
+                                        BaseResponseDocs.withList(ScreeningWithMovieDtoDocs.fields())
+                                )
+                        )
+                )
+        ;
+    }
+
+    @Test
+    void readTheaterScreeningTodayDate() throws Exception{
+        TheaterDto theater = theaterService.createTheater(new TheaterCreateRequest(
+                UUID.randomUUID().toString(),
+                30,
+                30
+        ));
+        MovieDto movie = movieService.createMovie(new MovieCreateRequest("movie", 1));
+
+        int count = 20;
+        LocalDateTime now = LocalDateTime.now();
+        for(int i=1;i<=count;i++){
+            screeningService.createScreening(new CreateScreeningRequest(
+                    theater.getTheaterId(),
+                    movie.getMovieId(),
+                    now
+            ));
+            now = now.plusMinutes(10);
+        }
+
+        LocalDate date = LocalDate.now();
+
+        ResultActions result = mockMvc.perform(get("/theaters/{id}/screenings", theater.getTheaterId())
+                .header("Authorization", "Bearer " + accessToken)
+                .queryParam("date", date.format(DateTimeFormatter.ISO_DATE))
+        );
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].screeningId").isNumber())
+                .andExpect(jsonPath("$.data[0].theaterId").isNumber())
+                .andExpect(jsonPath("$.data[0].startTime").isString())
+                .andExpect(jsonPath("$.data[0].endTime").isString())
+                .andExpect(jsonPath("$.data[0].movieId").isNumber())
+                .andExpect(jsonPath("$.data[0].title").isString())
+                .andExpect(jsonPath("$.data[0].duration").isNumber())
+                .andExpect(jsonPath("$.pagination.count").isNumber())
         ;
 
         result
@@ -108,16 +157,16 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
                         document(docs->docs
                                 .requestHeaders(authorizationHeader())
                                 .queryParameters(
-                                        parameterWithName("page").description("요청한 페이지번호"),
-                                        parameterWithName("size").description("페이지 내부의 데이터 개수")
+                                        parameterWithName("date").description("영화의 날짜")
                                 )
                                 .responseFields(
-                                        BaseResponseDocs.withPaginations(ScreeningDtoDocs.fields())
+                                        BaseResponseDocs.withList(ScreeningWithMovieDtoDocs.fields())
                                 )
                         )
                 )
         ;
     }
+
 
     @Test
     void readMoviesScreening() throws Exception{

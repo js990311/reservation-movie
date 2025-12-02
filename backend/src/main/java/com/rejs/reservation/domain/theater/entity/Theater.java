@@ -24,6 +24,12 @@ public class Theater {
     @Column
     private String name;
 
+    @Column
+    private Integer rowSize;
+
+    @Column
+    private Integer colSize;
+
     /* # 관계 - Seat */
     @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Seat> seats = new ArrayList<>();
@@ -60,8 +66,15 @@ public class Theater {
         this.name = name;
     }
 
+    public Theater(String name, Integer rowSize, Integer colSize) {
+        this.name = name;
+        this.rowSize = rowSize;
+        this.colSize = colSize;
+    }
+
+
     public static Theater create(String name, Integer rowSize, Integer colSize){
-        Theater theater = new Theater(name);
+        Theater theater = new Theater(name, rowSize, colSize);
         for(int row=1;row<=rowSize;row++){
             for(int col=1;col<=colSize;col++){
                 Seat seat = new Seat(row, col);

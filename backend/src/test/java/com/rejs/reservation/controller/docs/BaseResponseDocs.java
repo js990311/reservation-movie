@@ -12,7 +12,15 @@ public class BaseResponseDocs {
         ).andWithPrefix("data.", DocsUtils.mergeFields(field));
     }
 
-    public static FieldDescriptors withPaginations(FieldDescriptors field){
+    public static FieldDescriptors withList(FieldDescriptors field){
+        return new FieldDescriptors(
+                fieldWithPath("data[]").description("메시지 본문").type(JsonFieldType.ARRAY),
+                fieldWithPath("pagination.count").description("현재 페이지의 데이터 개수").type(JsonFieldType.NUMBER)
+        ).andWithPrefix("data[].", DocsUtils.mergeFields(field));
+    }
+
+
+        public static FieldDescriptors withPaginations(FieldDescriptors field){
         return new FieldDescriptors(
                 fieldWithPath("data[]").description("메시지 본문").type(JsonFieldType.ARRAY),
                 fieldWithPath("pagination.count").description("현재 페이지의 데이터 개수").type(JsonFieldType.NUMBER),
