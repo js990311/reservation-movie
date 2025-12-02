@@ -34,6 +34,9 @@ public class Screening {
     @JoinColumn(name = "movie_id")
     private Movie movie;
 
+    @Column(name = "movie_id", insertable = false, updatable = false)
+    private Long movieId;
+
     public Long getMovieId(){
         return movie != null ? movie.getId() : null;
     }
@@ -59,6 +62,9 @@ public class Screening {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "theater_id")
     private Theater theater;
+
+    @Column(name = "theater_id", updatable = false, insertable = false)
+    private Long theaterId;
 
     public Long getTheaterId(){
         return theater != null ? theater.getId() : null;

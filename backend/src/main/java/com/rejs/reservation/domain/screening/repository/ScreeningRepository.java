@@ -2,6 +2,8 @@ package com.rejs.reservation.domain.screening.repository;
 
 import com.rejs.reservation.domain.screening.entity.Screening;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -31,4 +33,9 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
         WHERE sc.id = :screeningId
     """)
     Screening findWithLock(@Param("screeningId") Long screeningId);
+
+    Page<Screening> findByTheaterId(@Param("theaterId") Long theaterId, Pageable pageable);
+
+    Page<Screening> findByMovieId(@Param("movieId") Long movieId, Pageable pageable);
+
 }

@@ -5,8 +5,14 @@ import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -25,5 +31,13 @@ public class MovieController {
     public BaseResponse<MovieDto> readMovieById(@PathVariable("id") Long id){
         MovieDto movieDto = movieService.readById(id);
         return BaseResponse.of(movieDto);
+    }
+
+    @GetMapping
+    public BaseResponse<List<MovieDto>> getMovies(
+            @PageableDefault Pageable pageable
+    ){
+        Page<MovieDto> movies = movieService.readMovies(pageable);
+        return BaseResponse.ofPage(movies);
     }
 }

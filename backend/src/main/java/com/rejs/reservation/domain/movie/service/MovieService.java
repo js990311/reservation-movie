@@ -7,6 +7,8 @@ import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,5 +40,9 @@ public class MovieService {
         Movie movie = opt.orElseThrow(
                 ()-> BusinessException.of(MovieBusinessExceptionCode.MOVIE_NOT_FOUND, id + " NOT FOUND"));
         return MovieDto.from(movie);
+    }
+
+    public Page<MovieDto> readMovies(Pageable pageable) {
+        return movieRepository.findAll(pageable).map(MovieDto::from);
     }
 }

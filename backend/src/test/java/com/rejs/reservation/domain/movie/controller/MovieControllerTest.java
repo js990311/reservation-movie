@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.movie.controller;
 
+import com.epages.restdocs.apispec.ResourceDocumentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.controller.AbstractControllerTest;
 import com.rejs.reservation.controller.docs.BaseResponseDocs;
@@ -8,6 +9,7 @@ import com.rejs.reservation.domain.movie.controller.docs.MovieDtoDocs;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
+import com.rejs.reservation.domain.theater.controller.docs.TheaterDtoDocs;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
 import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.dto.response.BaseResponse;
@@ -181,5 +183,45 @@ class MovieControllerTest extends AbstractControllerTest {
                                 .requestHeaders(authorizationHeader())
                 )
         );
+    }
+
+    @Test
+    void getMovies() throws Exception{
+        ResultActions result = mockMvc.perform(get("/movies")
+                .header("Authorization", "Bearer " + accessToken)
+                .queryParam("page", "0")
+                .queryParam("size", "10")
+        );
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].movieId").isNumber())
+                .andExpect(jsonPath("$.data[0].title").isString())
+                .andExpect(jsonPath("$.data[0].duration").isNumber())
+
+                .andExpect(jsonPath("$.pagination.count").isNumber())
+                .andExpect(jsonPath("$.pagination.requestNumber").isNumber())
+                .andExpect(jsonPath("$.pagination.requestSize").isNumber())
+                .andExpect(jsonPath("$.pagination.hasNextPage").isBoolean())
+                .andExpect(jsonPath("$.pagination.totalPage").isNumber())
+                .andExpect(jsonPath("$.pagination.totalElements").isNumber())
+        ;
+
+        result
+                .andDo(
+                        document(docs->docs
+                                .requestHeaders(authorizationHeader())
+                                .queryParameters(
+                                        ResourceDocumentation.parameterWithName("page").description("요청한 페이지번호"),
+                                        ResourceDocumentation.parameterWithName("size").description("페이지 내부의 데이터 개수")
+                                )
+                                .responseFields(
+                                        BaseResponseDocs.withPaginations(MovieDtoDocs.fields())
+                                )
+                        )
+                )
+        ;
+
     }
 }

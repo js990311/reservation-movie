@@ -4,11 +4,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.controller.AbstractControllerTest;
 import com.rejs.reservation.controller.docs.BaseResponseDocs;
+import com.rejs.reservation.domain.movie.dto.MovieDto;
+import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
+import com.rejs.reservation.domain.movie.service.MovieService;
+import com.rejs.reservation.domain.screening.controller.docs.ScreeningDtoDocs;
+import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
+import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.controller.docs.CreateTheaterRequestDocs;
 import com.rejs.reservation.domain.theater.controller.docs.TheaterDtoDocs;
+import com.rejs.reservation.domain.theater.controller.docs.TheaterSummaryDocs;
+import com.rejs.reservation.domain.theater.dto.TheaterDto;
+import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
+import com.rejs.reservation.domain.theater.service.TheaterService;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
 import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.dto.response.BaseResponse;
@@ -22,9 +32,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,6 +60,15 @@ class TheaterControllerTest extends AbstractControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TheaterService theaterService;
+
+    @Autowired
+    private ScreeningService screeningService;
+
+    @Autowired
+    private MovieService movieService;
 
     @BeforeEach
     void setToken(){
@@ -140,7 +161,8 @@ class TheaterControllerTest extends AbstractControllerTest {
     @Test
     @DisplayName("GEt theatersById - 404")
     void readTheaterById_404() throws Exception{
-        ResultActions result = mockMvc.perform(get("/theaters/{id}", 0)                        .header("Authorization", "Bearer " + accessToken)
+        ResultActions result = mockMvc.perform(get("/theaters/{id}", 0)
+                .header("Authorization", "Bearer " + accessToken)
         );
 
         result
@@ -164,4 +186,53 @@ class TheaterControllerTest extends AbstractControllerTest {
                         )
                 );
     }
+
+    @Test
+    void readTheaters() throws Exception{
+        int count = 20;
+        for(int i=1;i<=count;i++){
+            theaterService.createTheater(new TheaterCreateRequest(
+                    UUID.randomUUID().toString(),
+                    30,
+                    30
+            ));
+        }
+
+        ResultActions result = mockMvc.perform(get("/theaters")
+                .header("Authorization", "Bearer " + accessToken)
+                .queryParam("page", "0")
+                .queryParam("size", "10")
+        );
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].theaterId").isNumber())
+                .andExpect(jsonPath("$.data[0].name").isString())
+
+                .andExpect(jsonPath("$.pagination.count").isNumber())
+                .andExpect(jsonPath("$.pagination.requestNumber").isNumber())
+                .andExpect(jsonPath("$.pagination.requestSize").isNumber())
+                .andExpect(jsonPath("$.pagination.hasNextPage").isBoolean())
+                .andExpect(jsonPath("$.pagination.totalPage").isNumber())
+                .andExpect(jsonPath("$.pagination.totalElements").isNumber())
+        ;
+
+        result
+                .andDo(
+                        document(docs->docs
+                                .requestHeaders(authorizationHeader())
+                                .queryParameters(
+                                        parameterWithName("page").description("요청한 페이지번호"),
+                                        parameterWithName("size").description("페이지 내부의 데이터 개수")
+                                )
+                                .responseFields(
+                                        BaseResponseDocs.withPaginations(TheaterSummaryDocs.fields())
+                                )
+                        )
+                )
+        ;
+    }
+
+
 }

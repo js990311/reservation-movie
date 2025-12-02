@@ -13,6 +13,8 @@ import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,4 +42,17 @@ public class ScreeningService {
 
         return ScreeningDto.from(screening);
     }
+
+    public Page<ScreeningDto> readScreenings(Pageable pageable) {
+        return screeningRepository.findAll(pageable).map(ScreeningDto::from);
+    }
+
+    public Page<ScreeningDto> readScreeningsByTheaterId(Long id, Pageable pageable) {
+        return screeningRepository.findByTheaterId(id, pageable).map(ScreeningDto::from);
+    }
+
+    public Page<ScreeningDto> readScreeningsByMovieId(Long id, Pageable pageable) {
+        return screeningRepository.findByMovieId(id, pageable).map(ScreeningDto::from);
+    }
+
 }

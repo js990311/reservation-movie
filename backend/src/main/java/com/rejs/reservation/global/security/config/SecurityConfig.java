@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/docs/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/movies/**", "/theaters/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
