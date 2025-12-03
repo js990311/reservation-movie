@@ -4,6 +4,7 @@ import {PaginationResponse} from "@/src/type/response/pagination";
 import {Movie} from "@/src/type/movie/movie";
 import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
 import {BaseResponse} from "@/src/type/response/base";
+import {ScreeningWithTheater} from "@/src/type/screening/screening";
 
 export async function getMoviesAction(page: number, size: number): Promise<PaginationResponse<Movie>> {
     try {
@@ -26,6 +27,14 @@ export async function getMoviesAction(page: number, size: number): Promise<Pagin
             }
         };
     }
+}
 
-
+export async function getMovieScreeningAction(id: string, date:string) {
+    try {
+        const response = await new ProxyRequestBuilder(`/movies/${id}/screenings?date=${date}`).withMethod("GET").execute();
+        const respData: PaginationResponse<ScreeningWithTheater> = await response.json();
+        return respData.data;
+    }catch (error) {
+        return [];
+    }
 }

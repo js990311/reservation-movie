@@ -5,6 +5,7 @@ import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.ScreeningWithMovieDto;
+import com.rejs.reservation.domain.screening.dto.ScreeningWithTheaterDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
@@ -57,8 +58,8 @@ public class ScreeningService {
         return screeningQueryRepository.findByTheaterId(id, date);
     }
 
-    public Page<ScreeningDto> readScreeningsByMovieId(Long id, Pageable pageable) {
-        return screeningRepository.findByMovieId(id, pageable).map(ScreeningDto::from);
+    public List<ScreeningWithTheaterDto> readScreeningsByMovieId(Long id, LocalDate date) {
+        return screeningQueryRepository.findByMovieId(id, date);
     }
 
 }

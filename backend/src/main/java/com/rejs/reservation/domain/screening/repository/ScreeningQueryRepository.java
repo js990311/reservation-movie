@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.rejs.reservation.domain.movie.entity.QMovie;
 import com.rejs.reservation.domain.screening.dto.ScreeningWithMovieDto;
+import com.rejs.reservation.domain.screening.dto.ScreeningWithTheaterDto;
 import com.rejs.reservation.domain.screening.entity.QScreening;
 import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.theater.entity.QTheater;
@@ -56,6 +57,24 @@ public class ScreeningQueryRepository {
                 .fetch();
     }
 
+    public List<ScreeningWithTheaterDto> findByMovieId(Long movieId, LocalDate date){
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        ScreeningWithTheaterDto.class,
+                        screening.id,
+                        screening.movieId,
+                        screening.startTime,
+                        screening.endTime,
+                        theater.id,
+                        theater.name
+                ))
+                .from(screening)
+                .join(screening.theater, theater)
+                .where(screening.movieId.eq(movieId).and(dateQuery(date)))
+                .fetch();
+    }
+
+
     public BooleanExpression dateQuery(LocalDate date){
         if(date == null){
             date = LocalDate.now();
@@ -64,4 +83,5 @@ public class ScreeningQueryRepository {
         LocalDateTime right = date.atTime(LocalTime.MAX);
         return screening.startTime.between(left, right);
     }
+
 }

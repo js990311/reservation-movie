@@ -15,3 +15,12 @@ export type ScreeningWithMovie = {
     title: string;
     duration: number;
 }
+
+export type ScreeningWithTheater = {
+    screeningId: number;
+    startTime: string;
+    endTime: string;
+    movieId: number;
+    theaterId: number;
+    theaterName: string;
+}

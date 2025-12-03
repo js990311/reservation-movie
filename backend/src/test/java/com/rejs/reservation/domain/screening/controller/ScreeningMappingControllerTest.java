@@ -7,6 +7,7 @@ import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.domain.screening.controller.docs.ScreeningDtoDocs;
 import com.rejs.reservation.domain.screening.controller.docs.ScreeningWithMovieDtoDocs;
+import com.rejs.reservation.domain.screening.controller.docs.ScreeningWithTheaterDtoDocs;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
@@ -157,7 +158,7 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
                         document(docs->docs
                                 .requestHeaders(authorizationHeader())
                                 .queryParameters(
-                                        parameterWithName("date").description("영화의 날짜")
+                                        parameterWithName("date").description("예매할 날짜")
                                 )
                                 .responseFields(
                                         BaseResponseDocs.withList(ScreeningWithMovieDtoDocs.fields())
@@ -188,27 +189,24 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
             now = now.plusMinutes(10);
         }
 
+        LocalDate date = LocalDate.now();
+
         ResultActions result = mockMvc.perform(get("/movies/{id}/screenings", movie.getMovieId())
                 .header("Authorization", "Bearer " + accessToken)
-                .queryParam("page", "0")
-                .queryParam("size", "10")
+                .queryParam("date", date.format(DateTimeFormatter.ISO_DATE))
         );
 
         result
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray())
                 .andExpect(jsonPath("$.data[0].screeningId").isNumber())
-                .andExpect(jsonPath("$.data[0].theaterId").isNumber())
                 .andExpect(jsonPath("$.data[0].movieId").isNumber())
                 .andExpect(jsonPath("$.data[0].startTime").isString())
                 .andExpect(jsonPath("$.data[0].endTime").isString())
+                .andExpect(jsonPath("$.data[0].theaterId").isNumber())
+                .andExpect(jsonPath("$.data[0].theaterName").isString())
 
                 .andExpect(jsonPath("$.pagination.count").isNumber())
-                .andExpect(jsonPath("$.pagination.requestNumber").isNumber())
-                .andExpect(jsonPath("$.pagination.requestSize").isNumber())
-                .andExpect(jsonPath("$.pagination.hasNextPage").isBoolean())
-                .andExpect(jsonPath("$.pagination.totalPage").isNumber())
-                .andExpect(jsonPath("$.pagination.totalElements").isNumber())
         ;
 
         result
@@ -216,11 +214,10 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
                         document(docs->docs
                                 .requestHeaders(authorizationHeader())
                                 .queryParameters(
-                                        parameterWithName("page").description("요청한 페이지번호"),
-                                        parameterWithName("size").description("페이지 내부의 데이터 개수")
+                                        parameterWithName("date").description("예매할 날짜")
                                 )
                                 .responseFields(
-                                        BaseResponseDocs.withPaginations(ScreeningDtoDocs.fields())
+                                        BaseResponseDocs.withList(ScreeningWithTheaterDtoDocs.fields())
                                 )
                         )
                 )

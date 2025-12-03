@@ -2,6 +2,8 @@ import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
 import {BaseResponse} from "@/src/type/response/base";
 import {Movie} from "@/src/type/movie/movie";
 import {Clock, Film} from "lucide-react";
+import DateSelector from "@/src/components/date/dateSelector";
+import {MovieScreeningList} from "@/src/components/movie/movieScreeningList";
 
 async function getMovieById(id: string) {
     try {
@@ -16,10 +18,15 @@ async function getMovieById(id: string) {
     }
 }
 
+type Props = {
+    params: Promise<{id: string}>;
+    searchParams: Promise<{date: string}>;
+}
 
-
-export default async function MovieIdPage({params} : {params : Promise<{id: string}>}) {
+export default async function MovieIdPage({params, searchParams} : Readonly<Props>) {
     const {id} = await params;
+    const {date} = await searchParams;
+    const selectedDate = date ?? new Date().toISOString().split("T")[0];
     const movie = await getMovieById(id);
 
     if(!movie) {
@@ -58,7 +65,14 @@ export default async function MovieIdPage({params} : {params : Promise<{id: stri
                     </p>
                 </div>
             </div>
-
+            <DateSelector
+                selectedDate={selectedDate}
+                baseUrl={`/movies/${id}`}
+            ></DateSelector>
+            <MovieScreeningList
+                movieId={id}
+                selectedDate={selectedDate}
+            />
         </div>
     );
 

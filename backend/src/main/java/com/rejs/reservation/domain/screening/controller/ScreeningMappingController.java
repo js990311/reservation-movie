@@ -3,6 +3,7 @@ package com.rejs.reservation.domain.screening.controller;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.ScreeningWithMovieDto;
+import com.rejs.reservation.domain.screening.dto.ScreeningWithTheaterDto;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.service.TheaterService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
@@ -34,12 +35,12 @@ public class ScreeningMappingController {
     }
 
     @GetMapping("/movies/{id}/screenings")
-    public BaseResponse<List<ScreeningDto>> readMoviesScreening(
+    public BaseResponse<List<ScreeningWithTheaterDto>> readMoviesScreening(
             @PathVariable("id") Long id,
-            @PageableDefault Pageable pageable
+            @RequestParam(value = "date",required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ){
-        Page<ScreeningDto> screenings = screeningService.readScreeningsByMovieId(id, pageable);
-        return BaseResponse.ofPage(screenings);
+        List<ScreeningWithTheaterDto> screenings = screeningService.readScreeningsByMovieId(id, date);
+        return BaseResponse.ofList(screenings);
     }
 
 
