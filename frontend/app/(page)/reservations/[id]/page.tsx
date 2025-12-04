@@ -4,8 +4,9 @@ import {ReservationDetail} from "@/src/type/reservation/reservation";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Label} from "@/components/ui/label";
-import {Armchair, CalendarClock, ChevronLeft, MapPin} from "lucide-react";
+import {Armchair, CalendarClock, MapPin} from "lucide-react";
 import {Button} from "@/components/ui/button";
+import {formatDate} from "@/src/components/utils/time/formatter";
 
 type Props = {
     params: Promise<{id:string}>  
@@ -31,15 +32,6 @@ async function getReservationId(id: string){
 export default async function ReservationIdPage({params} : Readonly<Props>) {
     const {id} = await params;
     const reservation = await getReservationId(id);
-
-    // 날짜 포맷팅 헬퍼
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat("ko-KR", {
-            dateStyle: "medium",
-            timeStyle: "short",
-        }).format(date);
-    }
 
     if(!reservation){
         return (
