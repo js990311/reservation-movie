@@ -8,9 +8,10 @@ export type Theater = {
 
 export type Seat = {
     col: number;
-    theaterId: number;
+    theaterId?: number;
     seatId: number;
     row: number;
+    reserved?: boolean;
 }
 
 export type TheaterSummary = {
@@ -19,3 +20,4 @@ export type TheaterSummary = {
     rowSize: number;
     colSize: number;
 }
+

@@ -2,13 +2,13 @@
 import {Seat} from "@/src/type/theater/theater";
 import {Button} from "@/components/ui/button";
 import {clsx} from "clsx";
-import {useMemo} from "react";
 
 interface SeatMapProps{
     seats: Seat[];
     onSeatClick?: (seatId: number) => void;
     rowSize: number;
     colSize: number;
+    selectedSeatIds ?: number[];
 }
 
 interface SeatProps {
@@ -18,7 +18,18 @@ interface SeatProps {
     disabled?: boolean;
 }
 
-export default function SeatMap({ seats, onSeatClick, rowSize, colSize }: Readonly<SeatMapProps>) {
+export default function SeatMap({ seats, onSeatClick, rowSize, colSize, selectedSeatIds }: Readonly<SeatMapProps>) {
+
+    const checkStatus = (seat: Seat) => {
+        if(seat.reserved){
+            return 'RESERVED';
+        }else if(selectedSeatIds?.includes(seat.seatId)){
+            return 'SELECTED';
+        }else {
+            return 'AVAILABLE';
+        }
+    }
+
     return (
         <div className="w-full overflow-auto p-10 bg-slate-50 rounded-xl border">
             <div className="mb-12 w-full flex flex-col items-center gap-2">
@@ -38,7 +49,7 @@ export default function SeatMap({ seats, onSeatClick, rowSize, colSize }: Readon
                 {seats.map((seat) => (
                     <SeatUnit
                         key={seat.seatId}
-                        status={"AVAILABLE"}
+                        status={checkStatus(seat)}
                         seat={seat}
                         onClick={onSeatClick}
                     />
@@ -62,10 +73,17 @@ function SeatUnit({
         RESERVED: "bg-slate-200 border-none text-slate-400 cursor-not-allowed",
     };
 
+    const onClickHandler = () => {
+        if(onClick){
+            onClick(seat.seatId);
+        }
+    }
+
     return (
         <Button
             type="button"
             disabled={disabled || status === 'RESERVED'}
+            onClick={onClickHandler}
             className={clsx(
                 "relative flex h-8 w-8 items-center justify-center rounded-t-lg rounded-b-sm text-xs font-bold transition-all duration-200",
                 statusStyles[status]

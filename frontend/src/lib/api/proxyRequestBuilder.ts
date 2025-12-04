@@ -42,6 +42,7 @@ export class ProxyRequestBuilder{
             // 보안 헤더 설정
             if (this.auth) {
                 const accessToken = await getAccessToken();
+                console.log(`[ProxyRequest] Auth Check - Token Exists: ${!!accessToken}`);
                 if (accessToken === null) {
                     return new NextResponse(null, {status: 401});
                 }

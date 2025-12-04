@@ -8,9 +8,13 @@ import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.screening.controller.docs.CreateScreeningRequestDocs;
+import com.rejs.reservation.domain.screening.controller.docs.ScreeningDetailDtoDocs;
 import com.rejs.reservation.domain.screening.controller.docs.ScreeningDtoDocs;
+import com.rejs.reservation.domain.screening.dto.ScreeningDto;
+import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
+import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
@@ -38,6 +42,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -53,6 +59,9 @@ class ScreeningControllerTest extends AbstractControllerTest {
 
     @Autowired
     private TheaterRepository theaterRepository;
+
+    @Autowired
+    private ScreeningService screeningService;
 
 
     @Autowired
@@ -261,6 +270,81 @@ class ScreeningControllerTest extends AbstractControllerTest {
                                 .requestFields(CreateScreeningRequestDocs.fields())
                         )
                 );
+    }
+
+    @Test
+    void getScreeningById() throws Exception{
+        ScreeningDto screening = screeningService.createScreening(new CreateScreeningRequest(theaterId, movieId, LocalDateTime.now()));
+        ResultActions result = mockMvc.perform(
+                get("/screenings/{id}", screening.getScreeningId())
+                        .header("Authorization", "Bearer " + accessToken)
+        );
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.screening.screeningId").isNumber())
+                .andExpect(jsonPath("$.data.screening.screeningId").value(screening.getScreeningId()))
+                .andExpect(jsonPath("$.data.screening.movieId").isNumber())
+                .andExpect(jsonPath("$.data.screening.movieId").value(screening.getMovieId()))
+                .andExpect(jsonPath("$.data.screening.theaterId").isNumber())
+                .andExpect(jsonPath("$.data.screening.theaterId").value(screening.getTheaterId()))
+                .andExpect(jsonPath("$.data.screening.startTime").isString())
+                .andExpect(jsonPath("$.data.screening.endTime").isString())
+                .andExpect(jsonPath("$.data.movie.movieId").isNumber())
+                .andExpect(jsonPath("$.data.movie.title").isString())
+                .andExpect(jsonPath("$.data.movie.duration").isNumber())
+                .andExpect(jsonPath("$.data.theater.theaterId").isNumber())
+                .andExpect(jsonPath("$.data.theater.name").isString())
+                .andExpect(jsonPath("$.data.theater.rowSize").isNumber())
+                .andExpect(jsonPath("$.data.theater.colSize").isNumber())
+                .andExpect(jsonPath("$.data.seats").isArray())
+                .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].reserved").isBoolean())
+        ;
+
+        result.andDo(
+                document(docs->docs
+                    .pathParameters(
+                        parameterWithName("id").description("screening 고유번호")
+                    )
+                        .requestHeaders(authorizationHeader())
+                        .responseSchema(ScreeningDetailDtoDocs.getSchema())
+                        .responseFields(BaseResponseDocs.baseFields(ScreeningDetailDtoDocs.getFields()))
+                )
+        );
+
+    }
+
+    @Test
+    void getScreening404() throws Exception{
+        ResultActions result = mockMvc.perform(get("/screenings/{id}", 0)
+                .header("Authorization", "Bearer " + accessToken)
+        );
+        ScreeningExceptionCode code = ScreeningExceptionCode.SCREENING_NOT_FOUND;
+
+        result
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.type").isString())
+                .andExpect(jsonPath("$.type").value(code.getType()))
+                .andExpect(jsonPath("$.title").isString())
+                .andExpect(jsonPath("$.title").value(code.getTitle()))
+                .andExpect(jsonPath("$.status").isNumber())
+                .andExpect(jsonPath("$.status").value(code.getStatus().value()))
+                .andExpect(jsonPath("$.instance").isString())
+                .andExpect(jsonPath("$.instance").value("/screenings/0"))
+                .andExpect(jsonPath("$.detail").isString())
+        ;
+        
+        result.andDo(
+                documentWithException(docs->docs
+                        .pathParameters(
+                        parameterWithName("id").description("screening 고유번호")
+                        )
+                        .requestHeaders(authorizationHeader())
+                )
+        );
     }
 
 }

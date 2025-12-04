@@ -18,7 +18,7 @@ export async function POST(request: NextRequest){
         }
 
         const token:Tokens = await response.json();
-        setTokens(token);
+        await setTokens(token);
 
         return NextResponse.json({ok: true}, {status: 200});
     }catch (error){

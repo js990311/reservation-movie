@@ -3,9 +3,7 @@ package com.rejs.reservation.domain.screening.service;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
-import com.rejs.reservation.domain.screening.dto.ScreeningDto;
-import com.rejs.reservation.domain.screening.dto.ScreeningWithMovieDto;
-import com.rejs.reservation.domain.screening.dto.ScreeningWithTheaterDto;
+import com.rejs.reservation.domain.screening.dto.*;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
@@ -24,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class ScreeningService {
@@ -62,4 +61,9 @@ public class ScreeningService {
         return screeningQueryRepository.findByMovieId(id, date);
     }
 
+    public ScreeningDetailDto readScreeningById(Long id) {
+        Screening screening = screeningQueryRepository.findById(id).orElseThrow(() -> new BusinessException(ScreeningExceptionCode.SCREENING_NOT_FOUND));
+        List<ScreeningSeatDto> seats = screeningQueryRepository.findScreeningSeats(screening.getId(), screening.getTheaterId());
+        return new ScreeningDetailDto(screening, seats);
+    }
 }

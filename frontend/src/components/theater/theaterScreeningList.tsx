@@ -84,7 +84,7 @@ export default async function TheaterScreeningList({theaterId,selectedDate}: Rea
                                                 className="h-auto py-2.5 px-5 flex flex-col gap-1 border-slate-200 hover:border-primary hover:bg-primary/5 hover:text-primary transition-all group"
                                                 asChild
                                             >
-                                                <Link href={`/reservations?screeningId=${sc.screeningId}`}>
+                                                <Link href={`/screenings/${sc.screeningId}`}>
                                                     <span className="font-bold text-lg leading-none">
                                                         {timeString}
                                                     </span>

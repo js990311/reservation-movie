@@ -4,7 +4,7 @@ import {clientException, ExceptionResponse} from "@/src/type/exception/exception
 
 export async function POST(){
     try {
-        clearTokens();
+        await clearTokens();
         return new NextResponse(null, {status: 204});
     }catch (error){
         const exceptionResponse: ExceptionResponse = clientException('/api/logout', error);

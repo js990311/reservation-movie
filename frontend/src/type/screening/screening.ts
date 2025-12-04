@@ -24,3 +24,4 @@ export type ScreeningWithTheater = {
     theaterId: number;
     theaterName: string;
 }
+
