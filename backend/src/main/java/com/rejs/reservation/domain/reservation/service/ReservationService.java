@@ -51,7 +51,7 @@ public class ReservationService {
     }
 
     public Page<ReservationSummaryDto> findMyReservations(long userId, Pageable pageable) {
-        return null;
+        return reservationFacade.findMyReservations(userId, pageable);
     }
 
     public ReservationDetailDto findById(Long id, long userId) {

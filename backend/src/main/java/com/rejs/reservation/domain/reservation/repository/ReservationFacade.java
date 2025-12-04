@@ -6,6 +6,8 @@ import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationSeatRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -48,6 +50,10 @@ public class ReservationFacade {
 
     public Reservation save(Reservation reservation) {
         return reservationRepository.save(reservation);
+    }
+
+    public Page<ReservationSummaryDto> findMyReservations(Long userId, Pageable pageable) {
+        return reservationQueryRepository.findMyReservations(userId, pageable);
     }
 
     public ReservationSummaryDto findById(Long id) {

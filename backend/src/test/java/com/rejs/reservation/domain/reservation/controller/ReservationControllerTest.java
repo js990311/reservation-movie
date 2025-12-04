@@ -111,7 +111,6 @@ class ReservationControllerTest extends AbstractControllerTest {
         User user = new User("username", "password");
         user = userRepository.save(user);
         userId = user.getId();
-
     }
 
     @Test
@@ -258,13 +257,19 @@ class ReservationControllerTest extends AbstractControllerTest {
 
     @Test
     void 나의예매보기() throws Exception{
-        // 예매하기
-        int reservationSeatCount = 5;
-        Reservation reservation = Reservation.create(userId, screeningId, seatIds.subList(0, reservationSeatCount));
-        reservationRepository.save(reservation);
+        ReservationRequest reservationRequest = new ReservationRequest(screeningId, seatIds);
+
+        mockMvc.perform(
+                post("/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reservationRequest))
+                        .header("Authorization", "Bearer " + accessToken)
+        );
 
         ResultActions result = mockMvc.perform(
                 get("/reservations/me")
+                        .queryParam("page", "0")
+                        .queryParam("size", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer " + accessToken)
         );
@@ -276,7 +281,7 @@ class ReservationControllerTest extends AbstractControllerTest {
 
                 .andExpect(jsonPath("$.data[0].screeningId").isNumber())
                 .andExpect(jsonPath("$.data[0].startTime").isString())
-                .andExpect(jsonPath("$.data.reservation.endTime").isString())
+                .andExpect(jsonPath("$.data[0].endTime").isString())
 
                 .andExpect(jsonPath("$.data[0].movieId").isNumber())
                 .andExpect(jsonPath("$.data[0].movieTitle").isString())
