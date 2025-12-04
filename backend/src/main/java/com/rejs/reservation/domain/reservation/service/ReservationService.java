@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.reservation.service;
 
+import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
@@ -9,6 +10,8 @@ import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +46,14 @@ public class ReservationService {
         Reservation reservation = Reservation.create(userId, screening.getId(), availableSeats);
         reservation = reservationFacade.save(reservation);
         return ReservationDto.from(reservation);
+    }
+
+    public Page<ReservationDetailDto> findMyReservations(long userId, Pageable pageable) {
+        return null;
+    }
+
+    public ReservationDetailDto findById(Long id, long userId) {
+        return null;
     }
 }
 
