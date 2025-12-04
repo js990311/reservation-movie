@@ -2,6 +2,7 @@ package com.rejs.reservation.domain.reservation.controller;
 
 import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
+import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.service.ReservationService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
@@ -32,12 +33,12 @@ public class ReservationController {
     }
 
     @GetMapping("/me")
-    public BaseResponse<List<ReservationDetailDto>> getMyReservation(
+    public BaseResponse<List<ReservationSummaryDto>> getMyReservation(
             @PageableDefault Pageable pageable,
             @TokenClaim ClaimsDto claimsDto
     ){
         long userId = Long.parseLong(claimsDto.getUsername());
-        Page<ReservationDetailDto> reservations = reservationService.findMyReservations(userId, pageable);
+        Page<ReservationSummaryDto> reservations = reservationService.findMyReservations(userId, pageable);
         return BaseResponse.ofPage(reservations);
     }
 

@@ -1,5 +1,7 @@
 package com.rejs.reservation.domain.reservation.repository;
 
+import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
+import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationSeatRepository;
@@ -18,6 +20,7 @@ public class ReservationFacade {
     private final ReservationRepository reservationRepository;
     private final ReservationSeatRepository reservationSeatRepository;
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final ReservationQueryRepository reservationQueryRepository;
 
     private static String FIND_AVAILABLE_SEAT = """
                 SELECT s.seat_id
@@ -35,16 +38,23 @@ public class ReservationFacade {
                 ; 
             """;
 
-    public List<Long> selectAvailableSeats(List<Long> seatIds, Long theaterId, Long screeningId){
+    public List<Long> selectAvailableSeats(List<Long> seatIds, Long theaterId, Long screeningId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("seatIds", seatIds)
                 .addValue("theaterId", theaterId)
-                .addValue("screeningId", screeningId)
-        ;
+                .addValue("screeningId", screeningId);
         return jdbcTemplate.queryForList(FIND_AVAILABLE_SEAT, param, Long.class);
     }
 
     public Reservation save(Reservation reservation) {
         return reservationRepository.save(reservation);
+    }
+
+    public ReservationSummaryDto findById(Long id) {
+        return reservationQueryRepository.findById(id);
+    }
+
+    public List<ReservationSeatNumberDto> findSeatNumberById(Long id) {
+        return reservationQueryRepository.findSeatNumberById(id);
     }
 }

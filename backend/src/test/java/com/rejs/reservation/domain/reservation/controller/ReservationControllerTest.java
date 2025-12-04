@@ -276,7 +276,7 @@ class ReservationControllerTest extends AbstractControllerTest {
 
                 .andExpect(jsonPath("$.data[0].screeningId").isNumber())
                 .andExpect(jsonPath("$.data[0].startTime").isString())
-                .andExpect(jsonPath("$.data[0].endTime").isNumber())
+                .andExpect(jsonPath("$.data.reservation.endTime").isString())
 
                 .andExpect(jsonPath("$.data[0].movieId").isNumber())
                 .andExpect(jsonPath("$.data[0].movieTitle").isString())
@@ -325,7 +325,7 @@ class ReservationControllerTest extends AbstractControllerTest {
 
                 .andExpect(jsonPath("$.data.reservation.screeningId").isNumber())
                 .andExpect(jsonPath("$.data.reservation.startTime").isString())
-                .andExpect(jsonPath("$.data.reservation.endTime").isNumber())
+                .andExpect(jsonPath("$.data.reservation.endTime").isString())
 
                 .andExpect(jsonPath("$.data.reservation.movieId").isNumber())
                 .andExpect(jsonPath("$.data.reservation.movieTitle").isString())
@@ -333,8 +333,8 @@ class ReservationControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.data.reservation.theaterId").isNumber())
                 .andExpect(jsonPath("$.data.reservation.theaterName").isString())
 
-                .andExpect(jsonPath("$.data.seats[0].row").isString())
-                .andExpect(jsonPath("$.data.seats[0].col").isString())
+                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
 
         result

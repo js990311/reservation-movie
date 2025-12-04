@@ -2,6 +2,8 @@ package com.rejs.reservation.domain.reservation.service;
 
 import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
+import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
+import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
@@ -48,12 +50,14 @@ public class ReservationService {
         return ReservationDto.from(reservation);
     }
 
-    public Page<ReservationDetailDto> findMyReservations(long userId, Pageable pageable) {
+    public Page<ReservationSummaryDto> findMyReservations(long userId, Pageable pageable) {
         return null;
     }
 
     public ReservationDetailDto findById(Long id, long userId) {
-        return null;
+        ReservationSummaryDto reservation = reservationFacade.findById(id);
+        List<ReservationSeatNumberDto> seats = reservationFacade.findSeatNumberById(id);
+        return new ReservationDetailDto(reservation, seats);
     }
 }
 
