@@ -16,3 +16,25 @@ export type ReservationSeat = {
     seatId: number;
     reservationId: number;
 }
+
+export type ReservationDetail = {
+    reservation: ReservationSummary;
+    seats: ReservationSeatNumber[];
+}
+
+export type ReservationSummary = {
+    reservationId: number;
+    status: string;
+    screeningId: number;
+    startTime: string;
+    endTime: string;
+    movieId: number;
+    movieTitle: string;
+    theaterId: number;
+    theaterName: string;
+}
+
+export type ReservationSeatNumber = {
+    row: number;
+    col: number;
+}
