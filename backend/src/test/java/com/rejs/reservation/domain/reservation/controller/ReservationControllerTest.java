@@ -1,13 +1,16 @@
 package com.rejs.reservation.domain.reservation.controller;
 
+import com.epages.restdocs.apispec.ResourceDocumentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.controller.AbstractControllerTest;
 import com.rejs.reservation.controller.docs.BaseResponseDocs;
 import com.rejs.reservation.domain.movie.dto.MovieDto;
 import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
+import com.rejs.reservation.domain.reservation.controller.docs.ReservationDetailDtoDocs;
 import com.rejs.reservation.domain.reservation.controller.docs.ReservationDtoDocs;
 import com.rejs.reservation.domain.reservation.controller.docs.ReservationRequestDocs;
+import com.rejs.reservation.domain.reservation.controller.docs.ReservationSummaryDtoDocs;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
@@ -44,6 +47,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -107,7 +111,6 @@ class ReservationControllerTest extends AbstractControllerTest {
         User user = new User("username", "password");
         user = userRepository.save(user);
         userId = user.getId();
-
     }
 
     @Test
@@ -252,4 +255,100 @@ class ReservationControllerTest extends AbstractControllerTest {
                 ));
     }
 
+    @Test
+    void 나의예매보기() throws Exception{
+        ReservationRequest reservationRequest = new ReservationRequest(screeningId, seatIds);
+
+        mockMvc.perform(
+                post("/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reservationRequest))
+                        .header("Authorization", "Bearer " + accessToken)
+        );
+
+        ResultActions result = mockMvc.perform(
+                get("/reservations/me")
+                        .queryParam("page", "0")
+                        .queryParam("size", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + accessToken)
+        );
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].reservationId").isNumber())
+                .andExpect(jsonPath("$.data[0].status").isString())
+
+                .andExpect(jsonPath("$.data[0].screeningId").isNumber())
+                .andExpect(jsonPath("$.data[0].startTime").isString())
+                .andExpect(jsonPath("$.data[0].endTime").isString())
+
+                .andExpect(jsonPath("$.data[0].movieId").isNumber())
+                .andExpect(jsonPath("$.data[0].movieTitle").isString())
+
+                .andExpect(jsonPath("$.data[0].theaterId").isNumber())
+                .andExpect(jsonPath("$.data[0].theaterName").isString())
+
+                .andExpect(jsonPath("$.pagination.count").isNumber())
+                .andExpect(jsonPath("$.pagination.requestNumber").isNumber())
+                .andExpect(jsonPath("$.pagination.requestSize").isNumber())
+                .andExpect(jsonPath("$.pagination.hasNextPage").isBoolean())
+                .andExpect(jsonPath("$.pagination.totalPage").isNumber())
+                .andExpect(jsonPath("$.pagination.totalElements").isNumber())
+        ;
+
+        result
+                .andDo(document(
+                        docs -> docs
+                                .requestHeaders(authorizationHeader())
+                                .queryParameters(
+                                        ResourceDocumentation.parameterWithName("page").description("요청한 페이지번호"),
+                                        ResourceDocumentation.parameterWithName("size").description("페이지 내부의 데이터 개수")
+                                )
+                                .responseSchema(ReservationSummaryDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.withPaginations(ReservationSummaryDtoDocs.fields()))
+                ));
+    }
+
+    @Test
+    void 예매정보보기() throws Exception{
+        // 예매하기
+        int reservationSeatCount = 5;
+        Reservation reservation = Reservation.create(userId, screeningId, seatIds.subList(0, reservationSeatCount));
+        reservation = reservationRepository.save(reservation);
+
+        ResultActions result = mockMvc.perform(
+                get("/reservations/{id}", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + accessToken)
+        );
+
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reservation.reservationId").isNumber())
+                .andExpect(jsonPath("$.data.reservation.status").isString())
+
+                .andExpect(jsonPath("$.data.reservation.screeningId").isNumber())
+                .andExpect(jsonPath("$.data.reservation.startTime").isString())
+                .andExpect(jsonPath("$.data.reservation.endTime").isString())
+
+                .andExpect(jsonPath("$.data.reservation.movieId").isNumber())
+                .andExpect(jsonPath("$.data.reservation.movieTitle").isString())
+
+                .andExpect(jsonPath("$.data.reservation.theaterId").isNumber())
+                .andExpect(jsonPath("$.data.reservation.theaterName").isString())
+
+                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
+                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
+        ;
+
+        result
+                .andDo(document(
+                        docs -> docs
+                                .requestHeaders(authorizationHeader())
+                                .responseSchema(ReservationDetailDtoDocs.schema())
+                                .responseFields(BaseResponseDocs.baseFields(ReservationDetailDtoDocs.fields()))
+                ));
+
+    }
 }
