@@ -13,16 +13,16 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, ClockIcon, CreditCardIcon, FilmIcon, MapPinIcon, ArmchairIcon } from "lucide-react";
+import usePayment from "@/src/hooks/paymentHook";
 
 // Props 정의: 데이터와 동작(함수)을 받습니다.
 interface PaymentSummaryCardProps {
     reservationDetail: ReservationDetail;
-    onPaymentClick?: () => void;
-    isLoading?: boolean;
 }
 
-export default function PaymentSummaryCard({ reservationDetail, onPaymentClick, isLoading }: PaymentSummaryCardProps) {
+export default function PaymentSummaryCard({ reservationDetail }: PaymentSummaryCardProps) {
     const { reservation, seats } = reservationDetail;
+    const {paymentStatus,handlePayment} = usePayment();
 
     // 날짜 및 시간 포맷팅
     const startDate = new Date(reservation.startTime);
@@ -131,10 +131,10 @@ export default function PaymentSummaryCard({ reservationDetail, onPaymentClick, 
                 <Button
                     className="w-full text-lg h-12 font-bold"
                     size="lg"
-                    onClick={onPaymentClick}
-                    disabled={isLoading}
+                    onClick={() => {handlePayment(reservation)}}
+                    disabled={paymentStatus.status === 'PENDING'}
                 >
-                    {isLoading ? (
+                    {paymentStatus.status === 'PENDING' ? (
                         <>
                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
