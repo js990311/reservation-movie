@@ -7,6 +7,7 @@ import {Label} from "@/components/ui/label";
 import {Armchair, CalendarClock, MapPin} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {formatDate} from "@/src/components/utils/time/formatter";
+import Link from "next/link";
 
 type Props = {
     params: Promise<{id:string}>  

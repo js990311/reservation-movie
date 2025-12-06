@@ -2,11 +2,13 @@ package com.rejs.reservation.controller;
 
 import com.epages.restdocs.apispec.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rejs.reservation.TestcontainersConfiguration;
 import com.rejs.reservation.controller.docs.BusinessExceptionDocs;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
@@ -24,6 +26,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
+@Import(TestcontainersConfiguration.class)
 @ExtendWith(RestDocumentationExtension.class)
 @SpringBootTest
 public class AbstractControllerTest {

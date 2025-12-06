@@ -118,6 +118,6 @@ public class ReservationQueryRepository {
                 )
                 .from(reservationSeat)
                 .join(seat).on(reservationSeat.seatId.eq(seat.id))
-                .where(reservationSeat.id.eq(id)).fetch();
+                .where(reservationSeat.reservation.id.eq(id)).fetch();
     }
 }
