@@ -25,6 +25,7 @@ export type ReservationDetail = {
 export type ReservationSummary = {
     reservationId: number;
     status: string;
+    totalAmount: number;
     screeningId: number;
     startTime: string;
     endTime: string;
