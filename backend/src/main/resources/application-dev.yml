@@ -26,3 +26,8 @@ springdoc:
 
 jwt:
   secret-key: 46ba09264fb200ac1acc9114b3af6f6217fd219fb15fb73244ddd6100a8e6207705e2783ef1e7069956023abd54b5d3da42a07509a93a2a8cdfd41cdfde4d1ba
+
+portone.secret:
+  storeId: ${PORTONE_API_STOREID}
+  apiSecret: ${PORTONE_API_SECRET}
+  webhookSecret: ${PORTONE_WEBHOOK_SECRET}

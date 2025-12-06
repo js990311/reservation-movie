@@ -39,3 +39,6 @@ out/
 diff.txt
 
 **/resources/docs/**
+
+.env
+application-test.yml
