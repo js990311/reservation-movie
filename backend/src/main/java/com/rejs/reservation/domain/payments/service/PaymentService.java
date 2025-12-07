@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.dto.PaymentLogDto;
 import com.rejs.reservation.domain.payments.entity.PaymentLog;
+import com.rejs.reservation.domain.payments.entity.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.domain.payments.repository.PaymentLogRepository;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -26,13 +28,21 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class PaymentService {
     private final ReservationRepository reservationRepository;
-    private final PaymentLogRepository paymentLogRepository;
     private final PaymentStateService paymentStateService;
+    private final PaymentLogRepository paymentLogRepository;
     private final PaymentClient paymentClient;
     private final ObjectMapper objectMapper;
 
     @Transactional(readOnly = true)
     public PaymentLogDto syncPayment(String paymentId) {
+        // 멱등성 보장
+        Optional<PaymentLog> opt = paymentLogRepository.findByPaymentId(paymentId);
+        if(opt.isPresent()){
+            PaymentLog paymentLog = opt.get();
+            if(paymentLog.getStatus().equals(PaymentStatus.PAID)){
+                return PaymentLogDto.from(paymentLog);
+            }
+        }
         Long reservationId = null;
         try {
             // payment client에서 payment 가져오기
