@@ -8,6 +8,7 @@ import {ReservationSummary} from "@/src/type/reservation/reservation";
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {formatDate} from "@/src/components/utils/time/formatter";
 import Link from "next/link";
+import ReservationStatusBadge from "@/src/components/reservation/reservationStatusBadge";
 
 type Props = {
     reservations: ReservationSummary[];
@@ -27,9 +28,10 @@ export default function ReservationList({ reservations }: Readonly<Props>) {
                                             {res.movieTitle}
                                         </CardTitle>
                                         <CardDescription>
-                                            No. {res.reservationId}
+                                            #{res.reservationId}
                                         </CardDescription>
                                     </div>
+                                    <ReservationStatusBadge status={res.status}></ReservationStatusBadge>
                                 </div>
                         </CardHeader>
                         <CardContent className="pt-4 grid gap-3 sm:grid-cols-2">

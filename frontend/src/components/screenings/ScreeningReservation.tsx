@@ -48,7 +48,7 @@ export default function ScreeningReservation({screeningId, theater, seats}: Read
                 toast.error(`${response.type} : ${response.title} ${response.detail}`);
             }else {
                 toast.success('예매성공');
-                router.push(`/reservations/${response.reservationId}`);
+                router.push(`/reservations/${response.reservationId}/payments`);
             }
         }catch (error) {
             toast.error(`시스템 오류가 발생했습니다.`);

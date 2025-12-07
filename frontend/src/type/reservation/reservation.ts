@@ -5,7 +5,7 @@ export type ReservationRequest = {
 
 export type Reservation = {
     reservationId: number;
-    status: string;
+    status: ReservationStatus;
     userId: number;
     screeningId: number;
     reservationSeats: ReservationSeat[];
@@ -22,9 +22,11 @@ export type ReservationDetail = {
     seats: ReservationSeatNumber[];
 }
 
+export type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELED" | "COMPLETED";
+
 export type ReservationSummary = {
     reservationId: number;
-    status: string;
+    status: ReservationStatus;
     totalAmount: number;
     screeningId: number;
     startTime: string;
