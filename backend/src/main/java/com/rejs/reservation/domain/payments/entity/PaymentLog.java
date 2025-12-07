@@ -27,6 +27,9 @@ public class PaymentLog {
     @Column
     private PaymentStatus status;
 
+    @Column
+    private String reason;
+
     public void mapReservaiton(Reservation reservation){
         this.reservationId = reservation.getId();
     }

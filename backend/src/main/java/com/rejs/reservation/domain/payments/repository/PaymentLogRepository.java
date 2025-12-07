@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface PaymentRepository extends JpaRepository<PaymentLog, Long> {
+public interface PaymentLogRepository extends JpaRepository<PaymentLog, Long> {
     Optional<PaymentLog> findByPaymentId(String paymentId);
 }
