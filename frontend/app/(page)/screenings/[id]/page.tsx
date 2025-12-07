@@ -3,7 +3,7 @@ import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
 import {BaseResponse} from "@/src/type/response/base";
 import {ScreeningDetail} from "@/src/type/screening/screeningDetail";
 import SeatMap from "@/src/components/theater/seatMap";
-import ScreeningReservation from "@/src/components/theater/screenings/ScreeningReservation";
+import ScreeningReservation from "@/src/components/screenings/ScreeningReservation";
 
 type Props = {
     params: Promise<{id: string}>

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class ReservationSummaryDto {
     private Long reservationId;
     private ReservationStatus status;
+    private Integer totalAmount;
 
     private Long screeningId;
     private LocalDateTime startTime;
@@ -20,9 +21,10 @@ public class ReservationSummaryDto {
     private Long theaterId;
     private String theaterName;
 
-    public ReservationSummaryDto(Long reservationId, ReservationStatus status, Long screeningId, LocalDateTime startTime, LocalDateTime endTime, Long movieId, String movieTitle, Long theaterId, String theaterName) {
+    public ReservationSummaryDto(Long reservationId, ReservationStatus status, Integer totalAmount, Long screeningId, LocalDateTime startTime, LocalDateTime endTime, Long movieId, String movieTitle, Long theaterId, String theaterName) {
         this.reservationId = reservationId;
         this.status = status;
+        this.totalAmount = totalAmount;
         this.screeningId = screeningId;
         this.startTime = startTime;
         this.endTime = endTime;

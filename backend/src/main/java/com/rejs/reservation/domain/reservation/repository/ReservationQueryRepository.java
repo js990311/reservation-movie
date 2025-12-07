@@ -41,6 +41,7 @@ public class ReservationQueryRepository {
                                 ReservationSummaryDto.class,
                                 reservation.id,
                                 reservation.status,
+                                reservation.totalAmount,
                                 screening.id,
                                 screening.startTime,
                                 screening.endTime,
@@ -82,6 +83,7 @@ public class ReservationQueryRepository {
                                 ReservationSummaryDto.class,
                                 reservation.id,
                                 reservation.status,
+                                reservation.totalAmount,
                                 screening.id,
                                 screening.startTime,
                                 screening.endTime,
@@ -118,6 +120,6 @@ public class ReservationQueryRepository {
                 )
                 .from(reservationSeat)
                 .join(seat).on(reservationSeat.seatId.eq(seat.id))
-                .where(reservationSeat.id.eq(id)).fetch();
+                .where(reservationSeat.reservation.id.eq(id)).fetch();
     }
 }

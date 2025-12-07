@@ -28,9 +28,14 @@ public class Reservation {
     @Column
     private ReservationStatus status;
 
+    @Column
+    private Integer totalAmount;
+
     // # 관계 - User
     @Column(name = "user_id")
     private Long userId;
+
+    // # 관계 상영표
 
     @Column(name = "screening_id")
     private Long screeningId;
@@ -49,15 +54,17 @@ public class Reservation {
         reservationSeat.mapReservation(null);
     }
 
-    public Reservation(Long userId, Long screeningId) {
+    public Reservation(Long userId, Long screeningId, Integer totalAmount) {
         this.userId = userId;
         this.screeningId = screeningId;
         this.status = ReservationStatus.PENDING;
+        this.totalAmount = totalAmount;
     }
 
     // 생성
     public static Reservation create(Long userId, Long screeningId, List<Long> seatIds){
-        Reservation reservation = new Reservation(userId, screeningId);
+        int totalAmount = seatIds.size() * 10000; // 임시로 하드코딩
+        Reservation reservation = new Reservation(userId, screeningId, totalAmount);
 
         for(Long seatId : seatIds){
             ReservationSeat rs = new ReservationSeat(seatId);
@@ -65,6 +72,11 @@ public class Reservation {
         }
 
         return reservation;
+    }
+
+    // 로직
+    public void confirm(){
+        this.status = ReservationStatus.CONFIRMED;
     }
 
 }
