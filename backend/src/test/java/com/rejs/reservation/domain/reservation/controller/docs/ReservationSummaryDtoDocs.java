@@ -15,6 +15,7 @@ public class ReservationSummaryDtoDocs {
         return new FieldDescriptors(
                 fieldWithPath("reservationId").type(JsonFieldType.NUMBER).description("상영표 id"),
                 fieldWithPath("status").type(JsonFieldType.STRING).description("예매 상태"),
+                fieldWithPath("totalAmount").type(JsonFieldType.NUMBER).description("결제할 금액"),
                 fieldWithPath("screeningId").description("상영표 고유번호").type(JsonFieldType.NUMBER),
                 fieldWithPath("startTime").description("영화시작시간").type(JsonFieldType.STRING),
                 fieldWithPath("endTime").description("영화종료시간").type(JsonFieldType.STRING),

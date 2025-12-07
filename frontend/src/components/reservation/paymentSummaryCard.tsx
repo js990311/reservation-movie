@@ -14,6 +14,9 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, ClockIcon, CreditCardIcon, FilmIcon, MapPinIcon, ArmchairIcon } from "lucide-react";
 import usePayment from "@/src/hooks/paymentHook";
+import {useEffect} from "react";
+import toast from "react-hot-toast";
+import {useRouter} from "next/navigation";
 
 // Props 정의: 데이터와 동작(함수)을 받습니다.
 interface PaymentSummaryCardProps {
@@ -23,6 +26,16 @@ interface PaymentSummaryCardProps {
 export default function PaymentSummaryCard({ reservationDetail }: PaymentSummaryCardProps) {
     const { reservation, seats } = reservationDetail;
     const {paymentStatus,handlePayment} = usePayment();
+    const router = useRouter();
+
+    useEffect(() => {
+        if(paymentStatus.status === 'FAILED'){
+            toast.error(`Payment failed : ${paymentStatus.message}`);
+        }else if(paymentStatus.status === 'SUCCESS'){
+            toast.success("Payment successful");
+            router.push(`/reservations/${reservation.reservationId}`);
+        }
+    }, [paymentStatus]);
 
     // 날짜 및 시간 포맷팅
     const startDate = new Date(reservation.startTime);

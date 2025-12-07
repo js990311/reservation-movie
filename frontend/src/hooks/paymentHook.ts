@@ -2,6 +2,10 @@ import PortOne from "@portone/browser-sdk/v2";
 import {useState} from "react";
 import {ulid} from "ulid";
 import {ReservationSummary} from "@/src/type/reservation/reservation";
+import {apiClient} from "@/src/lib/api/apiClient";
+import {BaseResponse} from "@/src/type/response/base";
+import {PaymentLog} from "@/src/type/payment/paymentLog";
+import {paymentCompleteAction} from "@/src/actions/paymentAction";
 
 type PaymentStatus = {
     status: "IDLE" | "PENDING" | "FAILED" | "SUCCESS";
@@ -40,13 +44,19 @@ export default function usePayment(){
                 message: payment.message,
             })
             return;
-        }else {
+        }
+        const response = await paymentCompleteAction(paymentId)
+        if(response.data.status === 'PAID'){
             setPaymentStatus({
                 status: "SUCCESS",
-                message: payment.message,
-            })
+                message: ""
+            });
+        }else {
+            setPaymentStatus({
+                status: "FAILED",
+                message: "complete 과정에서 실패했습니다"
+            });
         }
-        // TODO: payment 완료시 서버로 쿼리 보내기
     }
     return {paymentStatus, handlePayment}
 }
