@@ -1,19 +1,32 @@
 "use server"
 
-import {PaginationResponse} from "@/src/type/response/pagination";
 import {Movie} from "@/src/type/movie/movie";
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
 import {BaseResponse} from "@/src/type/response/base";
+import {serverFetch} from "@/src/lib/api/serverFetch";
+import {createInternalServerException} from "@/src/type/error/ApiError";
+import {logger} from "@/src/lib/logger/logger";
 import {ScreeningWithTheater} from "@/src/type/screening/screening";
 
-export async function getMoviesAction(page: number, size: number): Promise<PaginationResponse<Movie>> {
+export async function getMovieByIdAction(id: string){
     try {
-        const response = await new ProxyRequestBuilder(`/movies?page=${page}&size=${size}`)
-            .withMethod('GET')
-            .execute()
-        ;
-        const respData: PaginationResponse<Movie> = await response.json();
-        return respData;
+        const response = await serverFetch<Movie>({
+            endpoint: `/movies/${id}`
+        });
+        if(response.error){
+            logger.apiError(response.error);
+        }
+        return response.data;
+    }catch (error) {
+        logger.apiError(createInternalServerException(`/getMovieByIdAction(id=${id})`, error));
+        return null;
+    }
+}
+
+export async function getMoviesAction(page: number, size: number): Promise<BaseResponse<Movie[]>> {
+    try {
+        return await serverFetch<Movie[]>({
+            endpoint: `/movies?page=${page}&size=${size}`,
+        });
     }catch (error) {
         return {
             data: [],
@@ -24,16 +37,18 @@ export async function getMoviesAction(page: number, size: number): Promise<Pagin
                 hasNextPage: false,
                 totalPage: 0,
                 totalElements: 0
-            }
+            },
+            error: createInternalServerException('/getMovieAction', error)
         };
     }
 }
 
 export async function getMovieScreeningAction(id: string, date:string) {
     try {
-        const response = await new ProxyRequestBuilder(`/movies/${id}/screenings?date=${date}`).withMethod("GET").execute();
-        const respData: PaginationResponse<ScreeningWithTheater> = await response.json();
-        return respData.data;
+        const response = await serverFetch<ScreeningWithTheater[]>({
+            endpoint: `/movies/${id}/screenings?date=${date}`,
+        });
+        return response.data;
     }catch (error) {
         return [];
     }

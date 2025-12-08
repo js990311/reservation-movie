@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {clientException, ExceptionResponse} from "@/src/type/exception/exceptionResponse";
+import {clientException, ExceptionResponse} from "@/src/type/response/exceptionResponse";
 import {getAccessToken} from "@/src/lib/api/tokenUtil";
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';

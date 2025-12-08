@@ -163,18 +163,7 @@ class MovieControllerTest extends AbstractControllerTest {
                         .header("Authorization", "Bearer " + accessToken)
         );
 
-        result
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/movies/" + id))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
+        andExpectException(()->result, MovieBusinessExceptionCode.MOVIE_NOT_FOUND, "/movies/" + id);
 
         result.andDo(
                 documentWithException((docs)->

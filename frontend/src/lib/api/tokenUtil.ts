@@ -51,3 +51,13 @@ export async function clearTokens(): Promise<void> {
     });
 
 }
+
+export async function isAuthenticated(): Promise<boolean> {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get(ACCESS_TOKEN_KEY);
+    if(accessToken){
+        return true;
+    }else {
+        return false;
+    }
+}

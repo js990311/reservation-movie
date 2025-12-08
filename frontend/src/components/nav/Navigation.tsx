@@ -1,21 +1,17 @@
+"use server"
+
 import {
-    NavigationMenu, NavigationMenuContent,
+    NavigationMenu,
     NavigationMenuItem,
     NavigationMenuLink,
-    NavigationMenuList, NavigationMenuTrigger
+    NavigationMenuList
 } from "@/components/ui/navigation-menu";
 import Link from "next/link";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import {Button} from "@/components/ui/button";
 import AuthDropdown from "@/src/components/nav/AuthDropdown";
+import {isAuthenticated} from "@/src/lib/api/tokenUtil";
 
-export default function Navigation() {
+export default async function Navigation() {
+    const isLogin = await isAuthenticated();
     return (
         <NavigationMenu className={"flex-1 container mx-auto px-1 py-2 max-w-md md:max-w-2xl lg:max-w-4xl"}>
             <div className={"w-full"}>
@@ -39,7 +35,9 @@ export default function Navigation() {
                     </div>
                     <div>
                         <NavigationMenuItem>
-                            <AuthDropdown></AuthDropdown>
+                            <AuthDropdown
+                                isLogin={isLogin}
+                            />
                         </NavigationMenuItem>
                     </div>
 

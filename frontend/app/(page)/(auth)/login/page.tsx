@@ -13,27 +13,25 @@ import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
-import {useLogin} from "@/src/hooks/loginHook";
+import {useLogin} from "@/src/hooks/auth/loginHook";
 import {useEffect, useState} from "react";
 import toast from "react-hot-toast";
 import {useRouter} from "next/navigation";
 
 export default function LoginPage(){
-    const {success, error, loading, login} = useLogin();
+    const {status, error, login} = useLogin();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
 
     useEffect(() => {
-        if(loading === false){
-            if( success === true){
-                toast.success('로그인 성공');
-                router.push("/");
-            }else if(error !== null){
-                toast.error(`[${error.type}] ${error.title} : ${error.detail}`);
-            }
+        if( status === "SUCCESS"){
+            toast.success('회원가입성공');
+            router.push("/");
+        }else if(status === "FAIL"){
+            toast.error(`[${error?.type}] ${error?.title} : ${error?.detail}`);
         }
-    }, [success, loading, error]);
+    }, [status]);
 
     const onLogin = async () => {
         await login({

@@ -1,6 +1,3 @@
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
-import {BaseResponse} from "@/src/type/response/base";
-import {ReservationDetail} from "@/src/type/reservation/reservation";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Label} from "@/components/ui/label";
@@ -10,31 +7,15 @@ import {formatDate} from "@/src/components/utils/time/formatter";
 import ReservationStatusBadge from "@/src/components/reservation/reservationStatusBadge";
 import {clsx} from "clsx";
 import Link from "next/link";
+import {getReservationIdAction} from "@/src/actions/reservationAction";
 
 type Props = {
     params: Promise<{id:string}>  
 };
 
-async function getReservationId(id: string){
-    try {
-        const response = await new ProxyRequestBuilder(`/reservations/${id}`)
-            .withMethod('GET')
-            .withAuth()
-            .execute();
-        if(response.ok){
-            const data:BaseResponse<ReservationDetail> = await response.json();
-            return data.data;
-        }else {
-            return null;
-        }
-    }catch (error){
-        return null;
-    }
-}
-
 export default async function ReservationIdPage({params} : Readonly<Props>) {
     const {id} = await params;
-    const reservation = await getReservationId(id);
+    const reservation = await getReservationIdAction(id);
 
     if(!reservation){
         return (
@@ -117,7 +98,9 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
                     {
                         reservation.reservation.status === 'PENDING' && (
                             <Button className={"cursor-pointer"}>
-                                결제하기
+                                <Link href={`/reservations/${reservation.reservation.reservationId}/payments`}>
+                                    결제하기
+                                </Link>
                             </Button>
                         )
                     }

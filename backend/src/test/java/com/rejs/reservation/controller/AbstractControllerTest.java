@@ -4,29 +4,30 @@ import com.epages.restdocs.apispec.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.TestcontainersConfiguration;
 import com.rejs.reservation.controller.docs.BusinessExceptionDocs;
+import com.rejs.reservation.global.exception.code.BusinessExceptionCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles("test")
 @Import(TestcontainersConfiguration.class)
@@ -82,5 +83,23 @@ public class AbstractControllerTest {
 
     public HeaderDescriptorWithType authorizationHeader(){
         return new HeaderDescriptorWithType("Authorization").description("액세스토큰");
+    }
+
+    public void andExpectException(Supplier<ResultActions> supplier, BusinessExceptionCode code, String instance) throws Exception {
+        ResultActions result = supplier.get();
+
+        result
+                .andExpect(status().is(code.getStatus().value()))
+                .andExpect(jsonPath("$.error.type").isString())
+                .andExpect(jsonPath("$.error.type").value(code.getType()))
+                .andExpect(jsonPath("$.error.title").isString())
+                .andExpect(jsonPath("$.error.title").value(code.getTitle()))
+                .andExpect(jsonPath("$.error.status").isNumber())
+                .andExpect(jsonPath("$.error.status").value(code.getStatus().value()))
+                .andExpect(jsonPath("$.error.instance").isString())
+                .andExpect(jsonPath("$.error.instance").value(instance))
+                .andExpect(jsonPath("$.error.detail").isString())
+
+        ;
     }
 }

@@ -7,6 +7,7 @@ import com.rejs.reservation.controller.docs.BaseResponseDocs;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
+import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.screening.controller.docs.CreateScreeningRequestDocs;
 import com.rejs.reservation.domain.screening.controller.docs.ScreeningDetailDtoDocs;
 import com.rejs.reservation.domain.screening.controller.docs.ScreeningDtoDocs;
@@ -176,19 +177,7 @@ class ScreeningControllerTest extends AbstractControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
-
-        result
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(ScreeningExceptionCode.SCREENING_TIME_CONFLICT.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(ScreeningExceptionCode.SCREENING_TIME_CONFLICT.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(ScreeningExceptionCode.SCREENING_TIME_CONFLICT.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/screenings"))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
+        andExpectException(()->result, ScreeningExceptionCode.SCREENING_TIME_CONFLICT, "/screenings");
 
         result
                 .andDo(
@@ -213,18 +202,7 @@ class ScreeningControllerTest extends AbstractControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
-        result
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(TheaterExceptionCode.THEATER_NOT_FOUND.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(TheaterExceptionCode.THEATER_NOT_FOUND.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(TheaterExceptionCode.THEATER_NOT_FOUND.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/screenings"))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
+        andExpectException(()->result, TheaterExceptionCode.THEATER_NOT_FOUND, "/screenings");
 
         result
                 .andDo(
@@ -249,19 +227,7 @@ class ScreeningControllerTest extends AbstractControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
                 .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
-        result
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(MovieBusinessExceptionCode.MOVIE_NOT_FOUND.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/screenings"))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
-
+        andExpectException(()->result, MovieBusinessExceptionCode.MOVIE_NOT_FOUND, "/screenings");
         result
                 .andDo(
                         documentWithException(docs->docs
@@ -324,19 +290,8 @@ class ScreeningControllerTest extends AbstractControllerTest {
         );
         ScreeningExceptionCode code = ScreeningExceptionCode.SCREENING_NOT_FOUND;
 
-        result
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(code.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(code.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(code.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/screenings/0"))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
-        
+        andExpectException(()->result, ScreeningExceptionCode.SCREENING_NOT_FOUND, "/screenings/0");
+
         result.andDo(
                 documentWithException(docs->docs
                         .pathParameters(

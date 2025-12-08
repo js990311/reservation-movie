@@ -14,20 +14,20 @@ public class BusinessExceptionDocs {
 
     public static FieldDescriptors fields(){
         return new FieldDescriptors(
-                fieldWithPath("type")
+                fieldWithPath("error.type")
                         .description("사전 정의된 예외 타입")
                         .type(JsonFieldType.STRING),
-                fieldWithPath("title")
+                fieldWithPath("error.title")
                         .description("예외 이름")
                         .type(JsonFieldType.STRING),
-                fieldWithPath("status")
+                fieldWithPath("error.status")
                         .description("예외에 대한 http 상태코드")
                         .type(JsonFieldType.NUMBER),
-                fieldWithPath("detail")
+                fieldWithPath("error.detail")
                         .description("예외에 대한 자세한 설명")
                         .optional()
                         .type(JsonFieldType.STRING),
-                fieldWithPath("instance")
+                fieldWithPath("error.instance")
                         .description("예외가 발생한 위치")
                         .type(JsonFieldType.STRING)
         );

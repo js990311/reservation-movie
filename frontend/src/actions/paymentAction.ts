@@ -1,15 +1,17 @@
 "use server"
 
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
-import {BaseResponse} from "@/src/type/response/base";
 import {PaymentLog} from "@/src/type/payment/paymentLog";
+import {createInternalServerException} from "@/src/type/error/ApiError";
+import {serverFetch} from "@/src/lib/api/serverFetch";
 
 export async function paymentCompleteAction(paymentId: string){
     try {
-        const response = await new ProxyRequestBuilder("/payment/complete").withAuth().withMethod('POST').withBody({paymentId: paymentId}).execute();
-        const respDate: BaseResponse<PaymentLog> = await response.json();
-        console.log(respDate);
-        return respDate;
+        return serverFetch<PaymentLog>({
+            endpoint: "/payment/complete",
+            method: "POST",
+            withAuth: true,
+            body: {paymentId: paymentId},
+        })
     }catch (error) {
         return {
             data: {
@@ -17,6 +19,7 @@ export async function paymentCompleteAction(paymentId: string){
                 status: "FAILED",
                 reservationId: 0
             },
+            error: createInternalServerException('paymentCompleteAction', error)
         };
     }
 }

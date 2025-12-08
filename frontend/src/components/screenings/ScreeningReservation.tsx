@@ -44,11 +44,11 @@ export default function ScreeningReservation({screeningId, theater, seats}: Read
                 screeningId: parseInt(screeningId),
                 seats: selectedSeatIds
             });
-            if('type' in response){ // exceptionResponse에 해당
-                toast.error(`${response.type} : ${response.title} ${response.detail}`);
+            if(response.error){ // exceptionResponse에 해당
+                toast.error(`${response.error.type} : ${response.error.title} ${response.error.detail}`);
             }else {
                 toast.success('예매성공');
-                router.push(`/reservations/${response.reservationId}/payments`);
+                router.push(`/reservations/${response.data.reservationId}/payments`);
             }
         }catch (error) {
             toast.error(`시스템 오류가 발생했습니다.`);

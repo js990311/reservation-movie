@@ -1,33 +1,13 @@
 import PaymentSummaryCard from "@/src/components/reservation/paymentSummaryCard";
-import {getMyReservationsAction} from "@/src/actions/reservationAction";
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
-import {BaseResponse} from "@/src/type/response/base";
-import {ReservationDetail} from "@/src/type/reservation/reservation";
+import {getReservationIdAction} from "@/src/actions/reservationAction";
 
 type Props = {
     params: Promise<{id: string}>
 }
 
-async function getReservationId(id: string){
-    try {
-        const response = await new ProxyRequestBuilder(`/reservations/${id}`)
-            .withMethod('GET')
-            .withAuth()
-            .execute();
-        if(response.ok){
-            const data:BaseResponse<ReservationDetail> = await response.json();
-            return data.data;
-        }else {
-            return null;
-        }
-    }catch (error){
-        return null;
-    }
-}
-
 export default async function PaymentsPage({params}: Readonly<Props>){
     const {id} = await params;
-    const resrvationDetail = await getReservationId(id);
+    const resrvationDetail = await getReservationIdAction(id);
     
     if(!resrvationDetail){
         return (

@@ -1,23 +1,7 @@
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
-import {BaseResponse} from "@/src/type/response/base";
-import {Movie} from "@/src/type/movie/movie";
-import {Clock, Film} from "lucide-react";
 import DateSelector from "@/src/components/date/dateSelector";
 import {MovieScreeningList} from "@/src/components/movie/movieScreeningList";
 import MovieInfo from "@/src/components/movie/movieInfo";
-
-async function getMovieById(id: string) {
-    try {
-        const response = await new ProxyRequestBuilder(`/movies/${id}`).withMethod("GET").execute();
-        if(!response.ok) {
-            return null;
-        }
-        const respData: BaseResponse<Movie> = await response.json();
-        return respData.data;
-    }catch (error) {
-        return null;
-    }
-}
+import {getMovieByIdAction} from "@/src/actions/movieAction";
 
 type Props = {
     params: Promise<{id: string}>;
@@ -28,7 +12,7 @@ export default async function MovieIdPage({params, searchParams} : Readonly<Prop
     const {id} = await params;
     const {date} = await searchParams;
     const selectedDate = date ?? new Date().toISOString().split("T")[0];
-    const movie = await getMovieById(id);
+    const movie = await getMovieByIdAction(id);
 
     if(!movie) {
         return (

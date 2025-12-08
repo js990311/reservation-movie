@@ -1,5 +1,6 @@
 package com.rejs.reservation.global.controller.advice;
 
+import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.dto.response.BusinessExceptionResponse;
 import com.rejs.reservation.global.exception.BusinessException;
 import com.rejs.reservation.global.exception.code.BusinessExceptionCode;
@@ -16,17 +17,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalControllerAdvice {
 
     @ExceptionHandler(value = BusinessException.class)
-    public ResponseEntity<BusinessExceptionResponse> handleBusinessException(BusinessException ex, HttpServletRequest request){
-        return ResponseEntity.status(ex.getCode().getStatus()).body(new BusinessExceptionResponse(ex.getCode(), request.getRequestURI(), ex.getDetail()));    }
+    public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException ex, HttpServletRequest request){
+        return ResponseEntity.status(ex.getCode().getStatus()).body(BusinessExceptionResponse.of(ex.getCode(), request.getRequestURI(), ex.getDetail()));    }
 
     @ExceptionHandler(value = RuntimeException.class)
-    public ResponseEntity<BusinessExceptionResponse> handleBaseException(RuntimeException ex, HttpServletRequest request){
+    public ResponseEntity<BaseResponse<?>> handleBaseException(RuntimeException ex, HttpServletRequest request){
         BusinessExceptionCode code = InternalServerExceptionCode.INTERNAL_SERVER_ERROR;
         String instance = request.getRequestURI();
         StringBuilder sb = new StringBuilder();
         sb.append("[").append(instance).append("] ").append(ex.getMessage());
         log.warn(sb.toString());
-        return ResponseEntity.status(code.getStatus()).body(new BusinessExceptionResponse(code, instance, null));
+        return ResponseEntity.status(code.getStatus()).body(BusinessExceptionResponse.of(code, instance));
     }
 
 }

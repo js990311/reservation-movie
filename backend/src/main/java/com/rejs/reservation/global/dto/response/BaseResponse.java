@@ -16,15 +16,24 @@ import java.util.List;
 public class BaseResponse<T> {
     private final T data;
     private final CollectionMetadata pagination;
+    private final BusinessExceptionResponse error;
 
     public BaseResponse(T data) {
         this.data = data;
-        pagination = null;
+        this.pagination = null;
+        this.error = null;
+    }
+
+    public BaseResponse(BusinessExceptionResponse error) {
+        this.data = null;
+        this.pagination = null;
+        this.error = error;
     }
 
     public BaseResponse(T data, CollectionMetadata pagination) {
         this.data = data;
         this.pagination = pagination;
+        this.error = null;
     }
 
     public static <T> BaseResponse<T> of(T data){
@@ -41,5 +50,9 @@ public class BaseResponse<T> {
 
     public static <E> BaseResponse<List<E>> ofPage(Page<E> data){
         return new BaseResponse<>(data.getContent(), PageMetadata.of(data));
+    }
+
+    public static BaseResponse<?> fail(BusinessExceptionResponse error){
+        return new BaseResponse<>(error);
     }
 }

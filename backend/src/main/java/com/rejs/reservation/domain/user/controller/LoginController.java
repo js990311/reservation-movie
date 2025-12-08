@@ -1,6 +1,7 @@
 package com.rejs.reservation.domain.user.controller;
 
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import com.rejs.reservation.global.security.service.LoginService;
 import lombok.RequiredArgsConstructor;
@@ -17,15 +18,15 @@ public class LoginController {
     private final LoginService loginService;
 
     @PostMapping("/login")
-    public Tokens login(@RequestBody LoginRequest request){
+    public BaseResponse<Tokens> login(@RequestBody LoginRequest request){
         Tokens tokens = loginService.login(request);
-        return tokens;
+        return BaseResponse.of(tokens);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
-    public ResponseEntity<Tokens> signup(@RequestBody LoginRequest request){
+    public BaseResponse<Tokens> signup(@RequestBody LoginRequest request){
         Tokens tokens = loginService.signup(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(tokens);
+        return BaseResponse.of(tokens);
     }
 }

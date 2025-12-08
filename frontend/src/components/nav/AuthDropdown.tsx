@@ -1,11 +1,23 @@
 "use client"
-import {getAccessToken} from "@/src/lib/api/tokenUtil";
+
 import LoginDropdown from "@/src/components/nav/LoginDropdown";
 import LogoutDropdown from "@/src/components/nav/LogoutDropdown";
-import useLoginStore from "@/src/hooks/loginStoreHook";
+import useLoginStore from "@/src/hooks/auth/loginStoreHook";
+import {useEffect} from "react";
 
-export default function AuthDropdown() {
-    const isLogin = useLoginStore((state) => state.isLogin);
+type Props = {
+    isLogin : boolean;
+}
+
+export default function AuthDropdown({isLogin}: Readonly<Props>) {
+    const {onLogin, onLogout} = useLoginStore((state) => state);
+    useEffect(() => {
+        if(isLogin){
+            onLogout();
+        }else {
+            onLogin();
+        }
+    }, [isLogin, onLogin, onLogout]);
 
     return (
         <>

@@ -23,4 +23,14 @@ public class BusinessExceptionResponse {
         }
     }
 
+    public static BaseResponse<?> of(BusinessExceptionCode code, String instance, String detail){
+        BusinessExceptionResponse businessExceptionResponse = new BusinessExceptionResponse(code, instance, detail);
+        return BaseResponse.fail(businessExceptionResponse);
+    }
+
+    public static BaseResponse<?> of(BusinessExceptionCode code, String instance){
+        BusinessExceptionResponse businessExceptionResponse = new BusinessExceptionResponse(code, instance, null);
+        return BaseResponse.fail(businessExceptionResponse);
+    }
+
 }

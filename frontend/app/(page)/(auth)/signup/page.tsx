@@ -11,28 +11,27 @@ import {
 import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
-import {useSignup} from "@/src/hooks/signupHook";
+import {useSignup} from "@/src/hooks/auth/signupHook";
 import {useEffect, useState} from "react";
 import toast from "react-hot-toast";
 import {useRouter} from "next/navigation";
-import useLoginStore from "@/src/hooks/loginStoreHook";
+import useLoginStore from "@/src/hooks/auth/loginStoreHook";
+import {useLogin} from "@/src/hooks/auth/loginHook";
 
 export default function SignupPage(){
-    const {success, error, loading, signup} = useSignup();
+    const {status, error, signup} = useSignup();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
 
     useEffect(() => {
-        if(loading === false){
-            if( success === true){
-                toast.success('회원가입성공');
-                router.push("/");
-            }else if(error !== null){
-                toast.error(`[${error.type}] ${error.title} : ${error.detail}`);
-            }
+        if( status === "SUCCESS"){
+            toast.success('회원가입성공');
+            router.push("/");
+        }else if(status === "FAIL"){
+            toast.error(`[${error?.type}] ${error?.title} : ${error?.detail}`);
         }
-    }, [success, loading, error]);
+    }, [status]);
 
     const onSignup = async () => {
         await signup({

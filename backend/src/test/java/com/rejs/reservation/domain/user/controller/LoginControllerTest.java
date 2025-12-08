@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.controller.AbstractControllerTest;
 import com.rejs.reservation.controller.docs.BusinessExceptionDocs;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
+import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.user.controller.docs.LoginRequestDocs;
 import com.rejs.reservation.domain.user.controller.docs.TokenResponseDocs;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
@@ -68,8 +69,8 @@ class LoginControllerTest extends AbstractControllerTest {
 
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").isString())
-                .andExpect(jsonPath("$.refreshToken").isString())
+                .andExpect(jsonPath("$.data.accessToken").isString())
+                .andExpect(jsonPath("$.data.refreshToken").isString())
         ;
         result.andDo(
                 document((docs)->docs
@@ -88,18 +89,8 @@ class LoginControllerTest extends AbstractControllerTest {
         ResultActions result = mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         BusinessExceptionCode expectCode = AuthenticationExceptionCode.USER_INFO_MISMATCH;
-        result
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(expectCode.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(expectCode.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(expectCode.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/login"))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
+        andExpectException(()->result, AuthenticationExceptionCode.USER_INFO_MISMATCH, "/login");
+
 
         result.andDo(
             documentWithException((docs)->
@@ -117,18 +108,7 @@ class LoginControllerTest extends AbstractControllerTest {
         ResultActions result = mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
         BusinessExceptionCode expectCode = AuthenticationExceptionCode.USER_INFO_MISMATCH;
-        result
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(expectCode.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(expectCode.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(expectCode.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/login"))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
+        andExpectException(()->result, AuthenticationExceptionCode.USER_INFO_MISMATCH, "/login");
 
         result.andDo(
                 documentWithException((docs)->
@@ -151,8 +131,8 @@ class LoginControllerTest extends AbstractControllerTest {
 
         result
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.accessToken").isString())
-                .andExpect(jsonPath("$.refreshToken").isString())
+                .andExpect(jsonPath("$.data.accessToken").isString())
+                .andExpect(jsonPath("$.data.refreshToken").isString())
         ;
 
         result.andDo(
@@ -170,19 +150,7 @@ class LoginControllerTest extends AbstractControllerTest {
         Map<String , String> request = Map.of("username", alreadyUsername, "password", alreadyPassword);
         ResultActions result = mockMvc.perform(post("/signup").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(request)));
 
-        BusinessExceptionCode expectCode = UserBusinessExceptionCode.USERNAME_ALREADY_EXISTS;
-        result
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(expectCode.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(expectCode.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(expectCode.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/signup"))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
+        andExpectException(()->result, UserBusinessExceptionCode.USERNAME_ALREADY_EXISTS, "/signup");
 
         result.andDo(
                 documentWithException((docs)->

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
 import LogoutButton from "@/src/components/nav/LogoutButton";
+import Link from "next/link";
 
 export default function LogoutDropdown() {
     return (
@@ -17,7 +18,9 @@ export default function LogoutDropdown() {
             <DropdownMenuContent>
                 <DropdownMenuGroup>
                     <DropdownMenuItem>
-                        마이페이지
+                        <Link href={"/reservations/me"}>
+                            마이페이지
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <LogoutButton />

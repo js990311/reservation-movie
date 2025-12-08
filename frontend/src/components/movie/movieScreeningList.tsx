@@ -1,4 +1,3 @@
-import getTheaterScreeningAction from "@/src/actions/theaterAction";
 import {ScreeningWithTheater} from "@/src/type/screening/screening";
 import {getMovieScreeningAction} from "@/src/actions/movieAction";
 import {CalendarX, MapPin} from "lucide-react";

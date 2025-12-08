@@ -1,25 +1,8 @@
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
-import {PaginationResponse} from "@/src/type/response/pagination";
-import {Theater} from "@/src/type/theater/theater";
-import {BaseResponse} from "@/src/type/response/base";
-import {Screening, ScreeningWithMovie} from "@/src/type/screening/screening";
 import SeatMap from "@/src/components/theater/seatMap";
 import {Accordion, AccordionContent, AccordionItem, AccordionTrigger} from "@/components/ui/accordion";
 import DateSelector from "@/src/components/date/dateSelector";
 import TheaterScreeningList from "@/src/components/theater/theaterScreeningList";
-
-async function getTheaterById(id: string) {
-    try {
-        const response = await new ProxyRequestBuilder(`/theaters/${id}`).withMethod("GET").execute();
-        if(!response.ok) {
-            return null;
-        }
-        const respData: BaseResponse<Theater> = await response.json();
-        return respData.data;
-    }catch (error) {
-        return null;
-    }
-}
+import {getTheaterByIdAction} from "@/src/actions/theaterAction";
 
 interface Props {
     params : Promise<{id: string}>;
@@ -30,7 +13,7 @@ export default async function TheaterIdPage({params, searchParams} : Readonly<Pr
     const {id} = await params;
     const {date} = await searchParams;
     const selectedDate = date ?? new Date().toISOString().split("T")[0];
-    const theater = await getTheaterById(id);
+    const theater = await getTheaterByIdAction(id);
 
     if(!theater) {
         return (

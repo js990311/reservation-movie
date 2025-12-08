@@ -6,6 +6,7 @@ import com.rejs.reservation.controller.AbstractControllerTest;
 import com.rejs.reservation.controller.docs.BaseResponseDocs;
 import com.rejs.reservation.domain.movie.dto.MovieDto;
 import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
+import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.domain.reservation.controller.docs.ReservationDetailDtoDocs;
 import com.rejs.reservation.domain.reservation.controller.docs.ReservationDtoDocs;
@@ -161,17 +162,8 @@ class ReservationControllerTest extends AbstractControllerTest {
         );
 
         BusinessExceptionCode expectCode = ReservationExceptionCode.INVALID_OR_UNAVAILABLE_SEATS;
-        result
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(expectCode.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(expectCode.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(expectCode.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/reservations"))
-                .andExpect(jsonPath("$.detail").isString());
+        andExpectException(()->result, ReservationExceptionCode.INVALID_OR_UNAVAILABLE_SEATS, "/reservations");
+
         result
                 .andDo(documentWithException(
                         docs -> docs
@@ -197,17 +189,7 @@ class ReservationControllerTest extends AbstractControllerTest {
         );
 
         BusinessExceptionCode expectCode = ReservationExceptionCode.INVALID_OR_UNAVAILABLE_SEATS;
-        result
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(expectCode.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(expectCode.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(expectCode.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/reservations"))
-                .andExpect(jsonPath("$.detail").isString());
+        andExpectException(()->result, ReservationExceptionCode.INVALID_OR_UNAVAILABLE_SEATS, "/reservations");
 
         result
                 .andDo(documentWithException(

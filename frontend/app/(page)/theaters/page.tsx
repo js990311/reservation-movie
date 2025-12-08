@@ -1,24 +1,20 @@
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
-import {PaginationResponse} from "@/src/type/response/pagination";
 import {Theater} from "@/src/type/theater/theater";
 import TheaterCard from "@/src/components/screenings/theaterCard";
+import {getTheatersAction} from "@/src/actions/theaterAction";
+import {BaseResponse} from "@/src/type/response/base";
 
-async function getTheaters(){
-    try {
-        const response = await new ProxyRequestBuilder('/theaters').withMethod("GET").execute();
-        if(!response.ok) {
-            return [];
-        }
-        const respData: PaginationResponse<Theater> = await response.json();
-        return respData.data;
-    }catch (error) {
-        return [];
-    }
-}
 
 export default async function TheaterPage(){
-    const theaters: Theater[] = await getTheaters();
+    const {data: theaters, pagination}: BaseResponse<Theater[]> = await getTheatersAction();
 
+    if(!theaters){
+        return (
+            <div>
+                영화관이 없습니다
+            </div>
+        )
+    }
+    
     return (
         <div>
             {

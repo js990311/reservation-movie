@@ -169,18 +169,7 @@ class TheaterControllerTest extends AbstractControllerTest {
                 .header("Authorization", "Bearer " + accessToken)
         );
 
-        result
-                .andExpect(jsonPath("$.status").value(TheaterExceptionCode.THEATER_NOT_FOUND.getStatus().value()))
-                .andExpect(jsonPath("$.type").isString())
-                .andExpect(jsonPath("$.type").value(TheaterExceptionCode.THEATER_NOT_FOUND.getType()))
-                .andExpect(jsonPath("$.title").isString())
-                .andExpect(jsonPath("$.title").value(TheaterExceptionCode.THEATER_NOT_FOUND.getTitle()))
-                .andExpect(jsonPath("$.status").isNumber())
-                .andExpect(jsonPath("$.status").value(TheaterExceptionCode.THEATER_NOT_FOUND.getStatus().value()))
-                .andExpect(jsonPath("$.instance").isString())
-                .andExpect(jsonPath("$.instance").value("/theaters/" + 0))
-                .andExpect(jsonPath("$.detail").isString())
-        ;
+        andExpectException(()->result,TheaterExceptionCode.THEATER_NOT_FOUND , "/theaters/0");
 
         result
                 .andDo(

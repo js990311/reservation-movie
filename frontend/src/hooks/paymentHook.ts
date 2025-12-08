@@ -2,9 +2,6 @@ import PortOne from "@portone/browser-sdk/v2";
 import {useState} from "react";
 import {ulid} from "ulid";
 import {ReservationSummary} from "@/src/type/reservation/reservation";
-import {apiClient} from "@/src/lib/api/apiClient";
-import {BaseResponse} from "@/src/type/response/base";
-import {PaymentLog} from "@/src/type/payment/paymentLog";
 import {paymentCompleteAction} from "@/src/actions/paymentAction";
 
 type PaymentStatus = {
@@ -24,7 +21,7 @@ export default function usePayment(){
             channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY,
             paymentId,
             orderName: `${reservation.movieTitle}_${reservation.theaterName}_${reservation.screeningId}`,
-            totalAmount: `${reservation.totalAmount}`,
+            totalAmount: reservation.totalAmount,
             currency: "KRW",
             payMethod: "EASY_PAY",
             customData: {

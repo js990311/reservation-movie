@@ -1,24 +1,38 @@
 "use server"
 
 import {
-    Reservation,
+    Reservation, ReservationDetail,
     ReservationRequest,
     ReservationSummary
 } from "@/src/type/reservation/reservation";
-import {ProxyRequestBuilder} from "@/src/lib/api/proxyRequestBuilder";
 import {BaseResponse} from "@/src/type/response/base";
-import {ExceptionResponse} from "@/src/type/exception/exceptionResponse";
-import {PaginationResponse} from "@/src/type/response/pagination";
+import {serverFetch} from "@/src/lib/api/serverFetch";
+import {createInternalServerException} from "@/src/type/error/ApiError";
+import {logger} from "@/src/lib/logger/logger";
 
-export async function getMyReservationsAction(page: number, size: number): Promise<PaginationResponse<ReservationSummary>> {
+export async function getReservationIdAction(id: string){
     try {
-        const response = await new ProxyRequestBuilder(`/reservations/me?page=${page}&size=${size}`)
-            .withMethod('GET')
-            .withAuth()
-            .execute()
-        ;
-        const respData: PaginationResponse<ReservationSummary> = await response.json();
-        return respData;
+        const response = await serverFetch<ReservationDetail>({
+            endpoint: `/reservations/${id}`,
+            withAuth: true
+        });
+        if(response.error){
+            logger.apiError(response.error);
+        }
+        return response.data;
+    }catch (error){
+        logger.apiError(createInternalServerException(`getReservationIdAction(id=${id})`, error));
+        return null;
+    }
+}
+
+
+export async function getMyReservationsAction(page: number, size: number): Promise<BaseResponse<ReservationSummary[]>> {
+    try {
+        return await serverFetch<ReservationSummary[]>({
+            endpoint:  `/reservations/me?page=${page}&size=${size}`,
+            withAuth:true
+        });
     }catch (error) {
         return {
             data: [],
@@ -29,37 +43,23 @@ export async function getMyReservationsAction(page: number, size: number): Promi
                 hasNextPage: false,
                 totalPage: 0,
                 totalElements: 0
-            }
+            },
+            error: createInternalServerException('/getMyReservationsAction', error)
         };
     }
 }
 
-
 export async function reservationAction(request: ReservationRequest){
     try {
-        const response = await new ProxyRequestBuilder(`/reservations`)
-            .withMethod('POST')
-            .withBody(request)
-            .withAuth()
-            .execute()
-        ;
-        if(response.ok){
-            console.log("reservation response ok");
-            const reservation:BaseResponse<Reservation> = await response.json();
-            return reservation.data;
-        }else {
-            const exception : ExceptionResponse = await response.json();
-            console.log(`${exception.type} : ${exception.title} / ${exception.detail}`);
-            return exception;
-        }
+        return await serverFetch<Reservation>({
+            endpoint:  `/reservations`,
+            method: "POST",
+            withAuth:true,
+            body: request
+        });
     }catch (error) {
         return {
-            type: 'NEXT_SERVER_ACTION_ERROR',
-            title: 'NEXT 서버 액션측에서 문제가 발생했습니다.',
-            status: 500,
-            detail: error instanceof Error ? error.message : '이유를 추적할 수 없습니다.',
-            instance: `reservationAction(${request.screeningId}, ${request.seats.length})`
-        }
+            error: createInternalServerException('reservationAction(${request.screeningId}, ${request.seats.length})', error)
+        };
     }
-
 }
