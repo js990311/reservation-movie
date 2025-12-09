@@ -8,6 +8,7 @@ import com.rejs.reservation.domain.payments.entity.PaymentLog;
 import com.rejs.reservation.domain.payments.entity.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.domain.payments.repository.PaymentLogRepository;
+import com.rejs.reservation.domain.payments.repository.ReservationPaymentRepository;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.global.exception.BusinessException;
@@ -32,6 +33,10 @@ public class PaymentService {
     private final PaymentLogRepository paymentLogRepository;
     private final PaymentClient paymentClient;
     private final ObjectMapper objectMapper;
+    private final PaymentCancelService paymentCancelService;
+    private final ReservationPaymentRepository reservationPaymentRepository;
+
+    // 결제 검증 관련
 
     @Transactional(readOnly = true)
     public PaymentLogDto syncPayment(String paymentId) {
@@ -56,6 +61,11 @@ public class PaymentService {
             reservationId = customData.getReservationId();
             Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(()->new BusinessException(PaymentExceptionCode.RESERVATION_NOT_FOUND));
 
+            // 중복 결제인지 검사
+            if(reservationPaymentRepository.existsPaymentByReservationId(reservation.getId())){
+                throw new BusinessException(PaymentExceptionCode.ALREADY_PAID_RESERVATION);
+            }
+
             // 금액 비교
             long totalAmount = paidPayment.getAmount().getTotal();
             if(reservation.getTotalAmount().longValue() != totalAmount){
@@ -67,9 +77,11 @@ public class PaymentService {
             return PaymentLogDto.from(paymentLog);
         }catch (BusinessException e){
             paymentStateService.failPaymentLog(paymentId, reservationId, e.getMessage());
+            paymentCancelService.cancelPayment(paymentId, "결제 검증 실패");
             throw e;
         }catch (Exception e){
             paymentStateService.failPaymentLog(paymentId, reservationId, e.getMessage());
+            paymentCancelService.cancelPayment(paymentId, "결제 검증 실패");
             throw new BusinessException(PaymentExceptionCode.PAYMENT_VALIDATION_FAIL);
         }
     }

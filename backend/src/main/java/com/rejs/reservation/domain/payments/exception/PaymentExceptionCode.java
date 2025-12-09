@@ -15,7 +15,9 @@ public enum PaymentExceptionCode implements BusinessExceptionCode {
     RESERVATION_NOT_FOUND("RESERVATION_NOT_FOUND", "결제 정보와 매핑된 예매 정보가 없습니다", HttpStatus.NOT_FOUND),
     INVALID_CURRENCY("INVALID_CURRENCY", "지원되지 앟는 통화입니다", HttpStatus.BAD_REQUEST),
     INVALID_CHANNEL("INVALID_CHANNEL", "유효하지 않은 결제환경입니다", HttpStatus.BAD_REQUEST),
-    PAYMENT_VALIDATION_FAIL("PAYMENT_VALIDATION_FAIL", "결제 로직이 정상 수행되지 않았습니다", HttpStatus.INTERNAL_SERVER_ERROR)
+    PAYMENT_VALIDATION_FAIL("PAYMENT_VALIDATION_FAIL", "결제 로직이 정상 수행되지 않았습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_CANCEL_FAIL("PAYMENT_CANCEL_FAIL", "결제 취소 실패", HttpStatus.INTERNAL_SERVER_ERROR),
+    ALREADY_PAID_RESERVATION("ALREADY_PAID_RESERVATION", "이미 결제된 예매입니다", HttpStatus.CONFLICT)
     ;
 
     private final String type;

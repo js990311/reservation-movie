@@ -36,5 +36,4 @@ public class PaymentStateService {
         paymentLog.failed();
         return paymentLog;
     }
-
 }

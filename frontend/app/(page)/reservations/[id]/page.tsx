@@ -8,6 +8,7 @@ import ReservationStatusBadge from "@/src/components/reservation/reservationStat
 import {clsx} from "clsx";
 import Link from "next/link";
 import {getReservationIdAction} from "@/src/actions/reservationAction";
+import ReservationCancelButton from "@/src/components/reservation/reservationCancelButton";
 
 type Props = {
     params: Promise<{id:string}>  
@@ -104,9 +105,7 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
                             </Button>
                         )
                     }
-                    <Button className={"cursor-pointer text-red-600 bg-white border-red-600 border hover:bg-red-700 hover:text-white"}>
-                        취소하기
-                    </Button>
+                    <ReservationCancelButton reservationId={    reservation.reservation.reservationId} />
                 </CardFooter>
             </Card>
         </div>

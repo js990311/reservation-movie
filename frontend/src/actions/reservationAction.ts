@@ -63,3 +63,36 @@ export async function reservationAction(request: ReservationRequest){
         };
     }
 }
+
+export async function reservationCancelAction(reservationId: number){
+    try {
+        const response = await serverFetch<null>({
+            endpoint:  `/reservations/${reservationId}`,
+            method: "DELETE",
+            withAuth:true
+        });
+        if(response){
+            if(response.error){
+                return {
+                    ok: false,
+                    error: response.error
+                };
+            }else {
+                return {
+                    ok: false,
+                    error: null
+                }
+            }
+        }else {
+            return {
+                ok: true,
+                error: null
+            }
+        }
+    }catch (error) {
+        return {
+            ok: false,
+            error: createInternalServerException('reservationAction(${request.screeningId}, ${request.seats.length})', error)
+        };
+    }
+}

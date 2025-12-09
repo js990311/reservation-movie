@@ -42,16 +42,24 @@ export default function usePayment(){
             })
             return;
         }
-        const response = await paymentCompleteAction(paymentId)
-        if(response.data.status === 'PAID'){
-            setPaymentStatus({
-                status: "SUCCESS",
-                message: ""
-            });
-        }else {
+        const response = await paymentCompleteAction(paymentId);
+        console.log(response);
+        if(response.data){
+            if(response.data.status === 'PAID'){
+                setPaymentStatus({
+                    status: "SUCCESS",
+                    message: ""
+                });
+            }else {
+                setPaymentStatus({
+                    status: "FAILED",
+                    message: "결제 검증 과정에서 실패했습니다"
+                });
+            }
+        } else {
             setPaymentStatus({
                 status: "FAILED",
-                message: "complete 과정에서 실패했습니다"
+                message: "결제 검증 과정에서 실패했습니다"
             });
         }
     }

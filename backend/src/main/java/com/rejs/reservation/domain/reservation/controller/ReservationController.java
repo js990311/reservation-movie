@@ -49,5 +49,14 @@ public class ReservationController {
         return BaseResponse.of(reservation);
     }
 
-
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}")
+    public BaseResponse<Void> cancelReservationById(
+            @PathVariable("id") Long id,
+            @TokenClaim ClaimsDto claimsDto
+    ){
+        long userId = Long.parseLong(claimsDto.getUsername());
+        reservationService.deleteReservationByReservationId(id, userId);
+        return BaseResponse.of(null);
+    }
 }

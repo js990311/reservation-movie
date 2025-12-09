@@ -18,7 +18,6 @@ import {useEffect} from "react";
 import toast from "react-hot-toast";
 import {useRouter} from "next/navigation";
 
-// Props 정의: 데이터와 동작(함수)을 받습니다.
 interface PaymentSummaryCardProps {
     reservationDetail: ReservationDetail;
 }

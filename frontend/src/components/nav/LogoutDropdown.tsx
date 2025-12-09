@@ -18,7 +18,7 @@ export default function LogoutDropdown() {
             <DropdownMenuContent>
                 <DropdownMenuGroup>
                     <DropdownMenuItem>
-                        <Link href={"/reservations/me"}>
+                        <Link href={"/mypage"}>
                             마이페이지
                         </Link>
                     </DropdownMenuItem>

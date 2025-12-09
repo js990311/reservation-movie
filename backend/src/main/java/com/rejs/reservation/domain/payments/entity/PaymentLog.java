@@ -42,6 +42,10 @@ public class PaymentLog {
         this.status = PaymentStatus.FAILED;
     }
 
+    public void canceled(){
+        this.status = PaymentStatus.CANCELED;
+    }
+
     public PaymentLog(String paymentId) {
         this.paymentId = paymentId;
         this.status = PaymentStatus.READY;

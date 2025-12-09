@@ -13,8 +13,8 @@ public class TokenResponseDocs {
 
     public static FieldDescriptors fields(){
         return new FieldDescriptors(
-                fieldWithPath("accessToken").type(JsonFieldType.STRING).description("액세스토큰"),
-                fieldWithPath("refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰")
+                fieldWithPath("data.accessToken").type(JsonFieldType.STRING).description("액세스토큰"),
+                fieldWithPath("data.refreshToken").type(JsonFieldType.STRING).description("리프레시 토큰")
         );
     }
 }

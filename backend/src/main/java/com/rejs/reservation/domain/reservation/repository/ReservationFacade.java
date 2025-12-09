@@ -3,8 +3,10 @@ package com.rejs.reservation.domain.reservation.repository;
 import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationSeatRepository;
+import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +38,7 @@ public class ReservationFacade {
                         JOIN reservations r using (reservation_id)
                         WHERE rs.seat_id = s.seat_id 
                             AND r.screening_id = :screeningId 
+                            AND r.status != 'CANCELED'
                     )
                 ; 
             """;
@@ -56,7 +59,11 @@ public class ReservationFacade {
         return reservationQueryRepository.findMyReservations(userId, pageable);
     }
 
-    public ReservationSummaryDto findById(Long id) {
+    public Reservation findById(Long id){
+        return reservationRepository.findById(id).orElseThrow(()-> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
+    }
+
+    public ReservationSummaryDto findReservationSummaryById(Long id) {
         return reservationQueryRepository.findById(id);
     }
 
