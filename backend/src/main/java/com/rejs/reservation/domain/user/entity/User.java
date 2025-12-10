@@ -30,8 +30,9 @@ public class User {
     @Column
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String role;
+    private UserRole role;
 
     @Column
     private LocalDateTime createAt;
@@ -42,7 +43,15 @@ public class User {
         this.email = email;
         this.name = email;
         this.password = password;
-        this.role = "USER";
+        this.role = UserRole.ROLE_USER;
+        this.createAt = LocalDateTime.now();
+    }
+
+    public User(String email, String password, UserRole role) {
+        this.email = email;
+        this.name = email;
+        this.password = password;
+        this.role = role;
         this.createAt = LocalDateTime.now();
     }
 }

@@ -13,10 +13,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collection;
+import java.util.Collections;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -31,14 +36,14 @@ public class LoginService {
     public Tokens signup(LoginRequest request) {
         String encryptPassword = passwordEncoder.encode(request.getPassword());
         UserDto user = userService.createUser(request.getUsername(), encryptPassword);
-        return jwtUtils.generateToken(user.getUserId().toString(), "ROLE_USER");
+        return jwtUtils.generateToken(user.getUserId().toString(), Collections.singletonList(user.getRole().name()));
     }
 
     public Tokens login(LoginRequest request) {
         try {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             // 로그인 실패하면 예외를 발생시킴
-            return jwtUtils.generateToken(authenticate.getName(), "ROLE_USER");
+            return jwtUtils.generateToken(authenticate.getName(), authenticate.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
         }catch (BusinessException ex){
             if(ex.getCode().equals(UserBusinessExceptionCode.USER_NOT_FOUND)){
                 throw BusinessException.of(AuthenticationExceptionCode.USER_INFO_MISMATCH, ex.getMessage());

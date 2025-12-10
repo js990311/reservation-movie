@@ -32,7 +32,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 throw ex;
             }
         }
-        return new User(user.getUserId().toString(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority("USER")));
+        return new User(user.getUserId().toString(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())));
     }
 
 }

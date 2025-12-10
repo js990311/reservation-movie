@@ -1,6 +1,7 @@
 package com.rejs.reservation.global.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rejs.reservation.domain.user.entity.UserRole;
 import com.rejs.reservation.global.dto.response.BusinessExceptionResponse;
 import com.rejs.reservation.global.security.exception.AuthenticationExceptionCode;
 import com.rejs.reservation.global.security.filter.JwtAuthenticationFilter;
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -65,12 +67,13 @@ public class SecurityConfig {
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth->auth
+                        .requestMatchers(HttpMethod.POST, "/movies", "/screenings", "/theaters").hasRole(UserRole.ROLE_ADMIN.getRoleName())
                         .requestMatchers("/login", "/signup").permitAll()
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/docs/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/movies/**", "/theaters/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated()
+                        .anyRequest().hasAnyRole(UserRole.ROLE_USER.getRoleName(), UserRole.ROLE_ADMIN.getRoleName())
                 )
                 .cors(cors->cors.configurationSource(corsConfigurationSource()))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

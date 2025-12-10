@@ -10,10 +10,14 @@ import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.theater.controller.docs.TheaterDtoDocs;
+import com.rejs.reservation.domain.user.dto.UserDto;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.entity.User;
+import com.rejs.reservation.domain.user.entity.UserRole;
 import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
+import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import com.rejs.reservation.global.security.service.LoginService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +28,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,9 +57,18 @@ class MovieControllerTest extends AbstractControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @BeforeEach
     void setup(){
-        Tokens tokens = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
+        User user = new User(UUID.randomUUID().toString(), "pw", UserRole.ROLE_ADMIN);
+        user = userRepository.save(user);
+        UserDto userDto = UserDto.of(user);
+        Tokens tokens = jwtUtils.generateToken(
+                String.valueOf(userDto.getUserId()),
+                Collections.singletonList(user.getRole().name())
+        );
         accessToken = tokens.getAccessToken();
     }
 

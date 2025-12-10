@@ -20,9 +20,13 @@ import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.domain.theater.service.TheaterService;
+import com.rejs.reservation.domain.user.dto.UserDto;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.entity.User;
+import com.rejs.reservation.domain.user.entity.UserRole;
 import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
+import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import com.rejs.reservation.global.security.service.LoginService;
 import jdk.jfr.ContentType;
 import org.junit.jupiter.api.AfterEach;
@@ -39,6 +43,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -84,9 +89,18 @@ class ScreeningControllerTest extends AbstractControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtUtils jwtUtils;
+
     @BeforeEach
     void setToken(){
-        Tokens tokens = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
+        User user = new User(UUID.randomUUID().toString(), "pw", UserRole.ROLE_ADMIN);
+        user = userRepository.save(user);
+        UserDto userDto = UserDto.of(user);
+        Tokens tokens = jwtUtils.generateToken(
+                String.valueOf(userDto.getUserId()),
+                Collections.singletonList(user.getRole().name())
+        );
         accessToken = tokens.getAccessToken();
     }
 

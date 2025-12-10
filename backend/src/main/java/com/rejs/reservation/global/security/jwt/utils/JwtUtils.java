@@ -1,13 +1,18 @@
 package com.rejs.reservation.global.security.jwt.utils;
 
+import com.rejs.reservation.domain.user.entity.UserRole;
 import com.rejs.reservation.global.security.jwt.token.ClaimsDto;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.security.Key;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 public class JwtUtils {
     public static final String KEY_ROLE = "role";
@@ -32,20 +37,20 @@ public class JwtUtils {
 
     // 토큰 생성
 
-    public Tokens generateToken(String username, String role){
+    public Tokens generateToken(String username, List<String> roles){
         Date now = new Date();
         return new Tokens(
-                generateAccessToken(username, role, now),
+                generateAccessToken(username, roles, now),
                 generateRefreshToken(username, now)
         );
     }
 
-    private String generateAccessToken(String username, String role, Date issuedAt){
+    private String generateAccessToken(String username, List<String> roles, Date issuedAt){
         Date expiryDate = new Date(issuedAt.getTime() + accessTokenExpiration);
 
         return Jwts.builder()
                 .setSubject(username)
-                .claim(KEY_ROLE, role)
+                .claim(KEY_ROLE, roles)
                 .claim(KEY_TYPE, TYPE_ACCESS)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiryDate)

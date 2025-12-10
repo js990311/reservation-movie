@@ -1,28 +1,27 @@
 package com.rejs.reservation.global.security.jwt.token;
 
+import com.rejs.reservation.domain.user.entity.UserRole;
 import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
+import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
 public class ClaimsDto {
     private final String username;
-    private final String role;
+    private final List<String> roles;
     private final String type;
 
     public ClaimsDto(Claims claims) {
         this.username = claims.getSubject();
-        this.role = claims.get(JwtUtils.KEY_ROLE, String.class);
+        List<?> rawRoles = claims.get(JwtUtils.KEY_ROLE, List.class);
+        if(rawRoles != null){
+            this.roles = rawRoles.stream().map(String::valueOf).toList();
+        }else {
+            this.roles = new ArrayList<>();
+        }
         this.type = claims.get(JwtUtils.KEY_TYPE, String.class);
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public String getType() {
-        return type;
     }
 }

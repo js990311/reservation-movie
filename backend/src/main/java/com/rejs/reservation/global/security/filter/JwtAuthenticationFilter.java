@@ -55,7 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return new UsernamePasswordAuthenticationToken(
                 claims.getUsername(),
                 null,
-                Collections.singletonList(new SimpleGrantedAuthority(claims.getRole()))
+                claims.getRoles().stream().map(SimpleGrantedAuthority::new).toList()
         );
     }
 
