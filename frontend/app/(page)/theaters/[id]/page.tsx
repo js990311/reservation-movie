@@ -13,15 +13,17 @@ export default async function TheaterIdPage({params, searchParams} : Readonly<Pr
     const {id} = await params;
     const {date} = await searchParams;
     const selectedDate = date ?? new Date().toISOString().split("T")[0];
-    const theater = await getTheaterByIdAction(id);
+    const response = await getTheaterByIdAction(id);
 
-    if(!theater) {
+    if(!response.ok) {
         return (
             <div>
                 404 상영관 정보가 없습니다.
             </div>
         )
     }
+
+    const theater = response.data;
 
     return (
         <div className="container mx-auto py-10 px-4 space-y-10">

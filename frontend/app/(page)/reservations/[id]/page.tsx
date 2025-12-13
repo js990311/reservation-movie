@@ -16,9 +16,9 @@ type Props = {
 
 export default async function ReservationIdPage({params} : Readonly<Props>) {
     const {id} = await params;
-    const reservation = await getReservationIdAction(id);
+    const response = await getReservationIdAction(id);
 
-    if(!reservation){
+    if(!response.ok){
         return (
             <div>
                 예매정보가 없습니다.
@@ -26,16 +26,18 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
         );
     }
 
+    const {reservation, seats} = response.data;
+
     return (
         <div className="flex justify-center py-10">
             <Card className="w-full max-w-lg shadow-lg">
                 <CardHeader className="border-b pb-4">
                     <div className="flex justify-between items-center">
                         <CardTitle className="text-2xl font-bold">예매 상세 정보</CardTitle>
-                        <ReservationStatusBadge status={reservation.reservation.status}></ReservationStatusBadge>
+                        <ReservationStatusBadge status={reservation.status}></ReservationStatusBadge>
                     </div>
                     <p className="text-sm text-muted-foreground mt-2">
-                        예매 번호: <span className="font-mono text-foreground">#{reservation.reservation.reservationId}</span>
+                        예매 번호: <span className="font-mono text-foreground">#{reservation.reservationId}</span>
                     </p>
                 </CardHeader>
 
@@ -43,9 +45,9 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
                     {/* 영화 정보 */}
                     <div className="space-y-2">
                         <Label className="text-base text-muted-foreground">영화</Label>
-                        <Link href={`/movies/${reservation.reservation.movieId}`}>
+                        <Link href={`/movies/${reservation.movieId}`}>
                             <div className="text-xl font-semibold leading-none">
-                                {reservation.reservation.movieTitle}
+                                {reservation.movieTitle}
                             </div>
                         </Link>
                     </div>
@@ -55,8 +57,8 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
                         <MapPin className="w-5 h-5 text-primary mt-0.5"/>
                         <div>
                             <Label className="text-sm text-muted-foreground block mb-1">상영관</Label>
-                            <Link href={`/theaters/${reservation.reservation.theaterId}`}>
-                                <span className="font-medium">{reservation.reservation.theaterName}</span>
+                            <Link href={`/theaters/${reservation.theaterId}`}>
+                                <span className="font-medium">{reservation.theaterName}</span>
                             </Link>
                         </div>
                     </div>
@@ -67,10 +69,10 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
                         <div>
                             <Label className="text-sm text-muted-foreground block mb-1">상영 시간</Label>
                             <div className="font-medium">
-                                {formatDate(reservation.reservation.startTime)} ~
+                                {formatDate(reservation.startTime)} ~
                             </div>
                             <div className="text-sm text-muted-foreground">
-                                {formatDate(reservation.reservation.endTime)}
+                                {formatDate(reservation.endTime)}
                             </div>
                         </div>
                     </div>
@@ -79,9 +81,9 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
                     <div className="flex items-start gap-3">
                         <Armchair className="w-5 h-5 text-primary mt-0.5"/>
                         <div className="w-full">
-                            <Label className="text-sm text-muted-foreground block mb-2">선택 좌석 ({reservation.seats.length}석)</Label>
+                            <Label className="text-sm text-muted-foreground block mb-2">선택 좌석 ({seats.length}석)</Label>
                             <div className="flex flex-wrap gap-2">
-                                {reservation.seats.map((seat, index) => (
+                                {seats.map((seat, index) => (
                                     <Badge key={`${seat.row},${seat.col}`} variant="outline" className="text-sm py-1 px-3 bg-secondary/30">
                                         {seat.row}행 {seat.col}열
                                     </Badge>
@@ -93,19 +95,19 @@ export default async function ReservationIdPage({params} : Readonly<Props>) {
 
                 <CardFooter className={clsx(
                     "flex border-t pt-6",
-                    {"justify-between" : reservation.reservation.status === 'PENDING'},
-                    {"justify-end" : reservation.reservation.status !== 'PENDING'}
+                    {"justify-between" : reservation.status === 'PENDING'},
+                    {"justify-end" : reservation.status !== 'PENDING'}
                 )}>
                     {
-                        reservation.reservation.status === 'PENDING' && (
+                        reservation.status === 'PENDING' && (
                             <Button className={"cursor-pointer"}>
-                                <Link href={`/reservations/${reservation.reservation.reservationId}/payments`}>
+                                <Link href={`/reservations/${reservation.reservationId}/payments`}>
                                     결제하기
                                 </Link>
                             </Button>
                         )
                     }
-                    <ReservationCancelButton reservationId={    reservation.reservation.reservationId} />
+                    <ReservationCancelButton reservationId={    reservation.reservationId} />
                 </CardFooter>
             </Card>
         </div>

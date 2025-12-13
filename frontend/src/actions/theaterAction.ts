@@ -1,56 +1,56 @@
 "use server"
 
 import {ScreeningWithMovie} from "@/src/type/screening/screening";
-import {serverFetch} from "@/src/lib/api/serverFetch";
-import {createInternalServerException} from "@/src/type/error/ApiError";
 import {Theater} from "@/src/type/theater/theater";
-import {logger} from "@/src/lib/logger/logger";
+import {BaseError, unknownFetchException} from "@/src/lib/api/error/apiErrors";
+import {failResult, listResult, oneResult} from "@/src/type/response/result";
+import {fetchList, fetchOne} from "@/src/lib/api/fetchWrapper";
 
 export async function getTheaterByIdAction(id: string) {
     try {
-        const response = await serverFetch<Theater>({
+        const response = await fetchOne<Theater>({
             endpoint: `/theaters/${id}`
         });
-        if(response.error) {
-            console.log(response.error);
-        }
-        return response.data;
+        return oneResult(response);
     }catch (error) {
-        return null;
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('getTheaterByIdAction',error);
+            return failResult(exception.details);
+        }
     }
 }
 
 export async function getTheatersAction(){
     try {
-        const response = serverFetch<Theater[]>({
+        const response = await fetchList<Theater>({
             endpoint: `/theaters`
         })
-        return response;
+        return listResult<Theater>(response);
     }catch (error) {
-        return {
-            data: [],
-            pagination: {
-                count: 0,
-                requestNumber: 1,
-                requestSize: 10,
-                hasNextPage: false,
-                totalPage: 0,
-                totalElements: 0
-            },
-            error: createInternalServerException('/getMovieAction', error)
-        };
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('getTheatersAction',error);
+            return failResult(exception.details);
+        }
     }
 }
 
 
 export default async function getTheaterScreeningAction(id: string, date:string) {
     try {
-        const response = await serverFetch<ScreeningWithMovie[]>({
+        const response = await fetchList<ScreeningWithMovie>({
             endpoint: `/theaters/${id}/screenings?date=${date}`
         })
-        return response.data;
+        return listResult(response);
     }catch (error) {
-        logger.apiError(createInternalServerException(`/getTheaterScreeningAction(id=${id}, date=${date})`, error))
-        return [];
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('getTheaterScreeningAction',error);
+            return failResult(exception.details);
+        }
     }
 }

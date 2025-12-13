@@ -1,9 +1,8 @@
 import {LoginRequest} from "@/src/type/login/LoginRequest";
 import useLoginStore from "@/src/hooks/auth/loginStoreHook";
-import {loginAction, signupAction} from "@/src/actions/authAction";
-import {createInternalClientException} from "@/src/type/error/ApiError";
-import {logger} from "@/src/lib/logger/logger";
+import {signupAction} from "@/src/actions/authAction";
 import {useRequestResult} from "@/src/hooks/status/clientStatus";
+import {unexpectedException} from "@/src/lib/api/error/apiErrors";
 
 export const useSignup = () => {
     const {result, setLoading, setSuccess, setFail} = useRequestResult();
@@ -17,12 +16,11 @@ export const useSignup = () => {
                 onLogin();
                 setSuccess();
             }else {
-                setFail(result.error ?? createInternalClientException('/signup', 'unknown error'));
+                setFail(result.error);
             }
         }catch (e) {
-            const exceptionResponse = createInternalClientException('/signup',e);
-            logger.apiError(exceptionResponse);
-            setFail(exceptionResponse);
+            const exceptionResponse = unexpectedException('useSignup',e);
+            setFail(exceptionResponse.details);
         }
     }
 

@@ -1,4 +1,6 @@
-import {BaseResponse} from "@/src/type/response/base";
+import {
+    BaseResponse
+} from "@/src/type/response/base";
 import {getAccessToken} from "@/src/lib/api/tokenUtil";
 import {ApiError, createInternalServerException} from "@/src/type/error/ApiError";
 import {logger} from "@/src/lib/logger/logger";
@@ -51,3 +53,4 @@ export async function serverFetch<T>({endpoint, method='GET', headers, withAuth,
         throw new ApiError(500, serverSideException);
     }
 }
+

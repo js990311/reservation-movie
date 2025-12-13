@@ -4,15 +4,17 @@ import {getMoviesAction} from "@/src/actions/movieAction";
 
 
 export default async function Home() {
-    const {data: movies, pagination} = await getMoviesAction(0, 10);
+    const response = await getMoviesAction(0, 10);
 
-    if(!movies){
+    if(!response.ok){
         return (
             <div>
                 영화정보가 없습니다
             </div>
         )
     }
+
+    const {data: movies} = response;
 
     return (
         <div className={"w-full"}>

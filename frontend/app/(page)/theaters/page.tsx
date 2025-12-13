@@ -5,16 +5,19 @@ import {BaseResponse} from "@/src/type/response/base";
 
 
 export default async function TheaterPage(){
-    const {data: theaters, pagination}: BaseResponse<Theater[]> = await getTheatersAction();
+    const response = await getTheatersAction();
 
-    if(!theaters){
+    if(!response.ok){
         return (
             <div>
                 영화관이 없습니다
             </div>
         )
     }
-    
+
+    const {data: theaters, pagination} = response;
+
+
     return (
         <div>
             {

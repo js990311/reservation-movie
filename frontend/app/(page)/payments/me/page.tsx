@@ -13,11 +13,21 @@ type Props = {
 
 export default async function PaymentsMePage({searchParams}: Readonly<Props>) {
     const {page=0, size=10} = await searchParams;
-    const {data, pagination}:BaseResponse<PaymentLog[]> = await getPaymentsAction(page ?? 0, size ?? 10);
+    const response = await getPaymentsAction(page ?? 0, size ?? 10);
+
+    if(!response.ok){
+        return (
+            <div>
+                예외가 발생했습니다.
+            </div>
+        )
+    }
+
+    const {data: payments, pagination} = response;
 
     return (
         <div>
-            <MyPayments payments={data}></MyPayments>
+            <MyPayments payments={payments}></MyPayments>
             <PaginationRemote pagination={pagination}/>
         </div>
     );

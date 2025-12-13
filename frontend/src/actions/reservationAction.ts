@@ -5,94 +5,86 @@ import {
     ReservationRequest,
     ReservationSummary
 } from "@/src/type/reservation/reservation";
-import {BaseResponse} from "@/src/type/response/base";
 import {serverFetch} from "@/src/lib/api/serverFetch";
-import {createInternalServerException} from "@/src/type/error/ApiError";
-import {logger} from "@/src/lib/logger/logger";
+import {fetchList, fetchOne, fetchVoid} from "@/src/lib/api/fetchWrapper";
+import {
+    ActionListResult,
+    ActionOneResult,
+    failResult,
+    listResult,
+    oneResult,
+    voidResult
+} from "@/src/type/response/result";
+import {BaseError, unknownFetchException} from "@/src/lib/api/error/apiErrors";
 
-export async function getReservationIdAction(id: string){
+export async function getReservationIdAction(id: string): Promise<ActionOneResult<ReservationDetail>>{
     try {
-        const response = await serverFetch<ReservationDetail>({
+        const response = await fetchOne<ReservationDetail>({
             endpoint: `/reservations/${id}`,
             withAuth: true
         });
-        if(response.error){
-            logger.apiError(response.error);
-        }
-        return response.data;
+        return oneResult(response);
     }catch (error){
-        logger.apiError(createInternalServerException(`getReservationIdAction(id=${id})`, error));
-        return null;
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('getReservationIdAction',error);
+            return failResult(exception.details);
+        }
     }
 }
 
 
-export async function getMyReservationsAction(page: number, size: number): Promise<BaseResponse<ReservationSummary[]>> {
+export async function getMyReservationsAction(page: number, size: number): Promise<ActionListResult<ReservationSummary>> {
     try {
-        return await serverFetch<ReservationSummary[]>({
+        const response = await fetchList<ReservationSummary>({
             endpoint:  `/reservations/me?page=${page}&size=${size}`,
             withAuth:true
         });
+        return listResult(response);
     }catch (error) {
-        return {
-            data: [],
-            pagination: {
-                count: 0,
-                requestNumber: page,
-                requestSize: size,
-                hasNextPage: false,
-                totalPage: 0,
-                totalElements: 0
-            },
-            error: createInternalServerException('/getMyReservationsAction', error)
-        };
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('getMyReservationsAction',error);
+            return failResult(exception.details);
+        }
     }
 }
 
-export async function reservationAction(request: ReservationRequest){
+export async function reservationAction(request: ReservationRequest): Promise<ActionOneResult<Reservation>>{
     try {
-        return await serverFetch<Reservation>({
+        const response = await fetchOne<Reservation>({
             endpoint:  `/reservations`,
             method: "POST",
             withAuth:true,
             body: request
         });
+        return oneResult(response);
     }catch (error) {
-        return {
-            error: createInternalServerException('reservationAction(${request.screeningId}, ${request.seats.length})', error)
-        };
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('reservationAction',error);
+            return failResult(exception.details);
+        }
     }
 }
 
 export async function reservationCancelAction(reservationId: number){
     try {
-        const response = await serverFetch<null>({
+        const response = await fetchVoid({
             endpoint:  `/reservations/${reservationId}`,
             method: "DELETE",
             withAuth:true
         });
-        if(response){
-            if(response.error){
-                return {
-                    ok: false,
-                    error: response.error
-                };
-            }else {
-                return {
-                    ok: false,
-                    error: null
-                }
-            }
-        }else {
-            return {
-                ok: true,
-                error: null
-            }
-        }
+        return voidResult();
     }catch (error) {
-        return {
-            ok: false,
-            error: createInternalServerException('reservationAction(${request.screeningId}, ${request.seats.length})', error)
-        };
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('reservationCancelAction',error);
+            return failResult(exception.details);
+        }
     }
 }
