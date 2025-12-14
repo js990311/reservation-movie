@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.reservation.controller;
 
+import com.rejs.reservation.domain.reservation.authorizer.annotation.IsReservationOwner;
 import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
@@ -42,21 +43,20 @@ public class ReservationController {
         return BaseResponse.ofPage(reservations);
     }
 
+    @IsReservationOwner
     @GetMapping("/{id}")
-    public BaseResponse<ReservationDetailDto> getReservationById(@PathVariable("id") Long id, @TokenClaim ClaimsDto claimsDto){
-        long userId = Long.parseLong(claimsDto.getUsername());
-        ReservationDetailDto reservation = reservationService.findById(id, userId);
+    public BaseResponse<ReservationDetailDto> getReservationById(@PathVariable("id") Long id){
+        ReservationDetailDto reservation = reservationService.findById(id);
         return BaseResponse.of(reservation);
     }
 
+    @IsReservationOwner
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public BaseResponse<Void> cancelReservationById(
-            @PathVariable("id") Long id,
-            @TokenClaim ClaimsDto claimsDto
+            @PathVariable("id") Long id
     ){
-        long userId = Long.parseLong(claimsDto.getUsername());
-        reservationService.deleteReservationByReservationId(id, userId);
+        reservationService.deleteReservationByReservationId(id);
         return BaseResponse.of(null);
     }
 }

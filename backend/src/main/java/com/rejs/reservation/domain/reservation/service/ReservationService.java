@@ -57,7 +57,7 @@ public class ReservationService {
         return reservationFacade.findMyReservations(userId, pageable);
     }
 
-    public ReservationDetailDto findById(Long id, long userId) {
+    public ReservationDetailDto findById(Long id) {
         ReservationSummaryDto reservation = reservationFacade.findReservationSummaryById(id);
         List<ReservationSeatNumberDto> seats = reservationFacade.findSeatNumberById(id);
         return new ReservationDetailDto(reservation, seats);
@@ -67,7 +67,7 @@ public class ReservationService {
 
     // DELETE
     @Transactional
-    public void deleteReservationByReservationId(Long reservationId, Long userId){
+    public void deleteReservationByReservationId(Long reservationId){
         // reservation 찾아옴
         Reservation reservation = reservationFacade.findById(reservationId);
 
