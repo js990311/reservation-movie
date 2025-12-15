@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.payments.entity;
 
+import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

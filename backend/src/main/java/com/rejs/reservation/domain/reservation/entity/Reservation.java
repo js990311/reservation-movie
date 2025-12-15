@@ -4,6 +4,7 @@ import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.user.entity.User;
+import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "reservations")
-public class Reservation {
+public class Reservation extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "reservation_id")

@@ -1,7 +1,7 @@
 package com.rejs.reservation.domain.payments.dto;
 
 import com.rejs.reservation.domain.payments.entity.PaymentLog;
-import com.rejs.reservation.domain.payments.entity.PaymentStatus;
+import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import lombok.Getter;
 
 @Getter

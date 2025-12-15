@@ -1,7 +1,7 @@
 package com.rejs.reservation.domain.payments.service;
 
 import com.rejs.reservation.domain.payments.entity.PaymentLog;
-import com.rejs.reservation.domain.payments.entity.PaymentStatus;
+import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.domain.payments.repository.PaymentLogRepository;
 import com.rejs.reservation.global.exception.BusinessException;

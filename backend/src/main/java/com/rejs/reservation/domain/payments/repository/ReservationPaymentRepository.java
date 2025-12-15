@@ -1,8 +1,7 @@
 package com.rejs.reservation.domain.payments.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.rejs.reservation.domain.payments.entity.PaymentLog;
-import com.rejs.reservation.domain.payments.entity.PaymentStatus;
+import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.entity.QPaymentLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
