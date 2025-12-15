@@ -4,12 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.dto.PaymentLogDto;
+import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.entity.PaymentLog;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.domain.payments.repository.PaymentLogRepository;
+import com.rejs.reservation.domain.payments.repository.PaymentRepository;
 import com.rejs.reservation.domain.payments.repository.ReservationPaymentRepository;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
+import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import io.portone.sdk.server.common.Currency;
@@ -19,6 +23,7 @@ import io.portone.sdk.server.payment.Payment;
 import io.portone.sdk.server.payment.PaymentClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
@@ -35,6 +40,7 @@ public class PaymentService {
     private final ObjectMapper objectMapper;
     private final PaymentCancelService paymentCancelService;
     private final ReservationPaymentRepository reservationPaymentRepository;
+    private final PaymentRepository paymentRepository;
 
     // 결제 검증 관련
 
@@ -127,5 +133,45 @@ public class PaymentService {
             throw new BusinessException(PaymentExceptionCode.MISSING_CUSTOM_DATA);
         }
         return customData;
+    }
+
+    /**
+     * 데이터베이스의 데이터와 검증
+     * @param reservationId
+     * @param totalAmount
+     */
+    @Transactional(readOnly = true)
+    public void validatePayment(Long reservationId, Long totalAmount){
+        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
+        // 결제 금액이 맞는 지 검증
+        if(reservation.getTotalAmount().longValue() != totalAmount){
+            throw BusinessException.of(PaymentExceptionCode.PAYMENT_AMOUNT_MISMATCH);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public void validatePayment(String paymentId, Long totalAmount){
+        // readOnly라 멱등성이 어긋날리가 없음
+        com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow(() -> BusinessException.of(PaymentExceptionCode.PAYMENT_NOT_FOUND));
+        Reservation reservation = reservationRepository.findById(payment.getReservationId()).orElseThrow(() -> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
+        // 결제 금액이 맞는 지 검증
+        if(reservation.getTotalAmount().longValue() != totalAmount){
+            throw BusinessException.of(PaymentExceptionCode.PAYMENT_AMOUNT_MISMATCH);
+        }
+    }
+
+
+    @Transactional
+    public PaymentLogDto confirmReservation(Long reservationId, String paymentId){
+        Reservation reservation = reservationRepository.findWithLockById(reservationId).orElseThrow(() -> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
+        com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow(() -> BusinessException.of(PaymentExceptionCode.PAYMENT_NOT_FOUND));
+
+        // 이미 상태가 변화되었으면 상태변화 메서드 호출 없이 그대로
+        if(reservation.getStatus().equals(ReservationStatus.CONFIRMED) || payment.getStatus().equals(PaymentStatus.PAID)){
+            return new PaymentLogDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
+        }
+        reservation.confirm();
+        payment.paid();
+        return new PaymentLogDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
     }
 }
