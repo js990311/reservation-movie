@@ -1,13 +1,11 @@
 package com.rejs.reservation.domain.reservation.service;
 
-import com.rejs.reservation.domain.payments.service.PaymentCancelService;
 import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
-import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.reservation.repository.ReservationFacade;
 import com.rejs.reservation.domain.screening.entity.Screening;
@@ -28,7 +26,7 @@ import java.util.Optional;
 public class ReservationService {
     private final ReservationFacade reservationFacade;
     private final ScreeningRepository screeningRepository;
-    private final PaymentCancelService paymentCancelService;
+
 
     // CREATE - Reservation
     @Transactional
@@ -65,21 +63,5 @@ public class ReservationService {
         List<ReservationSeatNumberDto> seats = reservationFacade.findSeatNumberById(id);
         return new ReservationDetailDto(reservation, seats);
     }
-
-    // UPDATE
-
-    // DELETE
-    @Transactional
-    public void deleteReservationByReservationId(Long reservationId){
-        // reservation 찾아옴
-        Reservation reservation = reservationFacade.findById(reservationId);
-
-        // 성공한 결제내역을 찾아서 있으면
-        paymentCancelService.cancelPayment(reservationId);
-
-        // reservation을 취소처리함
-        reservation.cancel();
-    }
-
 }
 

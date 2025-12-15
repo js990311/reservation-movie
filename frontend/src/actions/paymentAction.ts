@@ -1,8 +1,8 @@
 "use server"
 
 import {PaymentLog} from "@/src/type/payment/paymentLog";
-import {ActionListResult, ActionOneResult, failResult, listResult, oneResult} from "@/src/type/response/result";
-import {fetchList, fetchOne} from "@/src/lib/api/fetchWrapper";
+import {ActionOneResult, failResult, oneResult} from "@/src/type/response/result";
+import {fetchOne} from "@/src/lib/api/fetchWrapper";
 import {BaseError, unknownFetchException} from "@/src/lib/api/error/apiErrors";
 import {PaymentPrepare} from "@/src/type/payment/preparePayment";
 
@@ -20,24 +20,6 @@ export async function paymentCompleteAction(paymentId: string): Promise<ActionOn
             return failResult(error.details);
         }else {
             const exception = unknownFetchException('paymentCompleteAction',error);
-            return failResult(exception.details);
-        }
-    }
-}
-
-export async function getPaymentsAction(page: number, size:number): Promise<ActionListResult<PaymentLog>>{
-    try {
-        const response = await fetchList<PaymentLog>({
-            endpoint: `/payments?page=${page}&size=${size}`,
-            method: "GET",
-            withAuth:true
-        });
-        return listResult(response);
-    }catch (error) {
-        if(error instanceof BaseError){
-            return failResult(error.details);
-        }else {
-            const exception = unknownFetchException('getPaymentsAction',error);
             return failResult(exception.details);
         }
     }
