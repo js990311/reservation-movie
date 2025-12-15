@@ -6,8 +6,10 @@ import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.dto.PaymentLogDto;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.entity.PaymentLog;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancel;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
+import com.rejs.reservation.domain.payments.repository.PaymentCancelRepository;
 import com.rejs.reservation.domain.payments.repository.PaymentLogRepository;
 import com.rejs.reservation.domain.payments.repository.PaymentRepository;
 import com.rejs.reservation.domain.payments.repository.ReservationPaymentRepository;
@@ -41,6 +43,7 @@ public class PaymentService {
     private final PaymentCancelService paymentCancelService;
     private final ReservationPaymentRepository reservationPaymentRepository;
     private final PaymentRepository paymentRepository;
+    private final PaymentCancelRepository paymentCancelRepository;
 
     // 결제 검증 관련
 
@@ -174,4 +177,5 @@ public class PaymentService {
         payment.paid();
         return new PaymentLogDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
     }
+
 }

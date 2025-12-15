@@ -5,6 +5,7 @@ import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
+import com.rejs.reservation.domain.reservation.facade.ReservationCancelFacade;
 import com.rejs.reservation.domain.reservation.service.ReservationService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.security.jwt.resolver.TokenClaim;
@@ -25,6 +26,7 @@ import java.util.List;
 @RequestMapping("/reservations")
 public class ReservationController {
     private final ReservationService reservationService;
+    private final ReservationCancelFacade reservationCancelFacade;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -56,7 +58,7 @@ public class ReservationController {
     public BaseResponse<Void> cancelReservationById(
             @PathVariable("id") Long id
     ){
-        reservationService.deleteReservationByReservationId(id);
+        reservationCancelFacade.cancelReservation(id);
         return BaseResponse.of(null);
     }
 }

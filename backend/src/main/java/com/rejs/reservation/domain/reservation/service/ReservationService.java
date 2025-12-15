@@ -7,6 +7,7 @@ import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.reservation.repository.ReservationFacade;
 import com.rejs.reservation.domain.screening.entity.Screening;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -57,6 +59,7 @@ public class ReservationService {
         return reservationFacade.findMyReservations(userId, pageable);
     }
 
+
     public ReservationDetailDto findById(Long id) {
         ReservationSummaryDto reservation = reservationFacade.findReservationSummaryById(id);
         List<ReservationSeatNumberDto> seats = reservationFacade.findSeatNumberById(id);
@@ -77,5 +80,6 @@ public class ReservationService {
         // reservation을 취소처리함
         reservation.cancel();
     }
+
 }
 
