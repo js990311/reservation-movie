@@ -15,11 +15,9 @@ import {useSignup} from "@/src/hooks/auth/signupHook";
 import {useEffect, useState} from "react";
 import toast from "react-hot-toast";
 import {useRouter} from "next/navigation";
-import useLoginStore from "@/src/hooks/auth/loginStoreHook";
-import {useLogin} from "@/src/hooks/auth/loginHook";
 
 export default function SignupPage(){
-    const {status, error, signup} = useSignup();
+    const {status, signup} = useSignup();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
@@ -28,8 +26,6 @@ export default function SignupPage(){
         if( status === "SUCCESS"){
             toast.success('회원가입성공');
             router.push("/");
-        }else if(status === "FAIL"){
-            toast.error(`[${error?.type}] ${error?.title} : ${error?.detail}`);
         }
     }, [status]);
 

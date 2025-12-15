@@ -7,20 +7,23 @@ type Props = {
 
 export default async function PaymentsPage({params}: Readonly<Props>){
     const {id} = await params;
-    const resrvationDetail = await getReservationIdAction(id);
-    
-    if(!resrvationDetail){
+    const response = await getReservationIdAction(id);
+
+
+    if(!response.ok){
         return (
             <div>
                 없습니다. 예약정보가
             </div>
         )
     }
+
+    const reservationDetail = response.data;
     
     return (
         <div>
             <PaymentSummaryCard 
-                reservationDetail={resrvationDetail}
+                reservationDetail={reservationDetail}
             />
         </div>
     )

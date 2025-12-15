@@ -19,7 +19,7 @@ import toast from "react-hot-toast";
 import {useRouter} from "next/navigation";
 
 export default function LoginPage(){
-    const {status, error, login} = useLogin();
+    const {status, login} = useLogin();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
@@ -28,8 +28,6 @@ export default function LoginPage(){
         if( status === "SUCCESS"){
             toast.success('회원가입성공');
             router.push("/");
-        }else if(status === "FAIL"){
-            toast.error(`[${error?.type}] ${error?.title} : ${error?.detail}`);
         }
     }, [status]);
 

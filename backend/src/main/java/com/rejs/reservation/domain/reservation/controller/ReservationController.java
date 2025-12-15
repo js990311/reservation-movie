@@ -1,9 +1,11 @@
 package com.rejs.reservation.domain.reservation.controller;
 
+import com.rejs.reservation.domain.reservation.authorizer.annotation.IsReservationOwner;
 import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
+import com.rejs.reservation.domain.reservation.facade.ReservationCancelFacade;
 import com.rejs.reservation.domain.reservation.service.ReservationService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.security.jwt.resolver.TokenClaim;
@@ -24,6 +26,7 @@ import java.util.List;
 @RequestMapping("/reservations")
 public class ReservationController {
     private final ReservationService reservationService;
+    private final ReservationCancelFacade reservationCancelFacade;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -42,21 +45,20 @@ public class ReservationController {
         return BaseResponse.ofPage(reservations);
     }
 
+    @IsReservationOwner
     @GetMapping("/{id}")
-    public BaseResponse<ReservationDetailDto> getReservationById(@PathVariable("id") Long id, @TokenClaim ClaimsDto claimsDto){
-        long userId = Long.parseLong(claimsDto.getUsername());
-        ReservationDetailDto reservation = reservationService.findById(id, userId);
+    public BaseResponse<ReservationDetailDto> getReservationById(@PathVariable("id") Long id){
+        ReservationDetailDto reservation = reservationService.findById(id);
         return BaseResponse.of(reservation);
     }
 
+    @IsReservationOwner
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public BaseResponse<Void> cancelReservationById(
-            @PathVariable("id") Long id,
-            @TokenClaim ClaimsDto claimsDto
+            @PathVariable("id") Long id
     ){
-        long userId = Long.parseLong(claimsDto.getUsername());
-        reservationService.deleteReservationByReservationId(id, userId);
+        reservationCancelFacade.cancelReservation(id);
         return BaseResponse.of(null);
     }
 }

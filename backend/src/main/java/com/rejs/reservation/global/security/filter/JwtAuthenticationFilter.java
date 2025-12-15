@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected Authentication createAuthentication(String token){
         ClaimsDto claims = jwtUtils.getClaims(token);
         return new UsernamePasswordAuthenticationToken(
-                claims.getUsername(),
+                claims,
                 null,
                 claims.getRoles().stream().map(SimpleGrantedAuthority::new).toList()
         );

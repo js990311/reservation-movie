@@ -1,8 +1,8 @@
 import PortOne from "@portone/browser-sdk/v2";
 import {useState} from "react";
-import {ulid} from "ulid";
 import {ReservationSummary} from "@/src/type/reservation/reservation";
-import {paymentCompleteAction} from "@/src/actions/paymentAction";
+import {getPaymentPrepare, paymentCompleteAction} from "@/src/actions/paymentAction";
+import {PaymentLog} from "@/src/type/payment/paymentLog";
 
 type PaymentStatus = {
     status: "IDLE" | "PENDING" | "FAILED" | "SUCCESS";
@@ -12,40 +12,62 @@ type PaymentStatus = {
 export default function usePayment(){
     const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>({status: "IDLE", message: ""});
     const handlePayment = async (reservation: ReservationSummary)=>{
+        // 로딩상태로 만들기
         setPaymentStatus({status: "PENDING", message: ""});
-        const paymentId = ulid(); // 랜덤 payment Id 생성
+
+        // 환경변수 만들기
+        const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
+        if(!storeId){
+            setPaymentStatus({
+                status: "FAILED",
+                message: 'storeId 환경변수가 없습니다',
+            });
+            return;
+        }
+
+        const prepareResponse = await getPaymentPrepare(reservation.reservationId);
+        if(!prepareResponse.ok){
+            setPaymentStatus({
+                status: "FAILED",
+                message: `결제 사전검증에서 실패했습니다.`,
+            });
+            return;
+        }
+
+        const {paymentId, totalAmount, customData} = prepareResponse.data;
 
         const payment = await PortOne.requestPayment({
             // env 사용해서 key값 가져오기
-            storeId: process.env.NEXT_PUBLIC_PORTONE_STORE_ID,
+            storeId: storeId,
             channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY,
             paymentId,
             orderName: `${reservation.movieTitle}_${reservation.theaterName}_${reservation.screeningId}`,
-            totalAmount: reservation.totalAmount,
+            totalAmount: totalAmount,
             currency: "KRW",
             payMethod: "EASY_PAY",
-            customData: {
-                reservationId: reservation.reservationId
-            }
+            customData: customData
         });
 
         if(!payment){
             setPaymentStatus({
                 status: "FAILED",
                 message: 'payment is not exists',
-            })
+            });
+            return;
         }
         else if (payment.code !== undefined) {
             setPaymentStatus({
                 status: "FAILED",
-                message: payment.message,
+                message: payment.message ?? 'Payment code를 이해할 수 없습니다.',
             })
             return;
         }
+
         const response = await paymentCompleteAction(paymentId);
-        console.log(response);
-        if(response.data){
-            if(response.data.status === 'PAID'){
+
+        if (response.ok) {
+            const paymentLog: PaymentLog = response.data;
+            if(paymentLog.status === 'PAID'){
                 setPaymentStatus({
                     status: "SUCCESS",
                     message: ""
@@ -56,7 +78,7 @@ export default function usePayment(){
                     message: "결제 검증 과정에서 실패했습니다"
                 });
             }
-        } else {
+        }else {
             setPaymentStatus({
                 status: "FAILED",
                 message: "결제 검증 과정에서 실패했습니다"

@@ -1,5 +1,6 @@
 import {ExceptionResponse} from "@/src/type/response/exceptionResponse";
 import {useState} from "react";
+import toast from "react-hot-toast";
 
 export type RequestStatus = 'PENDING' | 'LOADING' | 'SUCCESS' | 'FAIL';
 
@@ -29,7 +30,12 @@ export const useRequestResult = () => {
             status: 'FAIL',
             error: error,
         });
+        handleException(error);
     }
 
     return {result, setLoading, setSuccess, setFail};
+}
+
+export function handleException(ex: ExceptionResponse) {
+    toast.error(ex.detail);
 }

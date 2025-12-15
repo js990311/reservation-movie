@@ -6,3 +6,4 @@ export interface BaseResponse<T>{
     error ?: ExceptionResponse;
     pagination?: PaginationMetadata;
 }
+

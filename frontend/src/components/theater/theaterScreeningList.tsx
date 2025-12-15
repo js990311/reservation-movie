@@ -12,7 +12,18 @@ type Props = {
 }
 
 export default async function TheaterScreeningList({theaterId,selectedDate}: Readonly<Props>) {
-    const screenings = await getTheaterScreeningAction(theaterId, selectedDate);
+    const response = await getTheaterScreeningAction(theaterId, selectedDate);
+
+    if(!response.ok) {
+        return (
+            <div>
+                예외가 발생했습니다.
+            </div>
+        )
+    }
+
+    const {data: screenings, pagination} = response;
+
     const screeningMap = new Map<string, ScreeningWithMovie[]>();
 
     screenings.forEach((screening) => {

@@ -1,62 +1,45 @@
 "use server"
 
 import {PaymentLog} from "@/src/type/payment/paymentLog";
-import {createInternalServerException} from "@/src/type/error/ApiError";
-import {serverFetch} from "@/src/lib/api/serverFetch";
-import {BaseResponse} from "@/src/type/response/base";
+import {ActionOneResult, failResult, oneResult} from "@/src/type/response/result";
+import {fetchOne} from "@/src/lib/api/fetchWrapper";
+import {BaseError, unknownFetchException} from "@/src/lib/api/error/apiErrors";
+import {PaymentPrepare} from "@/src/type/payment/preparePayment";
 
-export async function paymentCompleteAction(paymentId: string): Promise<BaseResponse<PaymentLog>>{
+export async function paymentCompleteAction(paymentId: string): Promise<ActionOneResult<PaymentLog>>{
     try {
-        const response : BaseResponse<PaymentLog>= await serverFetch<PaymentLog>({
+        const response = await fetchOne<PaymentLog>({
             endpoint: "/payments/complete",
             method: "POST",
             withAuth: true,
             body: {paymentId: paymentId},
-        })
-        if(response.data){
-            return response;
-        }else {
-            return {
-                data: {
-                    paymentId: paymentId,
-                    status: "FAILED",
-                    reservationId: 0
-                },
-                error: response.error,
-            };
-        }
+        });
+        return oneResult(response);
     }catch (error) {
-        return {
-            data: {
-                paymentId: paymentId,
-                status: "FAILED",
-                reservationId: 0
-            },
-            error: createInternalServerException('paymentCompleteAction', error)
-        };
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('paymentCompleteAction',error);
+            return failResult(exception.details);
+        }
     }
 }
 
-export async function getPaymentsAction(page: number, size:number): Promise<BaseResponse<PaymentLog[]>>{
+export async function getPaymentPrepare(reservationId: number): Promise<ActionOneResult<PaymentPrepare>> {
     try {
-        const response = await serverFetch<PaymentLog[]>({
-            endpoint: `/payments?page=${page}&size=${size}`,
-            method: "GET",
+        const response = await fetchOne<PaymentPrepare>({
+            endpoint: `/reservations/${reservationId}/payments/prepare`,
+            method: "POST",
             withAuth:true
         });
-        return response;
+        return oneResult(response);
     }catch (error) {
-        return {
-            data: [],
-            pagination: {
-                count: 0,
-                requestNumber: page,
-                requestSize: size,
-                hasNextPage: false,
-                totalPage: 0,
-                totalElements : 0
-            },
-            error: createInternalServerException('getPaymentsAction', error)
+        if(error instanceof BaseError){
+            return failResult(error.details);
+        }else {
+            const exception = unknownFetchException('getPaymentPrepare',error);
+            return failResult(exception.details);
         }
     }
+
 }

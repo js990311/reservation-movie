@@ -12,15 +12,17 @@ export default async function MovieIdPage({params, searchParams} : Readonly<Prop
     const {id} = await params;
     const {date} = await searchParams;
     const selectedDate = date ?? new Date().toISOString().split("T")[0];
-    const movie = await getMovieByIdAction(id);
+    const result = await getMovieByIdAction(id);
 
-    if(!movie) {
+    if(!result.ok) {
         return (
             <div>
                 404 영화 정보가 없습니다.
             </div>
         );
     }
+
+    const movie = result.data;
 
     return (
         <div className="container mx-auto py-10 px-4 max-w-5xl">

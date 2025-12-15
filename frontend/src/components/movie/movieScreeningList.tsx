@@ -12,17 +12,24 @@ type Props = {
 }
 
 export async function MovieScreeningList({movieId, selectedDate}: Readonly<Props>) {
-    const theaters:ScreeningWithTheater[] = await getMovieScreeningAction(movieId, selectedDate);
-    const theaterMap = new Map<string, ScreeningWithTheater[]>();
+    const response = await getMovieScreeningAction(movieId, selectedDate);
 
+    if(!response.ok) {
+        return (
+            <div>
+                정보를 불러올 수 없습니다.
+            </div>
+        )
+    }
+
+    const theaters = response.data;
+    const theaterMap = new Map<string, ScreeningWithTheater[]>();
     theaters.forEach(theater => {
         const key = theater.theaterName;
         const list = theaterMap.get(key) || [];
         list.push(theater);
         theaterMap.set(key, list);
     });
-
-    console.log(theaterMap);
 
     if (theaters.length === 0) {
         return (

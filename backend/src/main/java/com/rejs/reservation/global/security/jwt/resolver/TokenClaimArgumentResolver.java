@@ -4,6 +4,8 @@ import com.rejs.reservation.global.security.jwt.token.ClaimsDto;
 import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -22,10 +24,10 @@ public class TokenClaimArgumentResolver implements HandlerMethodArgumentResolver
 
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-        String authorization = webRequest.getHeader("Authorization");
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            String token = authorization.substring(7);
-            return jwtUtils.getClaims(token);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        if(principal instanceof ClaimsDto claims){
+            return claims;
         }
         return null;
     }

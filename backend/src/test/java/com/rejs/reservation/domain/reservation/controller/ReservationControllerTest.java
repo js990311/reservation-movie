@@ -30,6 +30,7 @@ import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import com.rejs.reservation.global.exception.code.BusinessExceptionCode;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
+import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import com.rejs.reservation.global.security.service.LoginService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +48,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.epages.restdocs.apispec.ResourceDocumentation.parameterWithName;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -71,6 +73,9 @@ class ReservationControllerTest extends AbstractControllerTest {
 
     @Autowired
     private ReservationRepository reservationRepository;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     private String accessToken;
 
@@ -284,8 +289,8 @@ class ReservationControllerTest extends AbstractControllerTest {
                         docs -> docs
                                 .requestHeaders(authorizationHeader())
                                 .queryParameters(
-                                        ResourceDocumentation.parameterWithName("page").description("요청한 페이지번호"),
-                                        ResourceDocumentation.parameterWithName("size").description("페이지 내부의 데이터 개수")
+                                        parameterWithName("page").description("요청한 페이지번호"),
+                                        parameterWithName("size").description("페이지 내부의 데이터 개수")
                                 )
                                 .responseSchema(ReservationSummaryDtoDocs.schema())
                                 .responseFields(BaseResponseDocs.withPaginations(ReservationSummaryDtoDocs.fields()))
@@ -293,10 +298,37 @@ class ReservationControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    void 예매정보보기() throws Exception{
+    void 남의예매정보보기() throws Exception{
         // 예매하기
         int reservationSeatCount = 5;
         Reservation reservation = Reservation.create(userId, screeningId, seatIds.subList(0, reservationSeatCount));
+        reservation = reservationRepository.save(reservation);
+
+        ResultActions result = mockMvc.perform(
+                get("/reservations/{id}", reservation.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + accessToken)
+        );
+
+        BusinessExceptionCode code = ReservationExceptionCode.NOT_RESERVATION_OWNER;
+        andExpectException(()->result, code, "/reservations/"+reservation.getId());
+
+        result
+                .andDo(documentWithException(
+                        docs -> docs
+                                .pathParameters(
+                                        parameterWithName("id").description("예매 ID")
+                                )
+                                .requestHeaders(authorizationHeader())
+                ));
+    }
+
+    @Test
+    void 예매정보보기() throws Exception{
+        // 예매하기
+        int reservationSeatCount = 5;
+        Long reservationUserId = Long.valueOf(jwtUtils.getClaims(accessToken).getUsername());
+        Reservation reservation = Reservation.create(reservationUserId, screeningId, seatIds.subList(0, reservationSeatCount));
         reservation = reservationRepository.save(reservation);
 
         ResultActions result = mockMvc.perform(
@@ -327,10 +359,35 @@ class ReservationControllerTest extends AbstractControllerTest {
         result
                 .andDo(document(
                         docs -> docs
+                                .pathParameters(
+                                        parameterWithName("id").description("예매 ID")
+                                )
                                 .requestHeaders(authorizationHeader())
                                 .responseSchema(ReservationDetailDtoDocs.schema())
                                 .responseFields(BaseResponseDocs.baseFields(ReservationDetailDtoDocs.fields()))
                 ));
 
     }
+
+    @Test
+    void 없는예매정보보기() throws Exception{
+        ResultActions result = mockMvc.perform(
+                get("/reservations/{id}", 0)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + accessToken)
+        );
+
+        BusinessExceptionCode code = ReservationExceptionCode.RESERVATION_NOT_FOUND;
+        andExpectException(()->result, code, "/reservations/0");
+
+        result
+                .andDo(documentWithException(
+                        docs -> docs
+                                .pathParameters(
+                                        parameterWithName("id").description("예매 ID")
+                                )
+                                .requestHeaders(authorizationHeader())
+                ));
+    }
+
 }

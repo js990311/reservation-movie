@@ -44,7 +44,7 @@ export default function ScreeningReservation({screeningId, theater, seats}: Read
                 screeningId: parseInt(screeningId),
                 seats: selectedSeatIds
             });
-            if(response.error){ // exceptionResponse에 해당
+            if(!response.ok){ // exceptionResponse에 해당
                 toast.error(`${response.error.type} : ${response.error.title} ${response.error.detail}`);
             }else {
                 toast.success('예매성공');

@@ -12,12 +12,23 @@ type Props = {
 export default async function ReservationMePage({searchParams}: Readonly<Props>){
     const {page, size} = await searchParams;
     const response = await getMyReservationsAction(page ?? 0, size ?? 10);
+
+    if(!response.ok){
+        return (
+            <div>
+                예외가 발생했습니다.
+            </div>
+        )
+    }
+
+    const {data: reservations, pagination} = response;
+
     return (
         <div>
             <ReservationList
-                reservations={response.data}
+                reservations={reservations}
             />
-            <PaginationRemote pagination={response.pagination}/>
+            <PaginationRemote pagination={pagination}/>
         </div>
     )
 }

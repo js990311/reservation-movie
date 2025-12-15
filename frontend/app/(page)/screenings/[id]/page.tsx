@@ -9,15 +9,17 @@ type Props = {
 export default async function ScreeningIdPage({params}: Readonly<Props>){
     const {id} = await params;
 
-    const screening = await getScreeningByIdAction(id);
+    const response = await getScreeningByIdAction(id);
 
-    if(!screening){
+    if(!response.ok){
         return (
             <div>
                 상영표 정보가 없습니다
             </div>
         )
     }
+
+    const screening = response.data;
     
     return (
         <div>
