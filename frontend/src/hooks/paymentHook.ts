@@ -1,8 +1,7 @@
 import PortOne from "@portone/browser-sdk/v2";
 import {useState} from "react";
-import {ulid} from "ulid";
 import {ReservationSummary} from "@/src/type/reservation/reservation";
-import {paymentCompleteAction} from "@/src/actions/paymentAction";
+import {getPaymentPrepare, paymentCompleteAction} from "@/src/actions/paymentAction";
 import {PaymentLog} from "@/src/type/payment/paymentLog";
 
 type PaymentStatus = {
@@ -13,11 +12,11 @@ type PaymentStatus = {
 export default function usePayment(){
     const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>({status: "IDLE", message: ""});
     const handlePayment = async (reservation: ReservationSummary)=>{
+        // 로딩상태로 만들기
         setPaymentStatus({status: "PENDING", message: ""});
-        const paymentId = ulid(); // 랜덤 payment Id 생성
 
+        // 환경변수 만들기
         const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
-
         if(!storeId){
             setPaymentStatus({
                 status: "FAILED",
@@ -26,18 +25,27 @@ export default function usePayment(){
             return;
         }
 
+        const prepareResponse = await getPaymentPrepare(reservation.reservationId);
+        if(!prepareResponse.ok){
+            setPaymentStatus({
+                status: "FAILED",
+                message: `결제 사전검증에서 실패했습니다.`,
+            });
+            return;
+        }
+
+        const {paymentId, totalAmount, customData} = prepareResponse.data;
+
         const payment = await PortOne.requestPayment({
             // env 사용해서 key값 가져오기
             storeId: storeId,
             channelKey: process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY,
             paymentId,
             orderName: `${reservation.movieTitle}_${reservation.theaterName}_${reservation.screeningId}`,
-            totalAmount: reservation.totalAmount,
+            totalAmount: totalAmount,
             currency: "KRW",
             payMethod: "EASY_PAY",
-            customData: {
-                reservationId: reservation.reservationId
-            }
+            customData: customData
         });
 
         if(!payment){
