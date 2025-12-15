@@ -54,7 +54,7 @@ create table payments
     updated_at     datetime(6),
     payment_uid    varchar(255),
     reservation_id bigint,
-    status         enum ('CANCELED','FAILED','PAID','READY'),
+    status         enum ('PAID','READY'),
     primary key (payment_id)
 );
 

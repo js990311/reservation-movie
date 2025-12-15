@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class PaymentVaildateFacade {
+public class PaymentValidateFacade {
     private final PortOneAdaptor portoneAdaptor;
     private final PaymentService paymentService;
 
