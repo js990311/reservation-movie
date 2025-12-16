@@ -9,6 +9,7 @@ import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.reservation.repository.ReservationFacade;
 import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
