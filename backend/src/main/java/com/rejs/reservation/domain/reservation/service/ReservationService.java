@@ -1,6 +1,5 @@
 package com.rejs.reservation.domain.reservation.service;
 
-import com.rejs.reservation.domain.payments.service.PaymentCancelService;
 import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
@@ -19,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ import java.util.List;
 public class ReservationService {
     private final ReservationFacade reservationFacade;
     private final ScreeningRepository screeningRepository;
-    private final PaymentCancelService paymentCancelService;
+
 
     // CREATE - Reservation
     @Transactional
@@ -57,25 +57,11 @@ public class ReservationService {
         return reservationFacade.findMyReservations(userId, pageable);
     }
 
+
     public ReservationDetailDto findById(Long id) {
         ReservationSummaryDto reservation = reservationFacade.findReservationSummaryById(id);
         List<ReservationSeatNumberDto> seats = reservationFacade.findSeatNumberById(id);
         return new ReservationDetailDto(reservation, seats);
-    }
-
-    // UPDATE
-
-    // DELETE
-    @Transactional
-    public void deleteReservationByReservationId(Long reservationId){
-        // reservation 찾아옴
-        Reservation reservation = reservationFacade.findById(reservationId);
-
-        // 성공한 결제내역을 찾아서 있으면
-        paymentCancelService.cancelPayment(reservationId);
-
-        // reservation을 취소처리함
-        reservation.cancel();
     }
 }
 

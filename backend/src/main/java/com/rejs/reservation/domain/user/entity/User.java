@@ -1,6 +1,7 @@
 package com.rejs.reservation.domain.user.entity;
 
 import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity {
     @Id
     @GeneratedValue
     @Column(name = "user_id")
@@ -34,8 +35,6 @@ public class User {
     @Column
     private UserRole role;
 
-    @Column
-    private LocalDateTime createAt;
 
     // # 생성
 
@@ -44,7 +43,6 @@ public class User {
         this.name = email;
         this.password = password;
         this.role = UserRole.ROLE_USER;
-        this.createAt = LocalDateTime.now();
     }
 
     public User(String email, String password, UserRole role) {
@@ -52,6 +50,5 @@ public class User {
         this.name = email;
         this.password = password;
         this.role = role;
-        this.createAt = LocalDateTime.now();
     }
 }

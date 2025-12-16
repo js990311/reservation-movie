@@ -8,17 +8,21 @@ CREATE TABLE `seats` (
 CREATE TABLE `users` (
                          `user_id`	BIGINT	NOT NULL AUTO_INCREMENT PRIMARY KEY ,
                          `email`	VARCHAR(255)	NOT NULL,
-                         `password`	CHAR	NOT NULL,
+                         `password`	varchar(255)	NOT NULL,
                          `name`	VARCHAR(255)	NOT NULL,
                          `role`	VARCHAR(255)	NOT NULL,
-                         `created_at`	DATETIME	NULL
+                         created_at datetime(6),
+                         updated_at datetime(6)
 );
 
 CREATE TABLE `reservations` (
                                 `reservation_id`	BIGINT	NOT NULL AUTO_INCREMENT PRIMARY KEY ,
                                 `status`	VARCHAR(255)	NOT NULL,
                                 `screening_id`	BIGINT	NOT NULL,
-                                `user_id`	BIGINT	NOT NULL
+                                `user_id`	BIGINT	NOT NULL,
+                                `total_amount` INTEGER,
+                                created_at datetime(6),
+                                updated_at datetime(6)
 );
 
 CREATE TABLE `screenings` (
@@ -36,10 +40,36 @@ CREATE TABLE `movies` (
 );
 
 CREATE TABLE `theaters` (
-                            `theater_id`	BIGINT	NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-                            `name`	VARCHAR(255)	NOT NULL
+    `theater_id`	BIGINT	NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+    `name`	VARCHAR(255)	NOT NULL,
+    `col_size` INTEGER,
+    `row_size` INTEGER
 );
 
+-- 결제 관련
+create table payments
+(
+    payment_id     bigint not null AUTO_INCREMENT,
+    created_at     datetime(6),
+    updated_at     datetime(6),
+    payment_uid    varchar(255),
+    reservation_id bigint,
+    status         enum ('PAID','READY'),
+    primary key (payment_id)
+);
+
+create table payment_cancels (
+    payment_cancel_id bigint not null AUTO_INCREMENT,
+    created_at datetime(6),
+    updated_at datetime(6),
+    payment_uid varchar(255),
+    reservation_id bigint,
+    reason varchar(255),
+    status enum ('CANCELED','READY'),
+    primary key (payment_cancel_id)
+);
+
+-- 외래키 매핑
 CREATE TABLE `reservation_seats` (
      `reservation_seat_id`	BIGINT	NOT NULL AUTO_INCREMENT PRIMARY KEY ,
      `reservation_id`	BIGINT	NOT NULL,
@@ -103,3 +133,11 @@ ALTER TABLE `reservation_seats` ADD CONSTRAINT `UNIQUE_reservation_seats` UNIQUE
 ALTER TABLE `seats` ADD CONSTRAINT `UNIQUE_seats` UNIQUE (
                                                           `row_num`, `col_num`, `theater_id`
     ) ;
+
+ALTER TABLE `payments` ADD CONSTRAINT `FK_reservations_TO_payments` FOREIGN KEY (
+    `reservation_id`
+) REFERENCES `reservations` (`reservation_id`) ON DELETE CASCADE ;
+
+ALTER TABLE `payment_cancels` ADD CONSTRAINT `FK_reservations_TO_payment_cancels` FOREIGN KEY (
+                                                                                 `reservation_id`
+    ) REFERENCES `reservations` (`reservation_id`) ON DELETE CASCADE ;
