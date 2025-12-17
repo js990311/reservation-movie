@@ -1,0 +1,5 @@
+http://localhost {
+    reverse_proxy reservation-1:8080 reservation-2:8080 {
+        header_down X-Server-Name {upstream_hostport}
+    }
+}

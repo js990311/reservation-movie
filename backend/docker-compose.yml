@@ -1,10 +1,89 @@
 services:
   mariadb:
+    container_name: reservation-db
     image: mariadb:latest
     ports:
       - 3306:3306
     environment:
       MARIADB_DATABASE: movie_db
-      MARIADB_USER: user
-      MARIADB_PASSWORD: password
+      MARIADB_USER: ${DATASOURCE_USERNAME}
+      MARIADB_PASSWORD: ${DATASOURCE_PASSWORD}
       MARIADB_ROOT_PASSWORD: root_password
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      start_period: 1m
+      start_interval: 10s
+      interval: 1m
+      timeout: 5s
+      retries: 3
+
+  reservation-1:
+    container_name: reservation-1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8080
+    environment:
+      PORTONE_API_SECRET: ${PORTONE_API_SECRET}
+      PORTONE_API_STOREID: ${PORTONE_API_STOREID}
+      PORTONE_WEBHOOK_SECRET: ${PORTONE_WEBHOOK_SECRET}
+      DATASOURCE_URL: ${DATASOURCE_URL}
+      DATASOURCE_USERNAME: ${DATASOURCE_USERNAME}
+      DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1"]
+      start_period: 1m
+      start_interval: 10s
+      interval: 1m
+      timeout: 5s
+      retries: 3
+
+  reservation-2:
+    container_name: reservation-2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8082:8080
+    environment:
+      PORTONE_API_SECRET: ${PORTONE_API_SECRET}
+      PORTONE_API_STOREID: ${PORTONE_API_STOREID}
+      PORTONE_WEBHOOK_SECRET: ${PORTONE_WEBHOOK_SECRET}
+      DATASOURCE_URL: ${DATASOURCE_URL}
+      DATASOURCE_USERNAME: ${DATASOURCE_USERNAME}
+      DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1"]
+      start_period: 1m
+      start_interval: 10s
+      interval: 1m
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    container_name: caddy
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./caddy/conf:/etc/caddy
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      reservation-1:
+        condition: service_healthy
+      reservation-2:
+        condition: service_healthy
+volumes:
+  caddy_data:
+  caddy_config:
