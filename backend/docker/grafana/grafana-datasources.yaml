@@ -1,0 +1,47 @@
+apiVersion: 1
+
+datasources:
+  - name: Tempo
+    type: tempo
+    access: proxy
+    orgId: 1
+    uid: tempo_uid_reservation
+    url: http://tempo:3200
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: false
+    jsonData:
+      httpMethod: GET
+      serviceMap:
+        datasourceUid: 'prometheus'
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki:3100
+    basicAuth: false
+    isDefault: true
+    version: 1
+    editable: false
+    jsonData:
+      # 로그에서 TraceID 발견하면 Tempo로 연결해주는 설정
+      derivedFields:
+        - datasourceUid: tempo_uid_reservation
+          matcherRegex: "traceId=(\\w+)" # 로그에서 traceId=... 패턴을 찾음 (또는 JSON 필드 매칭)
+          name: TraceID
+          url: "$${__value.raw}"         # 찾은 ID로 URL 생성
+  - name: Prometheus
+    type: prometheus
+    uid: registration_prometheus
+    access: proxy
+    url: http://prometheus:9090
+    basicAuth: false
+    isDefault: false
+    editable: false
+    jsonData:
+      httpMethod: POST
+      # [핵심] Exemplar 설정: 메트릭에서 트레이스(Tempo)로 점프
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo_uid_reservation

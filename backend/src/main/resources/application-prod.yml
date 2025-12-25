@@ -3,6 +3,8 @@ server:
     context-path: /api
 
 spring:
+  application:
+    name: reservation-app
   datasource:
     url: ${DATASOURCE_URL}
     username: ${DATASOURCE_USERNAME}
@@ -10,11 +12,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
     open-in-view: false
-    show-sql: true
   flyway:
     enabled: true
 
@@ -32,6 +30,12 @@ management:
   endpoint:
     health:
       show-details: always
+  otlp:
+    tracing:
+      endpoint: ${TEMPO_ENDPOINT} # Tempo의 HTTP 수신 포트
+  tracing:
+    sampling:
+      probability: 0.1
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
@@ -40,3 +44,19 @@ portone.secret:
   storeId: ${PORTONE_API_STOREID}
   apiSecret: ${PORTONE_API_SECRET}
   webhookSecret: ${PORTONE_WEBHOOK_SECRET}
+
+loki:
+  endpoint: ${LOKI_URL}/loki/api/v1/push
+
+jdbc:
+  datasource-proxy:
+    logging: slf4j
+    multiline: false
+    slow-query:
+      enable-logging: true
+      log-level: WARN
+      logger-name: slow-query-logger
+      threshold: 2 # 2초이상걸리면 slow
+logging:
+  level:
+    slow-query-logger: WARN

@@ -1,3 +1,5 @@
+name: "reservation"
+
 services:
   mariadb:
     container_name: reservation-db
@@ -23,7 +25,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8081:8080
+      - 8082:8080
     environment:
       PORTONE_API_SECRET: ${PORTONE_API_SECRET}
       PORTONE_API_STOREID: ${PORTONE_API_STOREID}
@@ -32,6 +34,8 @@ services:
       DATASOURCE_USERNAME: ${DATASOURCE_USERNAME}
       DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      TEMPO_ENDPOINT: ${TEMPO_ENDPOINT}
+      LOKI_HOST: ${LOKI_HOST}
     depends_on:
       mariadb:
         condition: service_healthy
@@ -49,7 +53,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8082:8080
+      - 8083:8080
     environment:
       PORTONE_API_SECRET: ${PORTONE_API_SECRET}
       PORTONE_API_STOREID: ${PORTONE_API_STOREID}
@@ -58,6 +62,8 @@ services:
       DATASOURCE_USERNAME: ${DATASOURCE_USERNAME}
       DATASOURCE_PASSWORD: ${DATASOURCE_PASSWORD}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      TEMPO_ENDPOINT: ${TEMPO_ENDPOINT}
+      LOKI_HOST: ${LOKI_HOST}
     depends_on:
       mariadb:
         condition: service_healthy
@@ -68,15 +74,51 @@ services:
       interval: 1m
       timeout: 5s
       retries: 3
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./docker/tempo/tempo-config.yaml:/etc/tempo.yaml
+    ports:
+      - "4317:4317"  # OTLP gRPC
+      - "4318:4318"  # OTLP HTTP
+      - "3200:3200"  # Tempo internal
+
+  loki:
+    image: grafana/loki
+    container_name: loki
+    ports:
+      - "3100:3100" # 배포시에는 포트를 외부에 노출하지 말 것
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3003:3000"
+    volumes:
+      - ./docker/grafana/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=false      # 익명접근 거부
+      - GF_AUTH_DISABLE_LOGIN_FORM=false # 로그인 화면
+      # 관리자 정보
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      # 회원가입 금지
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - tempo
+      - loki
 
   caddy:
     container_name: caddy
     image: caddy:latest
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8081:80"
     volumes:
-      - ./caddy/conf:/etc/caddy
+      - ./docker/caddy/conf:/etc/caddy
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
@@ -87,3 +129,4 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  grafana-data:

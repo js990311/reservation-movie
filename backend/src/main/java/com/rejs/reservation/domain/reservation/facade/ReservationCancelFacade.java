@@ -5,9 +5,11 @@ import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.domain.reservation.service.ReservationCancelService;
 import com.rejs.reservation.domain.reservation.service.ReservationService;
 import com.rejs.reservation.global.exception.BusinessException;
+import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@Observed
 @RequiredArgsConstructor
 @Service
 public class ReservationCancelFacade {
