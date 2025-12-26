@@ -18,10 +18,10 @@ public class PaymentValidateFacade {
     public PaymentInfoDto validate(String paymentId){
         // 외부 API 호출
         PaymentStatusDto payment = portoneAdaptor.getPayment(paymentId);
+
         Long reservationId;
         try {
             // 내부 데이터와의 대조
-
             payment.validate(); // 문제 발생하면 예외 발생
 
             CustomDataDto customData = payment.getCustomData();
@@ -32,9 +32,10 @@ public class PaymentValidateFacade {
             paymentService.validatePayment(paymentId, totalAmount);
 
             // 성공시 상태 변경
+            // Pending -> Confirm
             return paymentService.confirmReservation(reservationId, paymentId);
         }catch (BusinessException e){
-            // 실패시 결제 취소
+            // CANCEL : 실패시 결제 취소
             portoneAdaptor.cancelPayment(paymentId, "검증 실패로 인한 결제 취소");
             throw e;
         }
