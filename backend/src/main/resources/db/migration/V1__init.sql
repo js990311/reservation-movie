@@ -134,6 +134,14 @@ ALTER TABLE `seats` ADD CONSTRAINT `UNIQUE_seats` UNIQUE (
                                                           `row_num`, `col_num`, `theater_id`
     ) ;
 
+ALTER TABLE `payments` ADD CONSTRAINT `UNIQUE_payments` UNIQUE (
+      `payment_uid`
+);
+
+ALTER TABLE `payment_cancels` ADD CONSTRAINT `UNIQUE_payment_cancels` UNIQUE (
+    `payment_uid`
+);
+
 ALTER TABLE `payments` ADD CONSTRAINT `FK_reservations_TO_payments` FOREIGN KEY (
     `reservation_id`
 ) REFERENCES `reservations` (`reservation_id`) ON DELETE CASCADE ;

@@ -36,10 +36,8 @@ public class PaymentPrepareService {
         }
 
         // 결제 시도를 ready 상태로 생성함
-        Payment payment = new Payment(reservation.getId());
-        payment = paymentRepository.save(payment);
+        Payment payment = Payment.create(reservation);
         CustomDataDto customDataDto = new CustomDataDto(reservation.getId());
-
         return new PaymentPrepareDto(payment.getPaymentUid(), reservation.getTotalAmount(),customDataDto);
     }
 }

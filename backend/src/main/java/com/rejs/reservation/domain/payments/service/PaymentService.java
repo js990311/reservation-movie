@@ -24,7 +24,7 @@ public class PaymentService {
     public void validatePayment(String paymentId, Long totalAmount){
         // readOnly라 멱등성이 어긋날리가 없음
         com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow(() -> BusinessException.of(PaymentExceptionCode.PAYMENT_NOT_FOUND));
-        Reservation reservation = reservationRepository.findById(payment.getReservationId()).orElseThrow(() -> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
+        Reservation reservation = payment.getReservation();
         // 결제 금액이 맞는 지 검증
         if(reservation.getTotalAmount().longValue() != totalAmount){
             throw BusinessException.of(PaymentExceptionCode.PAYMENT_AMOUNT_MISMATCH);
@@ -43,5 +43,11 @@ public class PaymentService {
         reservation.confirm();
         payment.paid();
         return new PaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
+    }
+
+    @Transactional
+    public void abortPayment(String paymentId){
+        com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow(() -> BusinessException.of(PaymentExceptionCode.PAYMENT_NOT_FOUND));
+        payment.aborted();
     }
 }

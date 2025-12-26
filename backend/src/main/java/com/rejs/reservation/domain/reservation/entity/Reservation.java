@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.reservation.entity;
 
+import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
@@ -54,6 +55,23 @@ public class Reservation extends BaseEntity {
         reservationSeats.remove(reservationSeat);
         reservationSeat.mapReservation(null);
     }
+
+    /* 관계 - Payment */
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Payment> payments = new ArrayList<>();
+
+    public void addPayments(Payment payment){
+        this.payments.add(payment);
+        payment.mapReservation(this);
+    }
+
+    public void removePayments(Payment payment){
+        this.payments.remove(payment);
+        payment.mapReservation(null);
+    }
+
+
+    // 생성
 
     public Reservation(Long userId, Long screeningId, Integer totalAmount) {
         this.userId = userId;

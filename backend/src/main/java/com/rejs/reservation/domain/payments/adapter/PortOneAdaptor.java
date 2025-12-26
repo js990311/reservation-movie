@@ -4,11 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.global.exception.BusinessException;
-import io.portone.sdk.server.payment.PaidPayment;
-import io.portone.sdk.server.payment.Payment;
-import io.portone.sdk.server.payment.PaymentClient;
+import io.portone.sdk.server.payment.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +44,16 @@ public class PortOneAdaptor {
     public void cancelPayment(String paymentId, String reason){
         portOneClient.cancelPayment(paymentId, reason);
     }
+
+    public void cancelPayment(String paymentId, PaymentCancelReason reason){
+        CancelPaymentResponse cancelPaymentResponse = portOneClient.cancelPayment(paymentId, reason.toString());
+        if(cancelPaymentResponse.getCancellation() instanceof SucceededPaymentCancellation){
+            return;
+        }else {
+            throw new BusinessException(PaymentExceptionCode.PAYMENT_CANCEL_FAIL);
+        }
+    }
+
 
     public CustomDataDto extractCustomData(PaidPayment paidPayment){
         String customDataJson = paidPayment.getCustomData();
