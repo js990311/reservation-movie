@@ -6,13 +6,12 @@ import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.repository.PaymentCancelRepository;
 import com.rejs.reservation.domain.payments.repository.PaymentRepository;
-import com.rejs.reservation.domain.reservation.entity.Reservation;
-import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
-import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentCancelCrudService {
@@ -23,7 +22,7 @@ public class PaymentCancelCrudService {
     public PaymentCancelDto getOrCreate(String paymentId, PaymentCancelReason reason){
         PaymentCancel paymentCancel = paymentCancelRepository.findByPaymentUid(paymentId).orElseGet(() -> {
             Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
-            PaymentCancel newPaymentCancel = new PaymentCancel(payment.getReservation().getId(), payment.getPaymentUid(), reason);
+            PaymentCancel newPaymentCancel = new PaymentCancel(payment.optionalReservationId(), payment.getPaymentUid(), reason);
             return paymentCancelRepository.save(newPaymentCancel);
         });
         return PaymentCancelDto.from(paymentCancel);

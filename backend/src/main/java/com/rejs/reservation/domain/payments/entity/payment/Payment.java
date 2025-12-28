@@ -30,9 +30,13 @@ public class Payment extends BaseEntity {
     private PaymentStatus status;
 
     /* 관계 */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
+
+    public Long optionalReservationId(){
+        return this.reservation == null ? null : this.reservation.getId();
+    }
 
     public void mapReservation(Reservation reservation){
         this.reservation = reservation;
@@ -47,6 +51,10 @@ public class Payment extends BaseEntity {
         this.status = PaymentStatus.ABORTED;
     }
 
+    public boolean isCompleted() {
+        return status.equals(PaymentStatus.PAID) || status.equals(PaymentStatus.FAILED) || status.equals(PaymentStatus.ABORTED);
+    }
+
     // 생성
 
     public Payment(String paymentUid, PaymentStatus status) {
@@ -59,4 +67,9 @@ public class Payment extends BaseEntity {
         reservation.addPayments(payment);
         return payment;
     }
+
+    public static Payment notFoundPayment(String paymentUid){
+        return new Payment(paymentUid, PaymentStatus.ABORTED);
+    }
+
 }

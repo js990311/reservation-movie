@@ -23,6 +23,7 @@ public class PaymentAbortFacade {
     private final PaymentCancelCrudService paymentCancelCrudService;
 
     public void abortPayment(String paymentId){
+        log.info("[payment.abort] 결제 취소 처리 시작 paymentId={}", paymentId);
         // try : 결제 취소내역을 의미하는 PaymentCancel을 생성한다.
         PaymentCancelDto paymentCancel = paymentCancelCrudService.getOrCreate(paymentId, PaymentCancelReason.VALIDATION_FAILED);
         if (paymentCancel.isComplete()){

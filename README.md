@@ -21,10 +21,11 @@ stateDiagram-v2
 stateDiagram-v2
     state "결제 엔티티의 상태" as Payment{
         [*] --> Ready : 결제 고유 id 발급
-        Ready --> Paid : 결제 완료(검증여부와 무관)
         Ready --> Failed : 결제 실패(돈이 안나감)
-        Ready --> Declined : 검증 실패로 인한 결제 거부
-        Declined --> [*]
+        Ready-->Verifying: 결제는 성공했고 확정되지는 않았음
+        Verifying --> Paid : 결제 완료(검증여부와 무관)
+        Verifying --> Aborted : 검증 실패로 인한 결제 거부
+        Aborted --> [*]
         Failed --> [*]
         Paid --> [*] : 사용자 환불이 있어도 변화없음(PaymentCancel 참조)
     }
@@ -52,7 +53,8 @@ stateDiagram-v2
             Pending --> Payment
             state "결제 검증(Payment의 상태)" as Payment{
                 [*] --> Ready : 결제 고유 id 발급
-                Ready --> Paid : 결제 승인
+                Ready --> Verifying : 결제 성공/ 확정 X
+                Verifying --> Paid : 결제 승인
             }
             Pending --> Canceled : 제한 시간 내 결제 실패
             Payment --> Confirm
@@ -69,7 +71,8 @@ stateDiagram-v2
         Pending --> Payment
         state "결제 거부(Payment의 상태)" as Payment{
             [*] --> Ready : 결제 고유 id 발급
-            Ready --> Declined : 결제 거부(돈이 지불되었지만 결제 실패)
+            Ready --> Verifying : 결제 성공/ 확정 X
+            Verifying --> Aborted : 결제 거부(돈이 지불되었지만 결제 실패)
         }
         Payment --> PaymentCancel
         state "결제 취소" as PaymentCancel {

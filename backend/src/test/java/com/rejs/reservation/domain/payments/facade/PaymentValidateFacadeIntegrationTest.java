@@ -4,10 +4,12 @@ import com.rejs.reservation.TestcontainersConfiguration;
 import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
+import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.domain.payments.repository.PaymentRepository;
+import com.rejs.reservation.domain.payments.service.PaymentLockResult;
 import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
@@ -26,20 +28,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 
 @ActiveProfiles("test")
 @Import(TestcontainersConfiguration.class)
-@Transactional
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
 class PaymentValidateFacadeIntegrationTest {
@@ -108,6 +109,73 @@ class PaymentValidateFacadeIntegrationTest {
     }
 
     @Test
+    @DisplayName("멱등성 통합 테스트")
+    void validateAlreadyCompleted() throws InterruptedException {
+        List<Long> seats =  List.of(1L,2L,3L);
+        Reservation reservation = Reservation.create(1L, 2L, seats);
+        reservation = reservationRepository.save(reservation);
+        Payment payment = Payment.create(reservation);
+        payment = paymentRepository.save(payment);
+
+        String paymentId = payment.getPaymentUid();
+        Long amount = Long.valueOf(reservation.getTotalAmount());
+
+        // 외부 API가 응답할 데이터
+        PaymentStatusDto paymentStatus = mock(PaymentStatusDto.class);
+        CustomDataDto customDataDto = new CustomDataDto(reservation.getId());
+        when(paymentStatus.getCustomData()).thenReturn(customDataDto);
+        when(paymentStatus.getTotalAmount()).thenReturn(amount);
+
+        // 외부 API가 정상적으로 작동
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+
+        int threadCount = 5;
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        AtomicInteger comfirmCount = new AtomicInteger(0);
+        AtomicInteger waitCount = new AtomicInteger(0);
+        AtomicInteger exceptionCount = new AtomicInteger(0);
+        for (int i=0; i<threadCount;i++){
+            executorService.submit(()-> {
+                try {
+                    PaymentInfoDto validate = paymentValidateFacade.validate(paymentId);
+                    if(validate.getStatus().equals(PaymentStatus.VERIFYING)){
+                        waitCount.incrementAndGet();
+                    }else {
+                        comfirmCount.incrementAndGet();
+                    }
+                }catch (Exception ex){
+                    exceptionCount.incrementAndGet();
+                }finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await();
+        executorService.shutdown();
+
+        assertEquals(1, comfirmCount.get());
+        assertEquals(threadCount-1, waitCount.get());
+        assertEquals(0, exceptionCount.get());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 결제 시나리오")
+    void paymentNotFound() {
+        // 서버쪽와 사전 합의되지 않은 내역이 들어옴
+        String paymentId = "123456";
+
+        // 환불해야함
+        PaymentInfoDto paymentInfo = paymentValidateFacade.validate(paymentId);
+
+        Optional<Payment> opt = paymentRepository.findByPaymentUid(paymentId);
+        assertTrue(opt.isPresent());
+        Payment payment = opt.get();
+        assertEquals(paymentInfo.getPaymentId(), payment.getPaymentUid());
+        assertEquals(PaymentStatus.ABORTED, payment.getStatus());
+    }
+
+    @Test
     @DisplayName("외부 API로 결제정보 취득 실패 시나리오")
     void validateGetPaymentInfoFail(){
         // 초기데이터 삽입
@@ -129,7 +197,7 @@ class PaymentValidateFacadeIntegrationTest {
         // t
         // 상태 확인
         payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
-        assertEquals(PaymentStatus.READY, payment.getStatus());
+        assertEquals(PaymentStatus.VERIFYING, payment.getStatus());
 
         reservation = reservationRepository.findById(reservation.getId()).orElseThrow();
         assertEquals(ReservationStatus.PENDING, reservation.getStatus());
