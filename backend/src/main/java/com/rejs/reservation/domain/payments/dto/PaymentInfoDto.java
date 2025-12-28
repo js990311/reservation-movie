@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.payments.dto;
 
+import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import lombok.Getter;
 
@@ -13,5 +14,9 @@ public class PaymentInfoDto {
         this.paymentId = paymentId;
         this.status = status;
         this.reservationId = reservationId;
+    }
+
+    public static PaymentInfoDto from(Payment payment){
+        return new PaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), payment.optionalReservationId());
     }
 }

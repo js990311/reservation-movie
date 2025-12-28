@@ -54,7 +54,7 @@ create table payments
     updated_at     datetime(6),
     payment_uid    varchar(255),
     reservation_id bigint,
-    status         enum ('PAID','READY'),
+    status         enum ('PAID', 'VERIFYING', 'READY', 'ABORTED', 'FAILED'),
     primary key (payment_id)
 );
 
@@ -64,8 +64,8 @@ create table payment_cancels (
     updated_at datetime(6),
     payment_uid varchar(255),
     reservation_id bigint,
-    reason varchar(255),
-    status enum ('CANCELED','READY'),
+    reason enum ('CUSTOMER_REQUEST','VALIDATION_FAILED'),
+    status enum ('CANCELED','REQUIRED', 'FAILED'),
     primary key (payment_cancel_id)
 );
 
@@ -133,6 +133,14 @@ ALTER TABLE `reservation_seats` ADD CONSTRAINT `UNIQUE_reservation_seats` UNIQUE
 ALTER TABLE `seats` ADD CONSTRAINT `UNIQUE_seats` UNIQUE (
                                                           `row_num`, `col_num`, `theater_id`
     ) ;
+
+ALTER TABLE `payments` ADD CONSTRAINT `UNIQUE_payments` UNIQUE (
+      `payment_uid`
+);
+
+ALTER TABLE `payment_cancels` ADD CONSTRAINT `UNIQUE_payment_cancels` UNIQUE (
+    `payment_uid`
+);
 
 ALTER TABLE `payments` ADD CONSTRAINT `FK_reservations_TO_payments` FOREIGN KEY (
     `reservation_id`

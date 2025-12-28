@@ -1,6 +1,7 @@
 package com.rejs.reservation.domain.payments.entity.payment;
 
 import com.github.f4b6a3.tsid.TsidCreator;
+import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,8 +21,6 @@ public class Payment extends BaseEntity {
     @Column(name = "payment_id")
     private Long id;
 
-    @Column(name = "reservation_id")
-    private Long reservationId;
 
     @Column(name = "payment_uid")
     private String paymentUid;
@@ -30,16 +29,47 @@ public class Payment extends BaseEntity {
     @Column
     private PaymentStatus status;
 
+    /* 관계 */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
+
+    public Long optionalReservationId(){
+        return this.reservation == null ? null : this.reservation.getId();
+    }
+
+    public void mapReservation(Reservation reservation){
+        this.reservation = reservation;
+    }
+
     // 로직
     public void paid(){
         this.status = PaymentStatus.PAID;
     }
 
+    public void aborted(){
+        this.status = PaymentStatus.ABORTED;
+    }
+
+    public boolean isCompleted() {
+        return status.equals(PaymentStatus.PAID) || status.equals(PaymentStatus.FAILED) || status.equals(PaymentStatus.ABORTED);
+    }
+
     // 생성
 
-    public Payment(Long reservationId) {
-        this.reservationId = reservationId;
-        this.status = PaymentStatus.READY;
-        this.paymentUid = TsidCreator.getTsid().toString();
+    public Payment(String paymentUid, PaymentStatus status) {
+        this.paymentUid = paymentUid;
+        this.status = status;
     }
+
+    public static Payment create(Reservation reservation){
+        Payment payment = new Payment(TsidCreator.getTsid().toString(), PaymentStatus.READY);
+        reservation.addPayments(payment);
+        return payment;
+    }
+
+    public static Payment notFoundPayment(String paymentUid){
+        return new Payment(paymentUid, PaymentStatus.ABORTED);
+    }
+
 }

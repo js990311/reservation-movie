@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -61,6 +62,10 @@ public class ReservationFacade {
 
     public Reservation findById(Long id){
         return reservationRepository.findById(id).orElseThrow(()-> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
+    }
+
+    public Optional<Reservation> findForCancel(Long id){
+        return reservationQueryRepository.findForCancel(id);
     }
 
     public ReservationSummaryDto findReservationSummaryById(Long id) {
