@@ -40,4 +40,5 @@ public class PaymentCancelCrudService {
         PaymentCancel paymentCancel = paymentCancelRepository.findById(paymentCancelId).orElseThrow();
         paymentCancel.failed();
     }
+
 }

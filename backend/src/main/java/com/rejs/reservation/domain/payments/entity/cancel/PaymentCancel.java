@@ -29,33 +29,34 @@ public class PaymentCancel extends BaseEntity {
     @Column
     private PaymentCancelStatus status;
 
+    @Enumerated(EnumType.STRING)
     @Column
     private PaymentCancelReason reason;
 
     // 상태변화
 
-    public void failed(){
-        this.status = PaymentCancelStatus.FAILED;
-    }
 
     public void canceled(){
         this.status = PaymentCancelStatus.CANCELED;
     }
 
+    public void failed() {
+        this.status = PaymentCancelStatus.FAILED;
+    }
 
     // 생성
 
     public PaymentCancel(Long reservationId, String paymentUid) {
         this.reservationId = reservationId;
         this.paymentUid = paymentUid;
-        this.status = PaymentCancelStatus.READY;
+        this.status = PaymentCancelStatus.REQUIRED;
     }
 
     public PaymentCancel(Long reservationId, String paymentUid, PaymentCancelReason reason) {
         this.reservationId = reservationId;
         this.paymentUid = paymentUid;
         this.reason =reason;
-        this.status = PaymentCancelStatus.READY;
+        this.status = PaymentCancelStatus.REQUIRED;
     }
 
 }

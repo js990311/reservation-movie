@@ -4,6 +4,7 @@ import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.service.PaymentLockResult;
 import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.global.exception.BusinessException;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class PaymentValidateFacade {
     private final PortOneAdaptor portoneAdaptor;
     private final PaymentService paymentService;
-    private final PaymentAbortFacade paymentAbortFacade;
+    private final PaymentCancelFacade paymentCancelFacade;
 
     public PaymentInfoDto validate(String paymentId){
         // 멱등성 보장을 위한 로직 및 결제가 성공했다는 의미를 위해 Ready -> Verifying
@@ -95,6 +96,6 @@ public class PaymentValidateFacade {
         paymentService.abortPayment(paymentId);
 
         // 2. 이미 결제된 payment에 대해서 취소를 진행한다.
-        paymentAbortFacade.abortPayment(paymentId);
+        paymentCancelFacade.cancelPayment(paymentId, PaymentCancelReason.VALIDATION_FAILED);
     }
 }

@@ -85,7 +85,7 @@ public class PaymentService {
 
     @Transactional
     public void abortPayment(String paymentId){
-        log.info("abortPayment: tx active={}, name={}, isolation={}, readOnly={}",
+        log.info("cancelPayment: tx active={}, name={}, isolation={}, readOnly={}",
                 TransactionSynchronizationManager.isActualTransactionActive(),
                 TransactionSynchronizationManager.getCurrentTransactionName(),
                 TransactionSynchronizationManager.getCurrentTransactionIsolationLevel(),

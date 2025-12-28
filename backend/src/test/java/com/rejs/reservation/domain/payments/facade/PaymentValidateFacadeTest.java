@@ -1,19 +1,12 @@
 package com.rejs.reservation.domain.payments.facade;
 
-import com.rejs.reservation.TestcontainersConfiguration;
 import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
-import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
-import com.rejs.reservation.domain.payments.entity.payment.Payment;
-import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
-import com.rejs.reservation.domain.payments.repository.PaymentRepository;
 import com.rejs.reservation.domain.payments.service.PaymentLockResult;
 import com.rejs.reservation.domain.payments.service.PaymentService;
-import com.rejs.reservation.domain.reservation.entity.Reservation;
-import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
-import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,14 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -45,7 +30,7 @@ class PaymentValidateFacadeTest {
     private PaymentService paymentService;
 
     @Mock
-    private PaymentAbortFacade paymentAbortFacade;
+    private PaymentCancelFacade paymentCancelFacade;
 
     @InjectMocks
     private PaymentValidateFacade paymentValidateFacade;
@@ -74,7 +59,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
-        verify(paymentAbortFacade, never()).abortPayment(anyString());
+        verify(paymentCancelFacade, never()).cancelPayment(anyString(), any());
     }
 
     @Test
@@ -98,7 +83,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
-        verify(paymentAbortFacade, never()).abortPayment(anyString());
+        verify(paymentCancelFacade, never()).cancelPayment(anyString(), any());
     }
 
     @Test
@@ -118,7 +103,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentAbortFacade, times(1)).abortPayment(anyString());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
     }
 
 
@@ -143,7 +128,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
-        verify(paymentAbortFacade, never()).abortPayment(anyString());
+        verify(paymentCancelFacade, never()).cancelPayment(anyString(), any());
     }
 
     @Test
@@ -170,7 +155,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentAbortFacade, times(1)).abortPayment(anyString());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
     }
 
     @Test
@@ -201,7 +186,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentAbortFacade, times(1)).abortPayment(anyString());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
     }
 
     @Test
@@ -228,7 +213,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentAbortFacade, times(1)).abortPayment(anyString());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
     }
 
 }

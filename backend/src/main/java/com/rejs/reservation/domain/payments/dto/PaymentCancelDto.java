@@ -14,7 +14,7 @@ public class PaymentCancelDto {
     private PaymentCancelReason reason;
 
     public boolean isComplete(){
-        return !status.equals(PaymentCancelStatus.READY);
+        return !status.equals(PaymentCancelStatus.REQUIRED);
     }
 
     public PaymentCancelDto(Long id, Long reservationId, String paymentUid, PaymentCancelStatus status, PaymentCancelReason reason) {

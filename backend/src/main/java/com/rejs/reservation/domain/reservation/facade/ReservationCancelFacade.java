@@ -1,9 +1,8 @@
 package com.rejs.reservation.domain.reservation.facade;
 
-import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
-import com.rejs.reservation.domain.payments.service.PaymentService;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
+import com.rejs.reservation.domain.payments.facade.PaymentCancelFacade;
 import com.rejs.reservation.domain.reservation.service.ReservationCancelService;
-import com.rejs.reservation.domain.reservation.service.ReservationService;
 import com.rejs.reservation.global.exception.BusinessException;
 import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class ReservationCancelFacade {
-    private final PortOneAdaptor portOneAdaptor;
+    private final PaymentCancelFacade paymentCancelFacade;
     private final ReservationCancelService reservationCancelService;
 
     public void cancelReservation(Long reservationId){
@@ -28,7 +27,7 @@ public class ReservationCancelFacade {
         //      취소할 결제 찾아오기
         String paymentId = reservationCancelService.findForCancelPayment(reservationId);
         try{
-            portOneAdaptor.cancelPayment(paymentId, "취소하기");
+            paymentCancelFacade.cancelPayment(paymentId, PaymentCancelReason.CUSTOMER_REQUEST);
         }catch (BusinessException e){
             // 외부 API 실패 시 취소지만 상태 변경이 없었으므로 방치
             throw e;

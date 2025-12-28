@@ -64,8 +64,8 @@ create table payment_cancels (
     updated_at datetime(6),
     payment_uid varchar(255),
     reservation_id bigint,
-    reason varchar(255),
-    status enum ('CANCELED','READY'),
+    reason enum ('CUSTOMER_REQUEST','VALIDATION_FAILED'),
+    status enum ('CANCELED','REQUIRED', 'FAILED'),
     primary key (payment_cancel_id)
 );
 
