@@ -10,34 +10,37 @@
         </encoder>
     </appender>
 
-    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
-        <http>
-            <url>${LOKI_ENDPOINT}</url>
-        </http>
+    <springProfile name="prod, dev">
+        <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+            <http>
+                <url>${LOKI_ENDPOINT}</url>
+            </http>
 
-        <!-- 1. <format> 태그 삭제 및 <labels>를 최상위로 이동 -->
-        <!-- 2. 콤마(,) 제거하고 줄바꿈으로 구분 -->
-        <labels>
-            compose_service=app-${APP_NAME}
-            app=${APP_NAME}
-            host=${HOSTNAME}
-            level=%level
-        </labels>
+            <!-- 1. <format> 태그 삭제 및 <labels>를 최상위로 이동 -->
+            <!-- 2. 콤마(,) 제거하고 줄바꿈으로 구분 -->
+            <labels>
+                compose_service=app-${APP_NAME}
+                app=${APP_NAME}
+                host=${HOSTNAME}
+                level=%level
+            </labels>
 
-        <!-- 3. <structuredMetadata>를 최상위로 이동 -->
-        <structuredMetadata>
-            * = %%mdc
-        </structuredMetadata>
+            <!-- 3. <structuredMetadata>를 최상위로 이동 -->
+            <structuredMetadata>
+                * = %%mdc
+            </structuredMetadata>
 
-        <!-- 4. <message>를 최상위로 이동 -->
-        <message>
-            <pattern>%d{yyyy-MM-dd} %d{HH:mm:ss.SSS} traceId=%X{traceId:-} spanId=%X{spanId:-} flags=0 %level [%thread] --- %msg%n</pattern>
-        </message>
-    </appender>
+            <!-- 4. <message>를 최상위로 이동 -->
+            <message>
+                <pattern>%d{yyyy-MM-dd} %d{HH:mm:ss.SSS} traceId=%X{traceId:-} spanId=%X{spanId:-} flags=0 %level [%thread] --- %msg%n</pattern>
+            </message>
+        </appender>
+    </springProfile>
 
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
-        <appender-ref ref="LOKI" />
+        <springProfile name="prod, dev">
+            <appender-ref ref="LOKI" />
+        </springProfile>
     </root>
-
 </configuration>

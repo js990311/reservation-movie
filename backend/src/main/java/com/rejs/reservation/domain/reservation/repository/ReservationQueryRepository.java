@@ -1,14 +1,17 @@
 package com.rejs.reservation.domain.reservation.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.rejs.reservation.domain.movie.entity.QMovie;
-import com.rejs.reservation.domain.reservation.dto.ReservationDetailDto;
+import com.rejs.reservation.domain.payments.entity.payment.QPayment;
 import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.entity.QReservation;
 import com.rejs.reservation.domain.reservation.entity.QReservationSeat;
+import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.screening.entity.QScreening;
 import com.rejs.reservation.domain.theater.entity.QSeat;
 import com.rejs.reservation.domain.theater.entity.QTheater;
@@ -19,7 +22,9 @@ import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Transactional(readOnly = true)
@@ -33,6 +38,7 @@ public class ReservationQueryRepository {
     private QMovie movie = QMovie.movie;
     private QTheater theater = QTheater.theater;
     private QSeat seat = QSeat.seat;
+    private QPayment payment = QPayment.payment;
 
     public Page<ReservationSummaryDto> findMyReservations(Long userId, Pageable pageable){
         List<ReservationSummaryDto> contents = jpaQueryFactory
@@ -121,5 +127,21 @@ public class ReservationQueryRepository {
                 .from(reservationSeat)
                 .join(seat).on(reservationSeat.seatId.eq(seat.id))
                 .where(reservationSeat.reservation.id.eq(id)).fetch();
+    }
+
+    public Optional<Reservation> findForCancel(Long id) {
+        return Optional.ofNullable(jpaQueryFactory
+                .select(
+                        reservation
+                ).from(reservation)
+                .join(screening).on(reservation.screeningId.eq(screening.id)) // 상영시간 종료 쿼리를 위한
+                .join(reservation.payments, payment).fetchJoin()
+                .where(
+                        reservation.id.eq(id)
+                                .and(reservation.status.ne(ReservationStatus.CANCELED)) // 이미 취소상태가 아닌
+                                .and(screening.startTime.after(LocalDateTime.now()))
+                )
+                .fetchOne()
+        );
     }
 }
