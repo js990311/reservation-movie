@@ -61,11 +61,9 @@ public class PaymentValidateFacade {
             reservationId = customData.getReservationId();
 
             // db 내부 데이터와의 검증
-            paymentService.validatePayment(paymentId, totalAmount);
             // 성공시 상태 변경
             // Pending -> Confirm
-            log.warn("[payment.verifying.complete] 결제 검증 성공 paymentId={}",paymentId);
-            return paymentService.confirmReservation(reservationId, paymentId);
+            return paymentService.validateAndConfirm(reservationId, paymentId, totalAmount);
         }catch (BusinessException e){
             /*
              * 실패시 처리

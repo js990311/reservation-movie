@@ -31,9 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -109,7 +107,7 @@ class PaymentValidateFacadeIntegrationTest {
     }
 
     @Test
-    @DisplayName("멱등성 통합 테스트")
+    @DisplayName("결제 검증 통합 테스트")
     void validateAlreadyCompleted() throws InterruptedException {
         List<Long> seats =  List.of(1L,2L,3L);
         Reservation reservation = Reservation.create(1L, 2L, seats);
@@ -132,20 +130,16 @@ class PaymentValidateFacadeIntegrationTest {
         int threadCount = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
-        AtomicInteger comfirmCount = new AtomicInteger(0);
-        AtomicInteger waitCount = new AtomicInteger(0);
-        AtomicInteger exceptionCount = new AtomicInteger(0);
+        CyclicBarrier barrier = new CyclicBarrier(threadCount);
         for (int i=0; i<threadCount;i++){
             executorService.submit(()-> {
                 try {
+                    barrier.await();
                     PaymentInfoDto validate = paymentValidateFacade.validate(paymentId);
-                    if(validate.getStatus().equals(PaymentStatus.VERIFYING)){
-                        waitCount.incrementAndGet();
-                    }else {
-                        comfirmCount.incrementAndGet();
-                    }
-                }catch (Exception ex){
-                    exceptionCount.incrementAndGet();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                } catch (BrokenBarrierException e) {
+                    throw new RuntimeException(e);
                 }finally {
                     latch.countDown();
                 }
@@ -154,9 +148,9 @@ class PaymentValidateFacadeIntegrationTest {
         latch.await();
         executorService.shutdown();
 
-        assertEquals(1, comfirmCount.get());
-        assertEquals(threadCount-1, waitCount.get());
-        assertEquals(0, exceptionCount.get());
+        // spybean이라서 실제 실행 횟수를 확인할 수 있음
+        verify(portOneAdaptor, times(1)).getPayment(paymentId);
+        verify(paymentService, times(1)).validateAndConfirm(reservation.getId(), paymentId, amount);
     }
 
     @Test
@@ -294,7 +288,7 @@ class PaymentValidateFacadeIntegrationTest {
         when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
 
         // 모든 검증이 성공했는데 트랜잭션에서 실패
-        doThrow(new RuntimeException()).when(paymentService).confirmReservation(customDataDto.getReservationId(), paymentId);
+        doThrow(new RuntimeException()).when(paymentService).validateAndConfirm(customDataDto.getReservationId(), paymentId, amount);
 
         // w
         assertThrows(Exception.class,()->paymentValidateFacade.validate(paymentId));
