@@ -6,7 +6,7 @@ import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.repository.PaymentCancelRepository;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
-import com.rejs.reservation.domain.reservation.repository.ReservationFacade;
+import com.rejs.reservation.domain.reservation.repository.ReservationDataFacade;
 import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.Optional;
 @Service
 public class ReservationCancelService {
     private final PaymentCancelRepository paymentCancelRepository;
-    private final ReservationFacade reservationFacade;
+    private final ReservationDataFacade reservationDataFacade;
 
     /**
      * 예매 취소할 때 결제도 같이 취소해야하는 지 여부
@@ -33,7 +33,7 @@ public class ReservationCancelService {
             2. 상영시작시간 전일 것
             데이터베이스에서 찾아오지 못했다면 취소 불가능한 것
          */
-        Reservation reservation = reservationFacade.findForCancel(reservationId).orElseThrow(() -> new BusinessException(ReservationExceptionCode.INVALID_RESERVATION_CANCEL_REQUEST));
+        Reservation reservation = reservationDataFacade.findForCancel(reservationId).orElseThrow(() -> new BusinessException(ReservationExceptionCode.INVALID_RESERVATION_CANCEL_REQUEST));
 
         // 결제 완료된 paymentId가 있는지 검사
         String paymentId = null;

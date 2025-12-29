@@ -11,7 +11,7 @@ import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.repository.PaymentCancelRepository;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
-import com.rejs.reservation.domain.reservation.repository.ReservationFacade;
+import com.rejs.reservation.domain.reservation.repository.ReservationDataFacade;
 import com.rejs.reservation.global.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ class ReservationCancelServiceTest {
     private PaymentCancelRepository paymentCancelRepository;
 
     @Mock
-    private ReservationFacade reservationFacade;
+    private ReservationDataFacade reservationDataFacade;
 
     @Test
     @DisplayName("결제 완료된 예매 취소 시, 결제 취소 내역이 저장되고 paymentId가 반환된다.")
@@ -48,7 +48,7 @@ class ReservationCancelServiceTest {
         given(reservation.getId()).willReturn(reservationId);
         given(reservation.getPayments()).willReturn(List.of(payment));
 
-        given(reservationFacade.findForCancel(reservationId)).willReturn(Optional.of(reservation));
+        given(reservationDataFacade.findForCancel(reservationId)).willReturn(Optional.of(reservation));
 
         // when
         Optional<String> result = reservationCancelService.cancelReservation(reservationId);
@@ -69,7 +69,7 @@ class ReservationCancelServiceTest {
 
         given(payment.getStatus()).willReturn(PaymentStatus.READY);
         given(reservation.getPayments()).willReturn(List.of(payment));
-        given(reservationFacade.findForCancel(reservationId)).willReturn(Optional.of(reservation));
+        given(reservationDataFacade.findForCancel(reservationId)).willReturn(Optional.of(reservation));
 
         // when
         Optional<String> result = reservationCancelService.cancelReservation(reservationId);
@@ -85,7 +85,7 @@ class ReservationCancelServiceTest {
     void cancelReservation_NotFound_ThrowsException() {
         // given
         Long reservationId = 1L;
-        given(reservationFacade.findForCancel(reservationId)).willReturn(Optional.empty());
+        given(reservationDataFacade.findForCancel(reservationId)).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> reservationCancelService.cancelReservation(reservationId))

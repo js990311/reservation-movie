@@ -21,7 +21,7 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Repository
-public class ReservationFacade {
+public class ReservationDataFacade {
     private final ReservationRepository reservationRepository;
     private final ReservationSeatRepository reservationSeatRepository;
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -43,6 +43,19 @@ public class ReservationFacade {
                     )
                 ; 
             """;
+
+    private static String UPDATE_AUTO_CANCEL_RESERVATION_BY_CREATED_AT = """
+            UPDATE reservations
+            SET status = 'CANCELLED'
+            WHERE status = 'PENDING' and created_at < NOW() -INTERVAL 10 MINUTE;
+    """;
+    private static String UPDATE_AUTO_CANCEL_RESERVATION_BY_SCREENING = """
+                UPDATE reservations
+                JOIN screenings using (screening_id)
+                SET status = 'CANCELLED'
+                WHERE start_time < NOW() and status = 'PENDING';
+            """;
+
 
     public List<Long> selectAvailableSeats(List<Long> seatIds, Long theaterId, Long screeningId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -74,5 +87,11 @@ public class ReservationFacade {
 
     public List<ReservationSeatNumberDto> findSeatNumberById(Long id) {
         return reservationQueryRepository.findSeatNumberById(id);
+    }
+
+    @Transactional
+    public void autoCancelReservation() {
+        jdbcTemplate.getJdbcOperations().update(UPDATE_AUTO_CANCEL_RESERVATION_BY_SCREENING);
+        jdbcTemplate.getJdbcOperations().update(UPDATE_AUTO_CANCEL_RESERVATION_BY_CREATED_AT);
     }
 }

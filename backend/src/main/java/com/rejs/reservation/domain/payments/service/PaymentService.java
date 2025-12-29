@@ -58,26 +58,40 @@ public class PaymentService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public void validatePayment(String paymentId, Long totalAmount){
-        // readOnly라 멱등성이 어긋날리가 없음
+    /**
+     * 불필요하게 나뉜 기존의 검증 트랜잭션과 승인 트랜잭션을 하나로 합침
+     * @param reservationId
+     * @param paymentId
+     * @return
+     */
+    @Transactional
+    public PaymentInfoDto validateAndConfirm(Long reservationId, String paymentId, Long totalAmount){
+        // 스케줄러 등 상태를 변경시키는 race condition으로부터 안전을 위해서 비관적 락 설정
+        Reservation reservation = reservationRepository.findWithLockById(reservationId).orElseThrow(() -> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
+
+        // 결제 정보 불러오기
         com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow(() -> BusinessException.of(PaymentExceptionCode.PAYMENT_NOT_FOUND));
-        Reservation reservation = payment.getReservation();
-        // 결제 금액이 맞는 지 검증
+
+        // 혹시라도 payment가 다른 예매에 대한 결제가 아닌 지 검증(reservationId를 custom data에서 가져왔기 때문)
+        if(!payment.getReservation().getId().equals(reservation.getId())){
+            throw BusinessException.of(PaymentExceptionCode.PAYMENT_INFO_MISMATCH);
+        }
+
+        // 결제 총 금액과의 비교
         if(reservation.getTotalAmount().longValue() != totalAmount){
             throw BusinessException.of(PaymentExceptionCode.PAYMENT_AMOUNT_MISMATCH);
         }
-    }
-
-    @Transactional
-    public PaymentInfoDto confirmReservation(Long reservationId, String paymentId){
-        Reservation reservation = reservationRepository.findWithLockById(reservationId).orElseThrow(() -> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
-        com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow(() -> BusinessException.of(PaymentExceptionCode.PAYMENT_NOT_FOUND));
 
         // 이미 상태가 변화되었으면 상태변화 메서드 호출 없이 그대로
         if(reservation.getStatus().equals(ReservationStatus.CONFIRMED) || payment.getStatus().equals(PaymentStatus.PAID)){
             return new PaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
         }
+
+        // 스케쥴러 등으로 인해 결제보다 취소가 빨랐으면 비즈니스 로직상 결제 취소 후 환불
+        if(reservation.getStatus().equals(ReservationStatus.CANCELED)){
+            throw BusinessException.of(PaymentExceptionCode.RESERVATION_ALREADY_CANCELED);
+        }
+
         reservation.confirm();
         payment.paid();
         return new PaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());

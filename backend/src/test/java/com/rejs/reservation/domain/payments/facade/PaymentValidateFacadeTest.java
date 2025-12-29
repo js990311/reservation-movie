@@ -55,7 +55,7 @@ class PaymentValidateFacadeTest {
         paymentValidateFacade.validate(paymentId);
 
         // w
-        verify(paymentService, times(1)).confirmReservation(1L,paymentId);
+        verify(paymentService, times(1)).validateAndConfirm(1L,paymentId, amount);
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
@@ -79,7 +79,7 @@ class PaymentValidateFacadeTest {
         // w
         verify(portOneAdaptor, never()).getPayment(paymentId);
 
-        verify(paymentService, never()).confirmReservation(1L,paymentId);
+        verify(paymentService, never()).validateAndConfirm(1L,paymentId, amount);
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
@@ -99,7 +99,7 @@ class PaymentValidateFacadeTest {
 
         // w
         verify(portOneAdaptor, never()).getPayment(paymentId);
-        verify(paymentService, never()).confirmReservation(1L,paymentId);
+        verify(paymentService, never()).validateAndConfirm(1L,paymentId, -1L);
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
@@ -124,7 +124,7 @@ class PaymentValidateFacadeTest {
 
         // t
         // 성공로직 실행 X
-        verify(paymentService, never()).confirmReservation(anyLong(),anyString());
+        verify(paymentService, never()).validateAndConfirm(anyLong(),anyString(), anyLong());
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
@@ -151,7 +151,7 @@ class PaymentValidateFacadeTest {
 
         // t
         // 성공로직 실행 X
-        verify(paymentService, never()).confirmReservation(anyLong(),anyString());
+        verify(paymentService, never()).validateAndConfirm(anyLong(),anyString(), anyLong());
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
@@ -159,38 +159,7 @@ class PaymentValidateFacadeTest {
     }
 
     @Test
-    @DisplayName("결제 금액 검증 실패 시나리오")
-    void validatePaymentFail(){
-        String paymentId = "123456";
-        Long amount = 1000L;
-        PaymentStatusDto paymentStatus = mock(PaymentStatusDto.class);
-        CustomDataDto customDataDto = new CustomDataDto(1L);
-
-        // 결제전 상태가 원만함
-        when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
-
-        // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
-        when(paymentStatus.getCustomData()).thenReturn(customDataDto);
-        when(paymentStatus.getTotalAmount()).thenReturn(amount);
-
-        // paymentService에서의 검증 실패 시나리오
-        doThrow(BusinessException.of(PaymentExceptionCode.PAYMENT_AMOUNT_MISMATCH)).when(paymentService).validatePayment(paymentId, amount);
-
-        // w
-        assertThrows(BusinessException.class,()->paymentValidateFacade.validate(paymentId));
-
-        // t
-        // 성공로직 실행 X
-        verify(paymentService, never()).confirmReservation(anyLong(),anyString());
-
-        // 실패로직
-        verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
-    }
-
-    @Test
-    @DisplayName("결제 승인 실패 시나리오")
+    @DisplayName("결제 검증 및 승인 실패 시나리오")
     void validateConfirmFail(){
         String paymentId = "123456";
         Long amount = 1000L;
@@ -205,8 +174,8 @@ class PaymentValidateFacadeTest {
         when(paymentStatus.getCustomData()).thenReturn(customDataDto);
         when(paymentStatus.getTotalAmount()).thenReturn(amount);
 
-        // 모든 검증이 성공했는데 트랜잭션에서 실패
-        when(paymentService.confirmReservation(customDataDto.getReservationId(), paymentId)).thenThrow(new RuntimeException());
+        // 검증 및 승인 실패
+        when(paymentService.validateAndConfirm(customDataDto.getReservationId(), paymentId, amount)).thenThrow(new RuntimeException());
 
         // w
         assertThrows(Exception.class,()->paymentValidateFacade.validate(paymentId));
