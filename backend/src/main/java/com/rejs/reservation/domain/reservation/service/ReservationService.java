@@ -7,9 +7,8 @@ import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
-import com.rejs.reservation.domain.reservation.repository.ReservationFacade;
+import com.rejs.reservation.domain.reservation.repository.ReservationDataFacade;
 import com.rejs.reservation.domain.screening.entity.Screening;
-import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import io.micrometer.observation.annotation.Observed;
@@ -20,14 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Observed
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class ReservationService {
-    private final ReservationFacade reservationFacade;
+    private final ReservationDataFacade reservationDataFacade;
     private final ScreeningRepository screeningRepository;
 
 
@@ -39,7 +37,7 @@ public class ReservationService {
 
         // 좌석이 실제로 존재하는 지 가져오기
         // + 이미 예약된 좌석인지 검사하기
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
+        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
                 request.getSeats(),
                 screening.getTheaterId(),
                 screening.getId()
@@ -51,19 +49,19 @@ public class ReservationService {
 
         // reservation 및 reservationSeat 생성
         Reservation reservation = Reservation.create(userId, screening.getId(), availableSeats);
-        reservation = reservationFacade.save(reservation);
+        reservation = reservationDataFacade.save(reservation);
         return ReservationDto.from(reservation);
     }
 
     // READ
     public Page<ReservationSummaryDto> findMyReservations(long userId, Pageable pageable) {
-        return reservationFacade.findMyReservations(userId, pageable);
+        return reservationDataFacade.findMyReservations(userId, pageable);
     }
 
 
     public ReservationDetailDto findById(Long id) {
-        ReservationSummaryDto reservation = reservationFacade.findReservationSummaryById(id);
-        List<ReservationSeatNumberDto> seats = reservationFacade.findSeatNumberById(id);
+        ReservationSummaryDto reservation = reservationDataFacade.findReservationSummaryById(id);
+        List<ReservationSeatNumberDto> seats = reservationDataFacade.findSeatNumberById(id);
         return new ReservationDetailDto(reservation, seats);
     }
 }

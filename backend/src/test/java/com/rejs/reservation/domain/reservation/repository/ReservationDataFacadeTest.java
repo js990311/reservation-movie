@@ -6,6 +6,7 @@ import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
@@ -13,7 +14,6 @@ import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.SeatDto;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
 import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
-import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.service.TheaterService;
 import com.rejs.reservation.domain.user.dto.UserDto;
 import com.rejs.reservation.domain.user.entity.User;
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(TestcontainersConfiguration.class)
 @Transactional
 @SpringBootTest
-class ReservationFacadeTest {
+class ReservationDataFacadeTest {
     @Autowired
     private MovieService movieService;
 
@@ -51,7 +52,7 @@ class ReservationFacadeTest {
     private UserRepository userRepository;
 
     @Autowired
-    private ReservationFacade reservationFacade;
+    private ReservationDataFacade reservationDataFacade;
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -59,13 +60,16 @@ class ReservationFacadeTest {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     private MovieDto movie;
     private TheaterDto theater;
     private ScreeningDto screening;
     private UserDto user;
 
     @BeforeEach
-    void setup(){
+    void setup() {
         // 영화 생성
         MovieCreateRequest movieRequest = new MovieCreateRequest("title", 145);
         movie = movieService.createMovie(movieRequest);
@@ -88,7 +92,7 @@ class ReservationFacadeTest {
         List<SeatDto> seats = theater.getSeats();
         ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
 
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
+        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
                 reservationRequest.getSeats(),
                 screening.getTheaterId(),
                 screening.getScreeningId()
@@ -98,7 +102,7 @@ class ReservationFacadeTest {
     }
 
     @Test
-    void 일부좌석이예약(){
+    void 일부좌석이예약() {
         // 예약이 진행되었다고 가정
         int reservationSeatCount = 5;
         List<SeatDto> seats = theater.getSeats();
@@ -108,7 +112,7 @@ class ReservationFacadeTest {
         entityManager.flush();
 
         //
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
+        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
                 seats.stream().map(SeatDto::getSeatId).toList(),
                 screening.getTheaterId(),
                 screening.getScreeningId()
@@ -117,7 +121,7 @@ class ReservationFacadeTest {
     }
 
     @Test
-    void 모든좌석예약(){
+    void 모든좌석예약() {
         // 예약이 진행되었다고 가정
         List<SeatDto> seats = theater.getSeats();
         Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
@@ -126,7 +130,7 @@ class ReservationFacadeTest {
         entityManager.flush();
 
         //
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
+        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
                 seats.stream().map(SeatDto::getSeatId).toList(),
                 screening.getTheaterId(),
                 screening.getScreeningId()
@@ -135,7 +139,7 @@ class ReservationFacadeTest {
     }
 
     @Test
-    void 다른상영시간의영향을받는지(){
+    void 다른상영시간의영향을받는지() {
         // 다른 상영표 생성
         CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plus(999, ChronoUnit.MINUTES));
         ScreeningDto screening2 = screeningService.createScreening(screeningRequest);
@@ -148,12 +152,12 @@ class ReservationFacadeTest {
         entityManager.flush();
 
         // 다른 상영표는 모두 예매 가능
-        List<Long> availableSeats = reservationFacade.selectAvailableSeats(
+        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
                 seats.stream().map(SeatDto::getSeatId).toList(),
                 screening2.getTheaterId(),
                 screening2.getScreeningId()
         );
         assertEquals(seats.size(), availableSeats.size());
-
     }
+
 }
