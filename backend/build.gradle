@@ -93,7 +93,6 @@ openapi3{
 	format = "yaml"
 }
 
-
 tasks.register('docs', Copy) {
 	doFirst {
 		delete file('src/main/resources/docs/openapi3.yaml')
