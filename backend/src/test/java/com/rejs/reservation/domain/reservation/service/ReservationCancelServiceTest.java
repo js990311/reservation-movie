@@ -45,7 +45,6 @@ class ReservationCancelServiceTest {
 
         given(payment.getStatus()).willReturn(PaymentStatus.PAID);
         given(payment.getPaymentUid()).willReturn(paymentUid);
-        given(reservation.getId()).willReturn(reservationId);
         given(reservation.getPayments()).willReturn(List.of(payment));
 
         given(reservationDataFacade.findForCancel(reservationId)).willReturn(Optional.of(reservation));

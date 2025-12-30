@@ -56,10 +56,6 @@ class LoginControllerTest extends AbstractControllerTest {
 
     }
 
-    @AfterEach
-    void clear(){
-        userRepository.deleteAll();
-    }
 
     @Test
     void login() throws Exception{

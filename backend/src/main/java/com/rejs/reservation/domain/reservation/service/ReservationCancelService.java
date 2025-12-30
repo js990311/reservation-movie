@@ -1,6 +1,7 @@
 package com.rejs.reservation.domain.reservation.service;
 
 import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancel;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.repository.PaymentCancelRepository;
@@ -37,11 +38,11 @@ public class ReservationCancelService {
 
         // 결제 완료된 paymentId가 있는지 검사
         String paymentId = null;
-        Optional<String> opt = reservation.getPayments().stream().filter((payment -> payment.getStatus().equals(PaymentStatus.PAID))).findFirst().map(Payment::getPaymentUid);
+        Optional<Payment> opt = reservation.getPayments().stream().filter((payment -> payment.getStatus().equals(PaymentStatus.PAID))).findFirst();
         if(opt.isPresent()){
             // 있으면 paymentCancel을 생성하고 paymentId를 위로 올림
-            paymentId = opt.get();
-            PaymentCancel paymentCancel = new PaymentCancel(reservation.getId(), paymentId);
+            paymentId = opt.get().getPaymentUid();
+            PaymentCancel paymentCancel = new PaymentCancel(opt.get(), PaymentCancelReason.CUSTOMER_REQUEST);
             paymentCancelRepository.save(paymentCancel);
         }
 

@@ -1,19 +1,24 @@
 package com.rejs.reservation.domain.reservation.entity;
 
+import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@SQLDelete(sql = "UPDATE reservation_seats SET deleted_at = NOW() WHERE reservation_seat_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "reservation_seats")
-public class ReservationSeat {
+public class ReservationSeat extends BaseEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "reservation_seat_id")
     private Long id;
 

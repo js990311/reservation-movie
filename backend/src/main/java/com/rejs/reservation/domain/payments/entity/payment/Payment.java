@@ -6,10 +6,14 @@ import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @NoArgsConstructor
 @Getter
 @Table(name = "payments")
+@SQLDelete(sql = "UPDATE payments SET deleted_at = NOW() WHERE payment_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Entity
 public class Payment extends BaseEntity {
 
@@ -17,12 +21,12 @@ public class Payment extends BaseEntity {
      * 데이터베이스에서만 사용하는 surrogate key
      */
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
     private Long id;
 
 
-    @Column(name = "payment_uid")
+    @Column(name = "payment_uid", columnDefinition = "CHAR(13)")
     private String paymentUid;
 
     @Enumerated(EnumType.STRING)

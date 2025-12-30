@@ -39,7 +39,7 @@ class PaymentCancelFacadeTest {
 
     @BeforeEach
     void setUp() {
-        requiredDto = new PaymentCancelDto(cancelId, null, paymentId, PaymentCancelStatus.REQUIRED, reason);
+        requiredDto = new PaymentCancelDto(cancelId, paymentId, PaymentCancelStatus.REQUIRED, reason);
     }
 
     @Test

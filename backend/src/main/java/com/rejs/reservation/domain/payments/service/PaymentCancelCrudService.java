@@ -22,7 +22,7 @@ public class PaymentCancelCrudService {
     public PaymentCancelDto getOrCreate(String paymentId, PaymentCancelReason reason){
         PaymentCancel paymentCancel = paymentCancelRepository.findByPaymentUid(paymentId).orElseGet(() -> {
             Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
-            PaymentCancel newPaymentCancel = new PaymentCancel(payment.optionalReservationId(), payment.getPaymentUid(), reason);
+            PaymentCancel newPaymentCancel = new PaymentCancel(payment, reason);
             return paymentCancelRepository.save(newPaymentCancel);
         });
         return PaymentCancelDto.from(paymentCancel);

@@ -3,8 +3,11 @@ package com.rejs.reservation.domain.screening.entity;
 import com.rejs.reservation.domain.movie.entity.Movie;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.theater.entity.Theater;
+import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -15,10 +18,12 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@SQLDelete(sql = "UPDATE screenings SET deleted_at = NOW() WHERE screening_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "screenings")
-public class Screening {
+public class Screening extends BaseEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "screening_id")
     private Long id;
 

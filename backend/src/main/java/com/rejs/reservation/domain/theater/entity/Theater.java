@@ -1,11 +1,14 @@
 package com.rejs.reservation.domain.theater.entity;
 
 import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +17,12 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
+@SQLDelete(sql = "UPDATE theaters SET deleted_at = NOW() WHERE theater_id = ?")
+@SQLRestriction("deleted_at IS NULL")
 @Table(name = "theaters")
-public class Theater {
+public class Theater extends BaseEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "theater_id")
     private Long id;
 

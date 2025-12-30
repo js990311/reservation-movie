@@ -90,10 +90,6 @@ class TheaterControllerTest extends AbstractControllerTest {
         accessToken = tokens.getAccessToken();
     }
 
-    @AfterEach
-    void clearToken(){
-        userRepository.deleteAll();;
-    }
 
     @Test
     @DisplayName("POST theaters - 201")

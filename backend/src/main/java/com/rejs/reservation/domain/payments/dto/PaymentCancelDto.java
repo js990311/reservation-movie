@@ -8,7 +8,6 @@ import lombok.Getter;
 @Getter
 public class PaymentCancelDto {
     private Long id;
-    private Long reservationId;
     private String paymentUid;
     private PaymentCancelStatus status;
     private PaymentCancelReason reason;
@@ -17,9 +16,8 @@ public class PaymentCancelDto {
         return !status.equals(PaymentCancelStatus.REQUIRED);
     }
 
-    public PaymentCancelDto(Long id, Long reservationId, String paymentUid, PaymentCancelStatus status, PaymentCancelReason reason) {
+    public PaymentCancelDto(Long id, String paymentUid, PaymentCancelStatus status, PaymentCancelReason reason) {
         this.id = id;
-        this.reservationId = reservationId;
         this.paymentUid = paymentUid;
         this.status = status;
         this.reason = reason;
@@ -28,7 +26,6 @@ public class PaymentCancelDto {
     public static PaymentCancelDto from(PaymentCancel paymentCancel){
         return new PaymentCancelDto(
                 paymentCancel.getId(),
-                paymentCancel.getReservationId(),
                 paymentCancel.getPaymentUid(),
                 paymentCancel.getStatus(),
                 paymentCancel.getReason()

@@ -104,12 +104,6 @@ class ScreeningControllerTest extends AbstractControllerTest {
         accessToken = tokens.getAccessToken();
     }
 
-    @AfterEach
-    void clearToken(){
-        userRepository.deleteAll();;
-    }
-
-
     @BeforeEach
     void setUp(){
         String movieName = "some-movie";
