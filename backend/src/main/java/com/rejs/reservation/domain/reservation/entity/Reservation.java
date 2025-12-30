@@ -7,10 +7,8 @@ import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.user.entity.User;
 import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 

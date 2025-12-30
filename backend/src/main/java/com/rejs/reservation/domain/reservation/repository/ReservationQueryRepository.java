@@ -2,6 +2,7 @@ package com.rejs.reservation.domain.reservation.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.rejs.reservation.domain.movie.entity.QMovie;
@@ -143,5 +144,43 @@ public class ReservationQueryRepository {
                 )
                 .fetchOne()
         );
+    }
+
+    /*
+                    SELECT s.seat_id
+                FROM seats s
+                WHERE
+                    s.seat_id in (:seatIds)
+                    AND s.theater_id = :theaterId
+                    AND NOT EXISTS(
+                        SELECT 1
+                        FROM reservation_seats rs
+                        JOIN reservations r using (reservation_id)
+                        WHERE rs.seat_id = s.seat_id
+                            AND r.screening_id = :screeningId
+                            AND r.status != 'CANCELED'
+                    )
+                ;
+
+     */
+
+    public List<Long> selectAvailableSeats(List<Long> seatIds, Long theaterId, Long screeningId) {
+        return jpaQueryFactory
+                .select(seat.id)
+                .from(seat)
+                .where(
+                        seat.id.in(seatIds)
+                                .and(seat.theater.id.eq(theaterId))
+                                .and(
+                                        JPAExpressions.selectOne()
+                                                .from(reservationSeat)
+                                                .join(reservationSeat.reservation, reservation)
+                                                .where(
+                                                        reservationSeat.seatId.eq(seat.id),
+                                                        reservation.screeningId.eq(screeningId),
+                                                        reservation.status.ne(ReservationStatus.CANCELED)
+                                                    ).notExists()
+                                )
+                ).fetch();
     }
 }

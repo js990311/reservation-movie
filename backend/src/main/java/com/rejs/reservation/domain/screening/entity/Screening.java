@@ -1,7 +1,6 @@
 package com.rejs.reservation.domain.screening.entity;
 
 import com.rejs.reservation.domain.movie.entity.Movie;
-import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -11,8 +10,6 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
@@ -96,7 +93,7 @@ public class Screening extends BaseEntity {
     }
 
     // 생성
-    public static Screening of(LocalDateTime startTime, Theater theater, Movie movie){
+    public static Screening create(LocalDateTime startTime, Theater theater, Movie movie){
         Screening screening = new Screening();
         screening.assignTheater(theater);
         screening.assignMovie(movie);

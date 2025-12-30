@@ -24,45 +24,11 @@ import java.util.Optional;
 public class ReservationDataFacade {
     private final ReservationRepository reservationRepository;
     private final ReservationSeatRepository reservationSeatRepository;
-    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final ReservationQueryRepository reservationQueryRepository;
-
-    private static String FIND_AVAILABLE_SEAT = """
-                SELECT s.seat_id
-                FROM seats s 
-                WHERE 
-                    s.seat_id in (:seatIds)
-                    AND s.theater_id = :theaterId
-                    AND NOT EXISTS(
-                        SELECT 1 
-                        FROM reservation_seats rs 
-                        JOIN reservations r using (reservation_id)
-                        WHERE rs.seat_id = s.seat_id 
-                            AND r.screening_id = :screeningId 
-                            AND r.status != 'CANCELED'
-                    )
-                ; 
-            """;
-
-    private static String UPDATE_AUTO_CANCEL_RESERVATION_BY_CREATED_AT = """
-            UPDATE reservations
-            SET status = 'CANCELLED'
-            WHERE status = 'PENDING' and created_at < NOW() -INTERVAL 10 MINUTE;
-    """;
-    private static String UPDATE_AUTO_CANCEL_RESERVATION_BY_SCREENING = """
-                UPDATE reservations
-                JOIN screenings using (screening_id)
-                SET status = 'CANCELLED'
-                WHERE start_time < NOW() and status = 'PENDING';
-            """;
 
 
     public List<Long> selectAvailableSeats(List<Long> seatIds, Long theaterId, Long screeningId) {
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("seatIds", seatIds)
-                .addValue("theaterId", theaterId)
-                .addValue("screeningId", screeningId);
-        return jdbcTemplate.queryForList(FIND_AVAILABLE_SEAT, param, Long.class);
+        return reservationQueryRepository.selectAvailableSeats(seatIds, theaterId, screeningId);
     }
 
     public Reservation save(Reservation reservation) {
@@ -87,11 +53,5 @@ public class ReservationDataFacade {
 
     public List<ReservationSeatNumberDto> findSeatNumberById(Long id) {
         return reservationQueryRepository.findSeatNumberById(id);
-    }
-
-    @Transactional
-    public void autoCancelReservation() {
-        jdbcTemplate.getJdbcOperations().update(UPDATE_AUTO_CANCEL_RESERVATION_BY_SCREENING);
-        jdbcTemplate.getJdbcOperations().update(UPDATE_AUTO_CANCEL_RESERVATION_BY_CREATED_AT);
     }
 }

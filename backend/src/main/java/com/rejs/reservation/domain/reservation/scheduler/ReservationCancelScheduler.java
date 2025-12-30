@@ -1,5 +1,6 @@
 package com.rejs.reservation.domain.reservation.scheduler;
 
+import com.rejs.reservation.domain.reservation.repository.AutoCancelRepository;
 import com.rejs.reservation.domain.reservation.repository.ReservationDataFacade;
 import com.rejs.reservation.domain.reservation.service.ReservationService;
 import lombok.RequiredArgsConstructor;
@@ -11,11 +12,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class ReservationCancelScheduler {
-    private final ReservationService reservationService;
-    private final ReservationDataFacade reservationDataFacade;
+    private final AutoCancelRepository autoCancelRepository;
 
-    @Scheduled(fixedDelay = 60*1000)
+    @Scheduled(fixedDelay = 60*1000) // 1분마다 실행
     public void autoCancelReservation(){
-        reservationDataFacade.autoCancelReservation();
+        // 트랜잭션은 repository에서 각각 실행됨
+        autoCancelRepository.autoCancelByCreatedAt();
+        autoCancelRepository.autoCancelByScreeningStartTime();
     }
 }
