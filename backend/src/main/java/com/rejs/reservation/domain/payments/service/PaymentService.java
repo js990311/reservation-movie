@@ -32,6 +32,8 @@ public class PaymentService {
     @Transactional
     public PaymentLockResult startVerification(String paymentId) {
         try {
+            int updated = paymentRepository.tryToUpdate(paymentId);
+
             Optional<Payment> opt = paymentRepository.findByPaymentUid(paymentId);
             if (opt.isEmpty()) {
                 return PaymentLockResult.NOT_FOUND;

@@ -22,7 +22,8 @@ public class PaymentValidateFacade {
     private final PaymentCancelFacade paymentCancelFacade;
 
     public PaymentInfoDto validate(String paymentId){
-        // 멱등성 보장을 위한 로직 및 결제가 성공했다는 의미를 위해 Ready -> Verifying
+
+        // 1. 멱등성 보장을 위한 로직 및 결제가 성공했다는 의미를 위해 Ready -> Verifying
         log.info("[payment.verify.request] 결제 검증 요청이 들어왔습니다. paymentId={}", paymentId);
         try {
             PaymentLockResult paymentLockResult = paymentService.startVerification(paymentId);
@@ -41,8 +42,8 @@ public class PaymentValidateFacade {
             return paymentService.getPaymentInfo(paymentId);
         }
 
+        // 2. 외부 API 호출
         PaymentStatusDto payment;
-        // 외부 API 호출
         try {
             payment = portoneAdaptor.getPayment(paymentId);
         }catch (Exception e){
