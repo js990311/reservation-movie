@@ -19,6 +19,7 @@ import java.util.List;
 @SQLRestriction("deleted_at IS NULL")
 @Table(name = "movies")
 public class Movie extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "movie_id")

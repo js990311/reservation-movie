@@ -10,6 +10,7 @@ env:
   # 아래서 {{env}}로 사용가능
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: reservation-app
+  ECR_PUBLIC_URI: public.ecr.aws/l6e2y7e7/reservation-app
 
 jobs:
   build-and-push:
@@ -50,7 +51,7 @@ jobs:
           platforms: linux/arm64 # t4g(Graviton)를 위해 ARM64 지정
           push: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+            ${{ env.ECR_PUBLIC_URI }}:${{ github.sha }}
+            ${{ env.ECR_PUBLIC_URI }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
