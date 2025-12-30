@@ -57,6 +57,4 @@ services:
       - loki
 
 volumes:
-  caddy_data:
-  caddy_config:
   grafana-data:
