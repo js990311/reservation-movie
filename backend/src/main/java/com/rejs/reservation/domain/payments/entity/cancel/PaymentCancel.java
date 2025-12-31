@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.time.LocalDateTime;
+
 /**
  * 엄격하게 관리한다면 payment와의 mapping이 있어야할지도 모르겠다
  */
@@ -34,6 +36,9 @@ public class PaymentCancel extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column
     private PaymentCancelReason reason;
+
+    @Column
+    private LocalDateTime lastAttemptedAt;
 
     // 관계
     @OneToOne(fetch = FetchType.LAZY)

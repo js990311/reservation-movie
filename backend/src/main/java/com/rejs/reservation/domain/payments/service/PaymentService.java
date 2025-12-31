@@ -1,9 +1,12 @@
 package com.rejs.reservation.domain.payments.service;
 
 import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancel;
+import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
+import com.rejs.reservation.domain.payments.repository.PaymentCancelRepository;
 import com.rejs.reservation.domain.payments.repository.PaymentRepository;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
@@ -28,6 +31,7 @@ import java.util.Optional;
 public class PaymentService {
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
+    private final PaymentCancelRepository paymentCancelRepository;
 
     @Transactional
     public PaymentLockResult startVerification(String paymentId) {
@@ -111,6 +115,10 @@ public class PaymentService {
             return paymentRepository.saveAndFlush(newPayment); // 후속 쿼리에서 감지를 못하는 문제 발생
         });
         payment.aborted();
+
+        // PaymentCancel의 생성을 이제 결제 거부할 때 같이하도록 지시
+        PaymentCancel paymentCancel = new PaymentCancel(payment, PaymentCancelReason.VALIDATION_FAILED);
+        paymentCancelRepository.save(paymentCancel);
     }
 
     @Transactional(readOnly = true)

@@ -15,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -47,7 +49,7 @@ class PaymentValidateFacadeTest {
         when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
         when(paymentStatus.getCustomData()).thenReturn(customDataDto);
         when(paymentStatus.getTotalAmount()).thenReturn(amount);
 
@@ -59,7 +61,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
-        verify(paymentCancelFacade, never()).cancelPayment(anyString(), any());
+        verify(paymentCancelFacade, never()).cancelPayment(anyString());
     }
 
     @Test
@@ -83,7 +85,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
-        verify(paymentCancelFacade, never()).cancelPayment(anyString(), any());
+        verify(paymentCancelFacade, never()).cancelPayment(anyString());
     }
 
     @Test
@@ -103,7 +105,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString());
     }
 
 
@@ -128,7 +130,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, never()).abortPayment(anyString());
-        verify(paymentCancelFacade, never()).cancelPayment(anyString(), any());
+        verify(paymentCancelFacade, never()).cancelPayment(anyString());
     }
 
     @Test
@@ -141,7 +143,7 @@ class PaymentValidateFacadeTest {
         when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
 
         // paymentStatus에서의 검증 실패 시나리오
         doThrow(BusinessException.of(PaymentExceptionCode.INVALID_CHANNEL)).when(paymentStatus).validate();
@@ -155,7 +157,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString());
     }
 
     @Test
@@ -170,7 +172,7 @@ class PaymentValidateFacadeTest {
         when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
         when(paymentStatus.getCustomData()).thenReturn(customDataDto);
         when(paymentStatus.getTotalAmount()).thenReturn(amount);
 
@@ -182,7 +184,7 @@ class PaymentValidateFacadeTest {
 
         // 실패로직
         verify(paymentService, times(1)).abortPayment(anyString());
-        verify(paymentCancelFacade, times(1)).cancelPayment(anyString(), any());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString());
     }
 
 }

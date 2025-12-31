@@ -79,6 +79,9 @@ dependencies {
 
 	// loki4j
 	implementation("com.github.loki4j:loki-logback-appender:2.0.2")
+
+	// 서킷 브레이커
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.3.0'
 }
 
 tasks.named('test') {

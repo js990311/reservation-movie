@@ -36,16 +36,6 @@ export default function usePayment(){
 
         const {paymentId, totalAmount, customData} = prepareResponse.data;
 
-        const storeId = process.env.NEXT_PUBLIC_PORTONE_STORE_ID;
-
-        if(!storeId){
-            setPaymentStatus({
-                status: "FAILED",
-                message: 'storeId 환경변수가 없습니다',
-            });
-            return;
-        }
-
         const payment = await PortOne.requestPayment({
             // env 사용해서 key값 가져오기
             storeId: storeId,

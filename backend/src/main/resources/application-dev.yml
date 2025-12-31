@@ -66,3 +66,18 @@ logging:
   level:
     query-logger: DEBUG
     slow-query-logger: WARN
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      portOne:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        slowCallDurationThreshold: 3000
+        recordExceptions:
+          - java.lang.Throwable
+          - io.portone.sdk.server.errors.UnknownException
+        ignoreExceptions:
+          - io.portone.sdk.server.errors.PortOneException

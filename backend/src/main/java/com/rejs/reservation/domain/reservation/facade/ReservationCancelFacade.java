@@ -19,10 +19,10 @@ public class ReservationCancelFacade {
 
     public void cancelReservation(Long reservationId){
         // 예매 취소 및 결제 취소 검증
-        Optional<String> paymentId = reservationCancelService.cancelReservation(reservationId);
+        Optional<String> paymentUid = reservationCancelService.cancelReservation(reservationId);
 
         // 결제 취소할 필요가 있으면 환불 호출
-        paymentId.ifPresent(s -> paymentCancelFacade.cancelPayment(s, PaymentCancelReason.CUSTOMER_REQUEST));
+        paymentUid.ifPresent(paymentCancelFacade::cancelPayment);
 
         // 종료
     }

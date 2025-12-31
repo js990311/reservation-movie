@@ -67,6 +67,9 @@ class PaymentValidateFacadeIntegrationTest {
     void setUp() {
         // 프로젝트 내의 모든 객체를... 다 생성할 순 없으므로
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
+
+        // 결제 실패에 대한 테스트가 아니기 때문에 전부 성공한다고
+        when(portOneAdaptor.cancelPayment(anyString(), any())).thenReturn(CompletableFuture.completedFuture(true));
     }
 
     @AfterEach
@@ -95,7 +98,7 @@ class PaymentValidateFacadeIntegrationTest {
         when(paymentStatus.getTotalAmount()).thenReturn(amount);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
 
         // w : 검증 실시
         paymentValidateFacade.validate(paymentId);
@@ -128,7 +131,7 @@ class PaymentValidateFacadeIntegrationTest {
         when(paymentStatus.getTotalAmount()).thenReturn(amount);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
 
         int threadCount = 5;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
@@ -217,7 +220,7 @@ class PaymentValidateFacadeIntegrationTest {
         PaymentStatusDto paymentStatus = mock(PaymentStatusDto.class);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
 
         // paymentStatus에서의 검증 실패 시나리오
         doThrow(BusinessException.of(PaymentExceptionCode.INVALID_CHANNEL)).when(paymentStatus).validate();
@@ -254,7 +257,7 @@ class PaymentValidateFacadeIntegrationTest {
         when(paymentStatus.getTotalAmount()).thenReturn(amount);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
 
         // w
         assertThrows(BusinessException.class,()->paymentValidateFacade.validate(paymentId));
@@ -288,7 +291,7 @@ class PaymentValidateFacadeIntegrationTest {
         when(paymentStatus.getTotalAmount()).thenReturn(amount);
 
         // 외부 API가 정상적으로 작동
-        when(portOneAdaptor.getPayment(paymentId)).thenReturn(paymentStatus);
+        when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
 
         // 모든 검증이 성공했는데 트랜잭션에서 실패
         doThrow(new RuntimeException()).when(paymentService).validateAndConfirm(customDataDto.getReservationId(), paymentId, amount);

@@ -44,7 +44,7 @@ public class PaymentValidateFacade {
         PaymentStatusDto payment;
         // 외부 API 호출
         try {
-            payment = portoneAdaptor.getPayment(paymentId);
+            payment = portoneAdaptor.getPayment(paymentId).join();
         }catch (Exception e){
             log.error("[payment.validation.api.error] 결제 검증을 위한 외부 통신 실패 paymentId={}", paymentId, e);
             // VERIFYING에서 상태를 바꾸지 않는 이유는 나중에 스케쥴러 등을 통해서 재시도를 할 것이기 때문. 즉 검증이 끝나야 다음 상태로 넘어갈 수 있다
@@ -94,6 +94,6 @@ public class PaymentValidateFacade {
         paymentService.abortPayment(paymentId);
 
         // 2. 이미 결제된 payment에 대해서 취소를 진행한다.
-        paymentCancelFacade.cancelPayment(paymentId, PaymentCancelReason.VALIDATION_FAILED);
+        paymentCancelFacade.cancelPayment(paymentId);
     }
 }
