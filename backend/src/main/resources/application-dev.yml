@@ -13,9 +13,13 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc.batch_size: 50
+        order_inserts: true
+
   flyway:
     enabled: true
-
 springdoc:
   api-docs:
     enabled: false
