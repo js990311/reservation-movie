@@ -11,6 +11,8 @@ import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCod
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
+import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.SeatDto;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
@@ -61,10 +63,16 @@ class ReservationServiceTest {
     @Autowired
     private ReservationService reservationService;
 
+    @Autowired
+    private ScreeningSeatRepository screeningSeatRepository;
+
+
     private MovieDto movie;
     private TheaterDto theater;
     private ScreeningDto screening;
     private UserDto user;
+
+    private List<ScreeningSeat> seats;
 
     @BeforeEach
     void setup(){
@@ -83,13 +91,14 @@ class ReservationServiceTest {
         User usere = new User("username", "password");
         usere = userRepository.save(usere);
         user = UserDto.of(usere);
+
+        seats = screeningSeatRepository.findByScreeningId(screening.getScreeningId());
     }
 
 
     @Test
     void reservationScreening() {
-        List<SeatDto> seats = theater.getSeats();
-        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(ScreeningSeat::getId).toList());
 
         ReservationDto reservationDto = reservationService.reservationScreening(reservationRequest, user.getUserId());
 
@@ -103,13 +112,12 @@ class ReservationServiceTest {
     void 일부좌석이예약(){
         // 예약이 진행되었다고 가정
         int reservationSeatCount = 5;
-        List<SeatDto> seats = theater.getSeats();
-        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.subList(0, reservationSeatCount).stream().map(SeatDto::getSeatId).toList());
+        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.subList(0, reservationSeatCount));
         reservationRepository.save(reservation);
 
         entityManager.flush();
 
-        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(ScreeningSeat::getId).toList());
         BusinessException businessException = assertThrows(
                 BusinessException.class,
                 () -> reservationService.reservationScreening(reservationRequest, user.getUserId())
@@ -120,13 +128,12 @@ class ReservationServiceTest {
     @Test
     void 모든좌석예약(){
         // 예약이 진행되었다고 가정
-        List<SeatDto> seats = theater.getSeats();
-        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats);
         reservationRepository.save(reservation);
 
         entityManager.flush();
 
-        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(ScreeningSeat::getId).toList());
         BusinessException businessException = assertThrows(
                 BusinessException.class,
                 () -> reservationService.reservationScreening(reservationRequest, user.getUserId())
@@ -139,15 +146,14 @@ class ReservationServiceTest {
         // 다른 상영표 생성
         CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plus(999, ChronoUnit.MINUTES));
         ScreeningDto screening2 = screeningService.createScreening(screeningRequest);
-
+        List<ScreeningSeat> seats2 = screeningSeatRepository.findByScreeningId(screening2.getScreeningId());
         // 기존 상영표의 예약이 모두 완료되었다고 가정
-        List<SeatDto> seats = theater.getSeats();
-        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats);
         reservationRepository.save(reservation);
 
         entityManager.flush();
 
-        ReservationRequest reservationRequest = new ReservationRequest(screening2.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        ReservationRequest reservationRequest = new ReservationRequest(screening2.getScreeningId(), seats2.stream().map(ScreeningSeat::getId).toList());
         ReservationDto reservationDto = reservationService.reservationScreening(reservationRequest, user.getUserId());
 
         assertNotNull(reservationDto);

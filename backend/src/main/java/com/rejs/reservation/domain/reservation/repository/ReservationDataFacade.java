@@ -26,11 +26,6 @@ public class ReservationDataFacade {
     private final ReservationSeatRepository reservationSeatRepository;
     private final ReservationQueryRepository reservationQueryRepository;
 
-
-    public List<Long> selectAvailableSeats(List<Long> seatIds, Long theaterId, Long screeningId) {
-        return reservationQueryRepository.selectAvailableSeats(seatIds, theaterId, screeningId);
-    }
-
     public Reservation save(Reservation reservation) {
         return reservationRepository.save(reservation);
     }

@@ -86,18 +86,16 @@ public class Screening extends BaseEntity {
         }
     }
 
-    // 로직
-    public void updateScreeningTime(LocalDateTime startTime){
+
+    public Screening(LocalDateTime startTime, Theater theater, Movie movie) {
+        this.movie = movie;
+        this.theater = theater;
         this.startTime = startTime.truncatedTo(ChronoUnit.MINUTES);
         this.endTime = startTime.plusMinutes(movie.getDuration());
     }
 
     // 생성
     public static Screening create(LocalDateTime startTime, Theater theater, Movie movie){
-        Screening screening = new Screening();
-        screening.assignTheater(theater);
-        screening.assignMovie(movie);
-        screening.updateScreeningTime(startTime);
-        return screening;
+        return new Screening(startTime, theater, movie);
     }
 }

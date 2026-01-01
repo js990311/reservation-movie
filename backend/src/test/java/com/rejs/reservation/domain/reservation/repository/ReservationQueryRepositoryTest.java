@@ -6,10 +6,12 @@ import com.rejs.reservation.domain.movie.dto.request.MovieCreateRequest;
 import com.rejs.reservation.domain.movie.service.MovieService;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
-import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
+import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
+import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.SeatDto;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
@@ -27,6 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -38,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(TestcontainersConfiguration.class)
 @Transactional
 @SpringBootTest
-class ReservationDataFacadeTest {
+class ReservationQueryRepositoryTest {
     @Autowired
     private MovieService movieService;
 
@@ -52,10 +55,13 @@ class ReservationDataFacadeTest {
     private UserRepository userRepository;
 
     @Autowired
-    private ReservationDataFacade reservationDataFacade;
+    private ReservationQueryRepository reservationQueryRepository;
 
     @Autowired
     private ReservationRepository reservationRepository;
+
+    @Autowired
+    private ScreeningSeatRepository screeningSeatRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -89,13 +95,11 @@ class ReservationDataFacadeTest {
 
     @Test
     void 예약된좌석없음() {
-        List<SeatDto> seats = theater.getSeats();
-        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        List<Long> seats = screeningSeatRepository.findByScreeningId(screening.getScreeningId()).stream().map(ScreeningSeat::getId).toList();
+        ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats);
 
-        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
-                reservationRequest.getSeats(),
-                screening.getTheaterId(),
-                screening.getScreeningId()
+        List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
+                reservationRequest.getSeats()
         );
 
         assertEquals(seats.size(), availableSeats.size());
@@ -105,17 +109,15 @@ class ReservationDataFacadeTest {
     void 일부좌석이예약() {
         // 예약이 진행되었다고 가정
         int reservationSeatCount = 5;
-        List<SeatDto> seats = theater.getSeats();
-        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.subList(0, reservationSeatCount).stream().map(SeatDto::getSeatId).toList());
+        List<ScreeningSeat> seats = screeningSeatRepository.findByScreeningId(screening.getScreeningId());
+        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.subList(0, reservationSeatCount));
         reservationRepository.save(reservation);
 
         entityManager.flush();
 
         //
-        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
-                seats.stream().map(SeatDto::getSeatId).toList(),
-                screening.getTheaterId(),
-                screening.getScreeningId()
+        List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
+                seats.stream().map(ScreeningSeat::getId).toList()
         );
         assertEquals(seats.size() - reservationSeatCount, availableSeats.size());
     }
@@ -123,17 +125,15 @@ class ReservationDataFacadeTest {
     @Test
     void 모든좌석예약() {
         // 예약이 진행되었다고 가정
-        List<SeatDto> seats = theater.getSeats();
-        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        List<ScreeningSeat> seats = screeningSeatRepository.findByScreeningId(screening.getScreeningId());
+        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats);
         reservationRepository.save(reservation);
 
         entityManager.flush();
 
         //
-        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
-                seats.stream().map(SeatDto::getSeatId).toList(),
-                screening.getTheaterId(),
-                screening.getScreeningId()
+        List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
+                seats.stream().map(ScreeningSeat::getId).toList()
         );
         assertEquals(0, availableSeats.size());
     }
@@ -145,19 +145,17 @@ class ReservationDataFacadeTest {
         ScreeningDto screening2 = screeningService.createScreening(screeningRequest);
 
         // 기존 상영표의 예약이 모두 완료되었다고 가정
-        List<SeatDto> seats = theater.getSeats();
-        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats.stream().map(SeatDto::getSeatId).toList());
+        List<ScreeningSeat> seats = screeningSeatRepository.findByScreeningId(screening.getScreeningId());
+        Reservation reservation = Reservation.create(user.getUserId(), screening.getScreeningId(), seats);
         reservationRepository.save(reservation);
 
         entityManager.flush();
 
+        seats = screeningSeatRepository.findByScreeningId(screening2.getScreeningId());
         // 다른 상영표는 모두 예매 가능
-        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
-                seats.stream().map(SeatDto::getSeatId).toList(),
-                screening2.getTheaterId(),
-                screening2.getScreeningId()
+        List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
+                seats.stream().map(ScreeningSeat::getId).toList()
         );
         assertEquals(seats.size(), availableSeats.size());
     }
-
 }

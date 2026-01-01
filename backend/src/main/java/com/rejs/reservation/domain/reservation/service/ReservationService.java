@@ -6,9 +6,13 @@ import com.rejs.reservation.domain.reservation.dto.ReservationSeatNumberDto;
 import com.rejs.reservation.domain.reservation.dto.ReservationSummaryDto;
 import com.rejs.reservation.domain.reservation.dto.request.ReservationRequest;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
+import com.rejs.reservation.domain.reservation.entity.ReservationSeat;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.reservation.repository.ReservationDataFacade;
-import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.reservation.repository.ReservationQueryRepository;
+import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
+import com.rejs.reservation.domain.reservation.repository.jpa.ReservationSeatRepository;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import io.micrometer.observation.annotation.Observed;
@@ -18,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Observed
@@ -26,21 +31,17 @@ import java.util.List;
 @Service
 public class ReservationService {
     private final ReservationDataFacade reservationDataFacade;
-    private final ScreeningRepository screeningRepository;
+    private final ReservationRepository reservationRepository;
+    private final ReservationQueryRepository reservationQueryRepository;
 
 
     // CREATE - Reservation
     @Transactional
     public ReservationDto reservationScreening(ReservationRequest request, Long userId){
-        // 비관적 락
-        Screening screening = screeningRepository.findWithLock(request.getScreeningId());
-
         // 좌석이 실제로 존재하는 지 가져오기
-        // + 이미 예약된 좌석인지 검사하기
-        List<Long> availableSeats = reservationDataFacade.selectAvailableSeats(
-                request.getSeats(),
-                screening.getTheaterId(),
-                screening.getId()
+        // 락이 걸려있는 쿼리임
+        List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
+                request.getSeats()
         );
 
         if(availableSeats.size() != request.getSeats().size()){
@@ -48,8 +49,8 @@ public class ReservationService {
         }
 
         // reservation 및 reservationSeat 생성
-        Reservation reservation = Reservation.create(userId, screening.getId(), availableSeats);
-        reservation = reservationDataFacade.save(reservation);
+        Reservation reservation = Reservation.create(userId, request.getScreeningId(), availableSeats);
+        reservation = reservationRepository.save(reservation);
         return ReservationDto.from(reservation);
     }
 
@@ -60,8 +61,8 @@ public class ReservationService {
 
 
     public ReservationDetailDto findById(Long id) {
-        ReservationSummaryDto reservation = reservationDataFacade.findReservationSummaryById(id);
-        List<ReservationSeatNumberDto> seats = reservationDataFacade.findSeatNumberById(id);
+        ReservationSummaryDto reservation = reservationQueryRepository.findById(id);
+        List<ReservationSeatNumberDto> seats = reservationQueryRepository.findSeatNumberById(id);
         return new ReservationDetailDto(reservation, seats);
     }
 }

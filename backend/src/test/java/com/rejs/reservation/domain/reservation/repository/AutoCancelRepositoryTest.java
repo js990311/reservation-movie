@@ -60,7 +60,7 @@ class AutoCancelRepositoryTest {
     @BeforeEach
     void setup() {
         JPAQueryFactory queryFactory = new JPAQueryFactory(em);
-        autoCancelRepository = new AutoCancelRepository(queryFactory);
+        autoCancelRepository = new AutoCancelRepository(queryFactory, reservationRepository);
 
         // user -> reservation
         user = new User("mock", "mock");
