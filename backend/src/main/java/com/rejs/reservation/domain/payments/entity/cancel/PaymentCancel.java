@@ -53,6 +53,10 @@ public class PaymentCancel extends BaseEntity {
         this.status = PaymentCancelStatus.FAILED;
     }
 
+    public void skipped() {
+        this.status = PaymentCancelStatus.SKIPPED;
+    }
+
     // 생성
 
     public PaymentCancel(Payment payment, PaymentCancelReason reason) {

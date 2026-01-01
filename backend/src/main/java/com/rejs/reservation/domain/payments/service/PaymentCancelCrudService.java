@@ -50,4 +50,8 @@ public class PaymentCancelCrudService {
         paymentCancel.failed();
     }
 
+    public void skipped(Long paymentCancelId) {
+        PaymentCancel paymentCancel = paymentCancelRepository.findById(paymentCancelId).orElseThrow();
+        paymentCancel.skipped();
+    }
 }

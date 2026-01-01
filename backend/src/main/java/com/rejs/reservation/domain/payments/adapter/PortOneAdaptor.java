@@ -11,7 +11,6 @@ import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.global.exception.BusinessException;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.portone.sdk.server.errors.*;
 import io.portone.sdk.server.payment.*;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /**
  * 외부 호출에 대한 추상화
@@ -57,47 +57,34 @@ public class PortOneAdaptor {
             if (cancelPaymentResponse.getCancellation() instanceof SucceededPaymentCancellation) {
                 log.info("[portone.cancel.success] 결제 취소 성공 paymentId={}", paymentId);
                 return true;
-            }else if (cancelPaymentResponse.getCancellation() instanceof FailedPaymentCancellation){
-                log.info("[portone.cancel.fail] 결제 취소 실패 paymentId={}", paymentId);
-                return false;
+            }else if (cancelPaymentResponse.getCancellation() instanceof FailedPaymentCancellation failedPaymentCancellation){
+                log.info("[ACTION_REQUIRED] [portone.cancel.fail] 결제 취소 실패 paymentId={} paymentCancelId={} reason={}", paymentId, failedPaymentCancellation.getId(), failedPaymentCancellation.getReason());
+                throw new PaymentCancelFailedException(PortOnePaymentCancelExceptionCode.UNKNOWN_ERROR, failedPaymentCancellation.getReason());
             }else if(cancelPaymentResponse.getCancellation() instanceof RequestedPaymentCancellation){
                 log.info("[portone.cancel.requested] 결제 취소 요청됨 paymentId={}", paymentId);
-                return false;
+                throw new PaymentCancelRetryableException(PortOnePaymentCancelExceptionCode.UNKNOWN_ERROR);
             }
             return false;
         }).exceptionally(e->{
-            throw switch (e) {
-                // 이미 취소가 완료됨
-                case PaymentAlreadyCancelledException pe -> new PaymentCancelAlreadySuccessException(
-                        PortOnePaymentCancelExceptionCode.ALREADY_CANCELLED
-                );
+            Throwable cause = (e instanceof CompletionException) ? e.getCause() : e;
 
-                // 비즈니스 로직상 환불이 불가능한 경우
-                case PaymentNotFoundException pe -> new PaymentCancelFailedException(
-                        PortOnePaymentCancelExceptionCode.NOT_FOUND, e.getMessage()
-                );
-                case PaymentNotPaidException pe -> new PaymentCancelFailedException(
-                        PortOnePaymentCancelExceptionCode.NOT_PAID, e.getMessage()
-                );
-                case CancelAmountExceedsCancellableAmountException pe -> new PaymentCancelFailedException(
-                        PortOnePaymentCancelExceptionCode.INVALID_AMOUNT, e.getMessage()
-                );
+            throw switch (cause) {
+                // 결제한적 없거나 이미 성공함
+                case PaymentAlreadyCancelledException pe -> handleAlreadySuccess(pe, paymentId);
+                case PaymentNotPaidException pe -> handleAlreadySuccess(pe, paymentId);
 
-                // 일시적 예외로 의심되는 경우
-                case PgProviderException pe -> new PaymentCancelRetryableException(
-                        PortOnePaymentCancelExceptionCode.PG_PROVIDER_ERROR, pe.getMessage()
-                );
+                // 재시도 해야하는 예외들
+                case PgProviderException pe -> handleRetryable(pe, paymentId, "PG사 응답 오류");
+                case UnknownException ue -> handleRetryable(ue, paymentId, "PortOne 알 수 없는 오류");
 
-                default -> {
-                    log.error("[portone.cancel.unknown] 예상치 못한 에러 발생, paymentId={}", paymentId, e);
-                    yield new PaymentCancelRetryableException(
-                            PortOnePaymentCancelExceptionCode.UNKNOWN_ERROR, e.getMessage()
-                    );
-                }
+                // 위에 예외에 해당하지 않으면 실패임
+                case CancelPaymentException cpe -> handleFailed(cpe, paymentId, "비즈니스 로직 오류");
+
+                // sdk가 만든 예외가 아님
+                default -> handleUnknown(cause, paymentId);
             };
         });
     }
-
 
     public CustomDataDto extractCustomData(PaidPayment paidPayment){
         String customDataJson = paidPayment.getCustomData();
@@ -115,4 +102,31 @@ public class PortOneAdaptor {
         return customData;
     }
 
+    public BusinessException handleAlreadySuccess(Throwable cause, String paymentId){
+        log.info("[portone.cancel] 이미 처리된 요청입니다. paymentId={}, detail={}",paymentId, cause.getClass().getSimpleName(), cause);
+        return new PaymentCancelAlreadySuccessException(PortOnePaymentCancelExceptionCode.ALREADY_CANCELLED);
+    }
+
+    private BusinessException handleRetryable(Throwable cause, String paymentId, String description) {
+        log.warn("[portone.cancel.retry] {}. paymentId={}, cause={}",
+                description, paymentId, cause.getMessage());
+        return new PaymentCancelRetryableException(
+                PortOnePaymentCancelExceptionCode.PG_PROVIDER_ERROR, cause.getMessage()
+        );
+    }
+
+    private BusinessException handleFailed(CancelPaymentException cause, String paymentId, String description) {
+        log.error("[ACTION_REQUIRED] [portone.cancel.fail] {}. 수동 확인이 필요합니다. paymentId={}, type={}, cause={}",
+                description, paymentId, cause.getClass().getSimpleName(), cause.getMessage());
+        return new PaymentCancelFailedException(
+                PortOnePaymentCancelExceptionCode.LOGIC_ERROR, cause.getMessage()
+        );
+    }
+
+    private BusinessException handleUnknown(Throwable cause, String paymentId) {
+        log.error("[portone.cancel.unknown] 예상치 못한 시스템 에러. paymentId={}, cause={}", paymentId, cause);
+        return new PaymentCancelRetryableException(
+                PortOnePaymentCancelExceptionCode.UNKNOWN_ERROR, cause.getMessage()
+        );
+    }
 }
