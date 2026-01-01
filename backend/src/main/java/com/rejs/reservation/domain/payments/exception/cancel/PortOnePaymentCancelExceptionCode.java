@@ -1,4 +1,4 @@
-package com.rejs.reservation.domain.payments.adapter.exception.cancel;
+package com.rejs.reservation.domain.payments.exception.cancel;
 
 import com.rejs.reservation.global.exception.code.BusinessExceptionCode;
 import lombok.AllArgsConstructor;

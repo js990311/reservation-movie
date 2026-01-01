@@ -2,10 +2,10 @@ package com.rejs.reservation.domain.payments.facade;
 
 
 import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
-import com.rejs.reservation.domain.payments.adapter.exception.cancel.PaymentCancelAlreadySuccessException;
-import com.rejs.reservation.domain.payments.adapter.exception.cancel.PaymentCancelFailedException;
-import com.rejs.reservation.domain.payments.adapter.exception.cancel.PaymentCancelRetryableException;
-import com.rejs.reservation.domain.payments.adapter.exception.cancel.PaymentCancelSkippedException;
+import com.rejs.reservation.domain.payments.exception.cancel.PaymentCancelAlreadySuccessException;
+import com.rejs.reservation.domain.payments.exception.cancel.PaymentCancelFailedException;
+import com.rejs.reservation.domain.payments.exception.cancel.PaymentCancelRetryableException;
+import com.rejs.reservation.domain.payments.exception.cancel.PaymentCancelSkippedException;
 import com.rejs.reservation.domain.payments.dto.PaymentCancelDto;
 import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.service.PaymentCancelCrudService;
@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 

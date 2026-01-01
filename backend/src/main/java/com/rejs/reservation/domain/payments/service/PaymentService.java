@@ -105,12 +105,6 @@ public class PaymentService {
 
     @Transactional
     public void abortPayment(String paymentId){
-        log.info("cancelPayment: tx active={}, name={}, isolation={}, readOnly={}",
-                TransactionSynchronizationManager.isActualTransactionActive(),
-                TransactionSynchronizationManager.getCurrentTransactionName(),
-                TransactionSynchronizationManager.getCurrentTransactionIsolationLevel(),
-                TransactionSynchronizationManager.isCurrentTransactionReadOnly()
-        );
         com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseGet(() -> {
             // NOT found 케이스에 대한 방어를 위해
             Payment newPayment = Payment.notFoundPayment(paymentId);

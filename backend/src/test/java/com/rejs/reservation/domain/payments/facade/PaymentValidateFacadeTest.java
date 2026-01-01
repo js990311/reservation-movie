@@ -4,7 +4,9 @@ import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
+import com.rejs.reservation.domain.payments.exception.GetPaymentInfoFailException;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
+import com.rejs.reservation.domain.payments.exception.PaymentValidateException;
 import com.rejs.reservation.domain.payments.service.PaymentLockResult;
 import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.global.exception.BusinessException;
@@ -97,7 +99,9 @@ class PaymentValidateFacadeTest {
         when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.NOT_FOUND);
 
         // 환불해야함
-        paymentValidateFacade.validate(paymentId);
+        assertThrows(PaymentValidateException.class, () -> {
+            paymentValidateFacade.validate(paymentId);
+        });
 
         // w
         verify(portOneAdaptor, never()).getPayment(paymentId);
@@ -119,18 +123,18 @@ class PaymentValidateFacadeTest {
         when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
 
         // 외부 API가 비정상적으로 작동 = 결제 시도 정보 획득에 실패
-        when(portOneAdaptor.getPayment(paymentId)).thenThrow(BusinessException.of(PaymentExceptionCode.PAYMENT_API_ERROR));
+        when(portOneAdaptor.getPayment(paymentId)).thenThrow(new GetPaymentInfoFailException(PaymentExceptionCode.PAYMENT_API_ERROR));
 
         // w
-        assertThrows(BusinessException.class,()->paymentValidateFacade.validate(paymentId));
+        assertThrows(GetPaymentInfoFailException.class,()->paymentValidateFacade.validate(paymentId));
 
         // t
         // 성공로직 실행 X
         verify(paymentService, never()).validateAndConfirm(anyLong(),anyString(), anyLong());
 
         // 실패로직
-        verify(paymentService, never()).abortPayment(anyString());
-        verify(paymentCancelFacade, never()).cancelPayment(anyString());
+        verify(paymentService, times(1)).abortPayment(anyString());
+        verify(paymentCancelFacade, times(1)).cancelPayment(anyString());
     }
 
     @Test
