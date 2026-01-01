@@ -16,14 +16,22 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     Optional<Payment> findByReservationIdAndStatus(Long reservationId, PaymentStatus status);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(value = "UPDATE payments " +
-            "SET status = 'VERIFYING', updated_at = NOW(6) " +
-            "WHERE payment_uid = :paymentId " +
-            "AND (" +
-            "  status = 'READY' " +
-            "  OR (status = 'VERIFYING' AND updated_at < NOW(6) - INTERVAL 5 MINUTE)" +
-            ")",
-            nativeQuery = true)
-    int tryToUpdate(String paymentId);
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = """
+        UPDATE payments p 
+        SET p.last_attempted_at = :now, p.status = 'VERIFYING'
+        WHERE p.payment_uid = :paymentUid
+        AND (
+            p.status = 'READY' 
+            OR 
+            (p.status = 'VERIFYING'  AND (
+                p.last_attempted_at IS NULL 
+                OR 
+                p.last_attempted_at <= :threshold
+            ))
+        )
+    """, nativeQuery = true)
+    int updateLastAttemptedAt(@Param("paymentUid") String paymentUid, @Param("now") LocalDateTime now, @Param("threshold") LocalDateTime threshold);
+
+    boolean existsByPaymentUid(@Param("paymentUid") String paymentUid);
 }

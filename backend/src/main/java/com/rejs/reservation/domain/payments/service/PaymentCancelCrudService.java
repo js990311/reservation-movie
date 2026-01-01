@@ -26,7 +26,7 @@ public class PaymentCancelCrudService {
     public Optional<PaymentCancelDto> tryLockForCancel(String paymentId, PaymentCancelReason reason){
         LocalDateTime now = LocalDateTime.now();
         // 생성은 외부에서 다 했어야함
-        int updatedCount = paymentCancelRepository.updateLastAttemptedAt(paymentId, now, now.minusMinutes(3L));
+        int updatedCount = paymentCancelRepository.updateLastAttemptedAt(paymentId, now, now.minusSeconds(30L));
 
         if (updatedCount > 0) {
             // 내가 선점에 성공했거나, 처음 시도하는 경우

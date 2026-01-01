@@ -8,6 +8,7 @@ import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
+import com.rejs.reservation.domain.payments.exception.PaymentValidateException;
 import com.rejs.reservation.domain.payments.repository.PaymentRepository;
 import com.rejs.reservation.domain.payments.service.PaymentLockResult;
 import com.rejs.reservation.domain.payments.service.PaymentService;
@@ -179,12 +180,11 @@ class PaymentValidateFacadeIntegrationTest {
         String paymentId = "123456";
 
         // 환불해야함
-        PaymentInfoDto paymentInfo = paymentValidateFacade.validate(paymentId);
+        assertThrows(PaymentValidateException.class,()->paymentValidateFacade.validate(paymentId));
 
-        Optional<Payment> opt = paymentRepository.findByPaymentUid(paymentId);
-        assertTrue(opt.isPresent());
-        Payment payment = opt.get();
-        assertEquals(paymentInfo.getPaymentId(), payment.getPaymentUid());
+        // t
+        // 상태 확인
+        Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
         assertEquals(PaymentStatus.ABORTED, payment.getStatus());
     }
 
@@ -201,15 +201,15 @@ class PaymentValidateFacadeIntegrationTest {
         Long amount = Long.valueOf(reservation.getTotalAmount());
 
         // 외부 API가 비정상적으로 작동 = 결제 시도 정보 획득에 실패
-        when(portOneAdaptor.getPayment(paymentId)).thenThrow(BusinessException.of(PaymentExceptionCode.PAYMENT_API_ERROR));
+        when(portOneAdaptor.getPayment(paymentId)).thenThrow(new PaymentValidateException(PaymentExceptionCode.PAYMENT_API_ERROR));
 
         // w
-        assertThrows(BusinessException.class,()->paymentValidateFacade.validate(paymentId));
+        assertThrows(PaymentValidateException.class,()->paymentValidateFacade.validate(paymentId));
 
         // t
         // 상태 확인
         payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
-        assertEquals(PaymentStatus.VERIFYING, payment.getStatus());
+        assertEquals(PaymentStatus.ABORTED, payment.getStatus());
 
         reservation = reservationRepository.findById(reservation.getId()).orElseThrow();
         assertEquals(ReservationStatus.PENDING, reservation.getStatus());

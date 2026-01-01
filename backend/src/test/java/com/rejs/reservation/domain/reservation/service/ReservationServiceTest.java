@@ -152,6 +152,7 @@ class ReservationServiceTest {
         reservationRepository.save(reservation);
 
         entityManager.flush();
+        entityManager.clear();
 
         ReservationRequest reservationRequest = new ReservationRequest(screening2.getScreeningId(), seats2.stream().map(ScreeningSeat::getId).toList());
         ReservationDto reservationDto = reservationService.reservationScreening(reservationRequest, user.getUserId());

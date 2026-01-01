@@ -4,7 +4,6 @@ import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
-import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.domain.payments.exception.PaymentValidateException;
 import com.rejs.reservation.domain.payments.service.PaymentLockResult;
@@ -12,7 +11,6 @@ import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletionException;
@@ -62,15 +60,10 @@ public class PaymentValidateFacade {
 
     public PaymentInfoDto tryConfirm(String paymentId){
         // 결제가 존재하는지. 누군가 처리했는지 문의
-        PaymentLockResult paymentLockResult = paymentService.startVerification(paymentId);
-
-        if(paymentLockResult.equals(PaymentLockResult.ALREADY_COMPLETED)){
+        if(!paymentService.tryLockForVerification(paymentId)){
             // 이미 처리된 검증이거나, 검증 중
             log.info("[payment.verify.already] 이미 검증되었거나 처리중입니다. paymentId={}", paymentId);
             return paymentService.getPaymentInfo(paymentId);
-        }else if(paymentLockResult.equals(PaymentLockResult.NOT_FOUND)){
-            log.warn("[payment.unknown] 서버와 합의되지 않은 결제가 이루어졌습니다. paymentId={}", paymentId);
-            throw new PaymentValidateException(PaymentExceptionCode.PAYMENT_NOT_FOUND);
         }
 
         PaymentStatusDto payment = portoneAdaptor.getPayment(paymentId).join();

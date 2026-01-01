@@ -35,6 +35,9 @@ public class Payment extends BaseEntity {
     @Column
     private PaymentStatus status;
 
+    @Column(name = "last_attempted_at")
+    private LocalDateTime lastAttemptedAt;
+
     /* 관계 */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")

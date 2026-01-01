@@ -3,7 +3,6 @@ package com.rejs.reservation.domain.payments.facade;
 import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
-import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.exception.GetPaymentInfoFailException;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
 import com.rejs.reservation.domain.payments.exception.PaymentValidateException;
@@ -48,7 +47,7 @@ class PaymentValidateFacadeTest {
         CustomDataDto customDataDto = new CustomDataDto(1L);
 
         // 결제전 상태가 원만함
-        when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
+        when(paymentService.tryLockForVerification(paymentId)).thenReturn(true);
 
         // 외부 API가 정상적으로 작동
         when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
@@ -75,7 +74,7 @@ class PaymentValidateFacadeTest {
         CustomDataDto customDataDto = new CustomDataDto(1L);
 
         // 멱등성 보장을 위해 검증을 중단해야하는 상황임
-        when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.ALREADY_COMPLETED);
+        when(paymentService.tryLockForVerification(paymentId)).thenReturn(false);
 
         // 적어도 지금은 더 검증할 필요없이 멱등한 상태
         paymentValidateFacade.validate(paymentId);
@@ -96,7 +95,7 @@ class PaymentValidateFacadeTest {
         String paymentId = "123456";
 
         // 서버쪽에선 생전 본적 없는 결제 내역이 들어옴
-        when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.NOT_FOUND);
+        when(paymentService.tryLockForVerification(paymentId)).thenThrow(new PaymentValidateException(PaymentExceptionCode.PAYMENT_NOT_FOUND));
 
         // 환불해야함
         assertThrows(PaymentValidateException.class, () -> {
@@ -120,7 +119,7 @@ class PaymentValidateFacadeTest {
         String paymentId = "123456";
 
         // 결제전 상태가 원만함
-        when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
+        when(paymentService.tryLockForVerification(paymentId)).thenReturn(true);
 
         // 외부 API가 비정상적으로 작동 = 결제 시도 정보 획득에 실패
         when(portOneAdaptor.getPayment(paymentId)).thenThrow(new GetPaymentInfoFailException(PaymentExceptionCode.PAYMENT_API_ERROR));
@@ -144,7 +143,7 @@ class PaymentValidateFacadeTest {
         PaymentStatusDto paymentStatus = mock(PaymentStatusDto.class);
 
         // 결제전 상태가 원만함
-        when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
+        when(paymentService.tryLockForVerification(paymentId)).thenReturn(true);
 
         // 외부 API가 정상적으로 작동
         when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));
@@ -173,7 +172,7 @@ class PaymentValidateFacadeTest {
         CustomDataDto customDataDto = new CustomDataDto(1L);
 
         // 결제전 상태가 원만함
-        when(paymentService.startVerification(paymentId)).thenReturn(PaymentLockResult.LOCKED);
+        when(paymentService.tryLockForVerification(paymentId)).thenReturn(true);
 
         // 외부 API가 정상적으로 작동
         when(portOneAdaptor.getPayment(paymentId)).thenReturn(CompletableFuture.completedFuture(paymentStatus));

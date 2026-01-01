@@ -6,6 +6,7 @@ import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
+import com.rejs.reservation.domain.payments.exception.PaymentValidateException;
 import com.rejs.reservation.domain.payments.repository.PaymentCancelRepository;
 import com.rejs.reservation.domain.payments.repository.PaymentRepository;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
@@ -13,16 +14,12 @@ import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCode;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.global.exception.BusinessException;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 
 @Slf4j
@@ -33,34 +30,23 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final PaymentCancelRepository paymentCancelRepository;
 
+    /**
+     * 너무 낮은 재시도 방지를 위해서
+     * @param paymentId
+     * @return 진입 가능시 true
+     */
     @Transactional
-    public PaymentLockResult startVerification(String paymentId) {
-        try {
-            int updated = paymentRepository.tryToUpdate(paymentId);
+    public boolean tryLockForVerification(String paymentId) {
+        LocalDateTime now = LocalDateTime.now();
+        // 생성은 외부에서 다 했어야함
+        int updatedCount = paymentRepository.updateLastAttemptedAt(paymentId, now, now.minusSeconds(30L));
 
-            Optional<Payment> opt = paymentRepository.findByPaymentUid(paymentId);
-            if (opt.isEmpty()) {
-                return PaymentLockResult.NOT_FOUND;
-            }
-
-            // 이미 완료된건지 체크
-            Payment payment = opt.get();
-            if (payment.isCompleted()) {
-                return PaymentLockResult.ALREADY_COMPLETED;
-            }
-
-            int isLocked = paymentRepository.tryToUpdate(paymentId);
-
-            if (isLocked == 0) {
-                log.warn("[payment.lock.conflict] 원자적 연산 실패로 인한 실패 paymentId={}", paymentId);
-                return PaymentLockResult.ALREADY_COMPLETED;
-            }
-
-            return PaymentLockResult.LOCKED;
-
-        }catch (CannotAcquireLockException ex){
-            log.warn("[payment.lock.conflict] DB 경합 발생 - 다른 프로세스가 선점함 paymentId={}", paymentId, ex);
-            throw ex; // 여기서 예외를 처리해도 밖에서 UnexpectedRollbackException이 터지므로
+        if (updatedCount > 0) {
+            return true;
+        }else if (paymentRepository.existsByPaymentUid(paymentId)){
+            return false;
+        }else {
+            throw new PaymentValidateException(PaymentExceptionCode.PAYMENT_NOT_FOUND);
         }
     }
 
