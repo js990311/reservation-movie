@@ -31,13 +31,10 @@ public class PaymentInfoQueryRepository {
                                 payment.paymentUid,
                                 payment.status,
                                 reservation.id,
-                                reservation.totalAmount,
                                 payment.createdAt,
-                                paymentCancel.status,
-                                paymentCancel.reason.stringValue(),
                                 Projections.constructor(PaymentCancelInfo.class,
-                                        paymentCancel.paymentUid,
                                         paymentCancel.status,
+                                        paymentCancel.createdAt,
                                         paymentCancel.reason.stringValue()
                                 )
                         )

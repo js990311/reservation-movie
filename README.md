@@ -1,4 +1,4 @@
-# 상태 다이어그램으로 보는 예매 시스템의 상태변화
+# 상태 다이어그램
 
 ## 예매의 상태변화
 
@@ -20,28 +20,36 @@ stateDiagram-v2
 stateDiagram-v2
     state "결제 엔티티의 상태" as Payment{
         [*] --> Ready : 결제 고유 id 발급
-        Ready --> Failed : 결제 실패(돈이 안나감)
-        Ready-->Verifying: 결제는 성공했고 확정되지는 않았음
+        Ready --> Timeout: 결제제한 시간이 지남.
+        Ready-->Verifying: 사용자가 금액을 지불했고 결제가 확정되지는 않았음
         Verifying --> Paid : 결제 완료(검증여부와 무관)
         Verifying --> Aborted : 검증 실패로 인한 결제 거부
+        Timeout --> [*]
         Aborted --> [*]
-        Failed --> [*]
-        Paid --> [*] : 사용자 환불이 있어도 변화없음(PaymentCancel 참조)
+        Paid --> [*] : 사용자 환불이 있어도 변화없음
     }
 ```
+
+Paid는 사용자가 환불을 요청해도 그 상태를 변경하지 않는다.
+결제 취소에 대한 상태는 PaymentCancel에 의해서 관리하도록 할 것
 
 ## PaymentCancel의 상태
 
 ```mermaid
 stateDiagram-v2
         state "결제 취소 엔티티의 상태" as PaymentCancel{
-            [*] --> REQUIRED : 결제 취소 필요
-            REQUIRED --> Canceled : 결제 취소 성공
-            REQUIRED --> Failed : 결제 불가능
-            Canceled --> [*]
-            Failed --> [*]
-        }
+        [*] --> REQUIRED : 결제 취소 요청 발생
+        REQUIRED --> CANCELED : [성공] PG사 승인 완료
+        REQUIRED --> FAILED : [실패] 비즈니스 로직 위반(금액 초과 등)
+        REQUIRED --> SKIPPED : [불필요] 이미 취소됨 또는 미결제 건
+
+        CANCELED --> [*]
+        FAILED --> [*]
+        SKIPPED --> [*]
+}
 ```
+
+- 재시도 해야하는 경우 상태를 변경하지 않는다.
 
 ## 결제 성공 시나리오
 
@@ -302,4 +310,72 @@ sequenceDiagram
     end
     Service->>User: 사용자에게 예매 취소 정보 주고 종료
     deactivate Service
+```
+
+## 시퀀스 다이어그램
+
+### 결제 전반
+
+#### 결제 전체 시스템
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor user as 사용자
+    participant frontend as 프런트엔드
+    participant pg as 외부결제서버
+    participant backend as 서버
+
+    user ->> frontend: 결제 시도
+    frontend ->> backend : 결제관련 사전 정보 요청
+    backend ->> frontend : paymentId, 지불할 금액 제공
+    frontend ->> pg : 결제 요청
+    pg ->> frontend : 결제 성공
+    frontend ->> backend : 결제 검증요청
+    pg ->> backend : 웹훅으로 결제 검증 성공응답
+    alt  검증 성공
+        backend ->> backend : 결제검증 및 예매 확정
+        backend ->> frontend : 결제 성공응답
+    else 검증실패
+        backend ->> pg : 검증실패
+        backend ->> frontend : 검증실패
+    end
+    frontend ->> user : 결과 출력
+```
+
+#### 결제 검증 전반
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant facade as ReservationValidateFacade
+    participant service as ReservationValidateService
+    participant client as portOneAdaptor
+    participant canceler as PaymentCancelFacade
+
+    alt 결제 검증이 가능한 상황인지 try
+        facade ->> service :
+        service ->> service : Payment의 상태를 pending -> verifying으로 저장
+        service ->> facade : 성공 응답
+    else 실패
+        facade ->> canceler : 결제취소(비동기)
+    end
+
+    alt 외부 API로부터 결제정보를 받을 수 있는지 try
+        facade ->> client :
+        client ->> client : 외부 결제 서버로부터 결제 정보 취득
+        facade ->> facade : 외부 결제 정부 취득 후 결제 메타데이터 검증 (KRW인지 등)
+    else 실패
+        facade ->> canceler : 결제취소(비동기)
+    end
+
+    alt 결제 검증 및 예매 확정
+        facade ->> service :
+        service ->> service : 결제 금액 검증, 예매상태 확인 등
+        service ->> service : 결제 승인 및 예매 승인(PAID, Confirmed)
+    else
+        service ->> service: 결제 상태를 승인 거부된 결제로 변경(Aborted)
+        facade ->> canceler : 결제취소(비동기)
+    end
+
 ```
