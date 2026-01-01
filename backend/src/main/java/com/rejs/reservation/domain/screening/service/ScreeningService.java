@@ -76,7 +76,7 @@ public class ScreeningService {
 
     public ScreeningDetailDto readScreeningById(Long id) {
         Screening screening = screeningQueryRepository.findById(id).orElseThrow(() -> new BusinessException(ScreeningExceptionCode.SCREENING_NOT_FOUND));
-        List<ScreeningSeatDto> seats = screeningQueryRepository.findScreeningSeats(screening.getId(), screening.getTheaterId());
+        List<ScreeningSeatDto> seats = screeningQueryRepository.findScreeningSeats(screening.getId());
         return new ScreeningDetailDto(screening, seats);
     }
 }

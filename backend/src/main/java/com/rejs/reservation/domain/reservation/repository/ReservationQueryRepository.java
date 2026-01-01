@@ -123,19 +123,18 @@ public class ReservationQueryRepository {
     }
 
     public List<ReservationSeatNumberDto> findSeatNumberById(Long id){
-        // TODO
-        return new ArrayList<>();
-//        return jpaQueryFactory
-//                .select(
-//                        Projections.constructor(
-//                            ReservationSeatNumberDto.class,
-//                            seat.rowNum,
-//                            seat.colNum
-//                        )
-//                )
-//                .from(reservationSeat)
-//                .join(seat).on(reservationSeat.seatId.eq(seat.id))
-//                .where(reservationSeat.reservation.id.eq(id)).fetch();
+        return jpaQueryFactory
+                .select(
+                        Projections.constructor(
+                            ReservationSeatNumberDto.class,
+                            seat.rowNum,
+                            seat.colNum
+                        )
+                )
+                .from(reservationSeat)
+                .join(reservationSeat.screeningSeat, screeningSeat)
+                .join(screeningSeat.seat, seat)
+                .where(reservationSeat.reservation.id.eq(id)).fetch();
     }
 
     public Optional<Reservation> findForCancel(Long id) {

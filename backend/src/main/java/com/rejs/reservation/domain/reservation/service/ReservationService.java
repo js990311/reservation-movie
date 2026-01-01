@@ -61,8 +61,8 @@ public class ReservationService {
 
 
     public ReservationDetailDto findById(Long id) {
-        ReservationSummaryDto reservation = reservationDataFacade.findReservationSummaryById(id);
-        List<ReservationSeatNumberDto> seats = reservationDataFacade.findSeatNumberById(id);
+        ReservationSummaryDto reservation = reservationQueryRepository.findById(id);
+        List<ReservationSeatNumberDto> seats = reservationQueryRepository.findSeatNumberById(id);
         return new ReservationDetailDto(reservation, seats);
     }
 }

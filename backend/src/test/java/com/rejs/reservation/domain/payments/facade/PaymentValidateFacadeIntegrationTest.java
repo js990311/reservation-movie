@@ -77,7 +77,7 @@ class PaymentValidateFacadeIntegrationTest {
         when(portOneAdaptor.cancelPayment(anyString(), any())).thenReturn(CompletableFuture.completedFuture(true));
 
         Seat mockSeat = mock(Seat.class);
-        when(mockSeat.getId()).thenReturn(1L);
+        lenient().when(mockSeat.getId()).thenReturn(1L);
 
         seats =List.of(
                 new ScreeningSeat(1L, 10000, mockSeat, null, ScreeningSeatStatus.AVAILABLE),

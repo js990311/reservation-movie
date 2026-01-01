@@ -17,7 +17,9 @@ import com.rejs.reservation.domain.screening.dto.ScreeningSeatDto;
 import com.rejs.reservation.domain.screening.dto.ScreeningWithMovieDto;
 import com.rejs.reservation.domain.screening.dto.ScreeningWithTheaterDto;
 import com.rejs.reservation.domain.screening.entity.QScreening;
+import com.rejs.reservation.domain.screening.entity.QScreeningSeat;
 import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeatStatus;
 import com.rejs.reservation.domain.theater.entity.QSeat;
 import com.rejs.reservation.domain.theater.entity.QTheater;
 import lombok.RequiredArgsConstructor;
@@ -46,34 +48,24 @@ public class ScreeningQueryRepository {
     private QSeat seat = QSeat.seat;
     private QReservationSeat reservationSeat = QReservationSeat.reservationSeat;
     private QReservation reservation = QReservation.reservation;
+    private QScreeningSeat screeningSeat = QScreeningSeat.screeningSeat;
 
-    public List<ScreeningSeatDto> findScreeningSeats(Long screeningId, Long theaterId){
-        // TODO
-        return new ArrayList<>();
-//            return jpaQueryFactory
-//                    .select(
-//                            Projections.constructor(
-//                                    ScreeningSeatDto.class,
-//                                    seat.id,
-//                                    seat.rowNum,
-//                                    seat.colNum,
-//                                    new CaseBuilder().when(
-//                                            JPAExpressions
-//                                                    .selectOne()
-//                                                    .from(reservationSeat) // 예약된 좌석 중에
-//                                                    .leftJoin(reservationSeat.reservation, reservation)
-//                                                    .where(
-//                                                            reservationSeat.seatId.eq(seat.id) // seatId에 대한 예약이면서
-//                                                            .and(reservation.screeningId.eq(screeningId)) // 이번 상영표에 대한 예약이면서
-//                                                            .and(reservation.status.ne(ReservationStatus.CANCELED)) // 취소상태가 아닌 것이
-//                                                    ).exists() // 존재하는가?
-//                                    ).then(true).otherwise(false) // 존재하면 isReserved=true (이미 예약됨)
-//                            )
-//                    )
-//                    .from(seat)
-//                    .where(seat.theater.id.eq(theaterId))
-//                    .fetch()
-//            ;
+    public List<ScreeningSeatDto> findScreeningSeats(Long screeningId){
+        return jpaQueryFactory
+                .select(
+                        Projections.constructor(
+                                ScreeningSeatDto.class,
+                                seat.id,
+                                seat.rowNum,
+                                seat.colNum,
+                                screeningSeat.status.eq(ScreeningSeatStatus.RESERVED)
+                        )
+                )
+                .from(screeningSeat)
+                .join(screeningSeat.seat, seat)
+                .where(screeningSeat.screening.id.eq(screeningId))
+                .fetch()
+        ;
     }
 
     public Optional<Screening> findById(Long id) {
