@@ -58,7 +58,7 @@ public class Payment extends BaseEntity {
     }
 
     public boolean isCompleted() {
-        return status.equals(PaymentStatus.PAID) || status.equals(PaymentStatus.FAILED) || status.equals(PaymentStatus.ABORTED);
+        return status.equals(PaymentStatus.PAID) || status.equals(PaymentStatus.TIMEOUT) || status.equals(PaymentStatus.ABORTED);
     }
 
     // 생성
