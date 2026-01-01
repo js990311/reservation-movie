@@ -19,6 +19,8 @@ import com.rejs.reservation.domain.reservation.exception.ReservationExceptionCod
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
+import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.SeatDto;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
@@ -41,6 +43,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -55,7 +58,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
+@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 class ReservationControllerTest extends AbstractControllerTest {
@@ -85,12 +88,16 @@ class ReservationControllerTest extends AbstractControllerTest {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private ScreeningSeatRepository screeningSeatRepository;
+
     private Long movieId;
     private Long theaterId;
     private Long screeningId;
     private Long userId;
 
     private List<Long> seatIds;
+    private List<ScreeningSeat> seats;
 
     @BeforeEach
     void setup(){
@@ -117,6 +124,11 @@ class ReservationControllerTest extends AbstractControllerTest {
         User user = new User("username", "password");
         user = userRepository.save(user);
         userId = user.getId();
+
+        entityManager.flush();
+
+        seats = screeningSeatRepository.findByScreeningId(screeningId);
+        seatIds = seats.stream().map(ScreeningSeat::getId).toList();
     }
 
     @Test
@@ -154,8 +166,10 @@ class ReservationControllerTest extends AbstractControllerTest {
     void 일부좌석이예약() throws Exception{
         // 예약이 진행되었다고 가정
         int reservationSeatCount = 5;
-        Reservation reservation = Reservation.create(userId, screeningId, seatIds.subList(0, reservationSeatCount));
+        Reservation reservation = Reservation.create(userId, screeningId, seats);
         reservationRepository.save(reservation);
+
+        entityManager.flush();
 
         ReservationRequest reservationRequest = new ReservationRequest(screeningId, seatIds);
 
@@ -181,7 +195,7 @@ class ReservationControllerTest extends AbstractControllerTest {
     @Test
     void 모든좌석예약() throws Exception{
         // 예약이 진행되었다고 가정
-        Reservation reservation = Reservation.create(userId, screeningId, seatIds);
+        Reservation reservation = Reservation.create(userId, screeningId, seats);
         reservationRepository.save(reservation);
 
         ReservationRequest reservationRequest = new ReservationRequest(screeningId, seatIds);
@@ -209,12 +223,15 @@ class ReservationControllerTest extends AbstractControllerTest {
         // 다른 상영표 생성
         CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theaterId, movieId, LocalDateTime.now().plus(999, ChronoUnit.MINUTES));
         ScreeningDto screening2 = screeningService.createScreening(screeningRequest);
-
+        List<Long> seatIds2 = screeningSeatRepository.findByScreeningId(screening2.getScreeningId())
+                .stream().map(ScreeningSeat::getId).toList();
         // 기존 상영표의 예약이 모두 완료되었다고 가정
-        Reservation reservation = Reservation.create(userId, screeningId, seatIds);
+        Reservation reservation = Reservation.create(userId, screeningId, seats);
         reservationRepository.save(reservation);
 
-        ReservationRequest reservationRequest = new ReservationRequest(screening2.getScreeningId(), seatIds);
+        entityManager.flush();
+
+        ReservationRequest reservationRequest = new ReservationRequest(screening2.getScreeningId(), seatIds2);
         ResultActions result = mockMvc.perform(
                 post("/reservations")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -301,7 +318,7 @@ class ReservationControllerTest extends AbstractControllerTest {
     void 남의예매정보보기() throws Exception{
         // 예매하기
         int reservationSeatCount = 5;
-        Reservation reservation = Reservation.create(userId, screeningId, seatIds.subList(0, reservationSeatCount));
+        Reservation reservation = Reservation.create(userId, screeningId, seats.subList(0, reservationSeatCount));
         reservation = reservationRepository.save(reservation);
 
         ResultActions result = mockMvc.perform(
@@ -328,7 +345,7 @@ class ReservationControllerTest extends AbstractControllerTest {
         // 예매하기
         int reservationSeatCount = 5;
         Long reservationUserId = Long.valueOf(jwtUtils.getClaims(accessToken).getUsername());
-        Reservation reservation = Reservation.create(reservationUserId, screeningId, seatIds.subList(0, reservationSeatCount));
+        Reservation reservation = Reservation.create(reservationUserId, screeningId, seats.subList(0, reservationSeatCount));
         reservation = reservationRepository.save(reservation);
 
         ResultActions result = mockMvc.perform(

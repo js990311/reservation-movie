@@ -6,9 +6,12 @@ import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.screening.dto.*;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningQueryRepository;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
+import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
+import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Observed
@@ -32,13 +36,14 @@ public class ScreeningService {
     private final ScreeningRepository screeningRepository;
     private final MovieRepository movieRepository;
     private final TheaterRepository theaterRepository;
+    private final ScreeningSeatRepository screeningSeatRepository;
 
     // CREATE
 
     @Transactional
     public ScreeningDto createScreening(CreateScreeningRequest request){
         Movie movie = movieRepository.findById(request.getMovieId()).orElseThrow(()-> BusinessException.of(MovieBusinessExceptionCode.MOVIE_NOT_FOUND, request.getMovieId() + " NOT FOUND"));
-        Theater theater = theaterRepository.findById(request.getTheaterId()).orElseThrow(() -> BusinessException.of(TheaterExceptionCode.THEATER_NOT_FOUND, request.getTheaterId() + " THEATER NOT FOUND"));
+        Theater theater = theaterRepository.findWithSeatsById(request.getTheaterId()).orElseThrow(() -> BusinessException.of(TheaterExceptionCode.THEATER_NOT_FOUND, request.getTheaterId() + " THEATER NOT FOUND"));
         Screening screening = Screening.create(request.getStartTime(), theater, movie);
         boolean isExists = screeningRepository.existsByScreeningTime(screening.getTheaterId(), screening.getStartTime(), screening.getEndTime());
 
@@ -47,7 +52,13 @@ public class ScreeningService {
         }
 
         screening = screeningRepository.save(screening);
+        List<ScreeningSeat> screeningSeats = new ArrayList<>();
+        for (Seat seat : theater.getSeats()){
+            ScreeningSeat screeningSeat = new ScreeningSeat(screening, seat);
+            screeningSeats.add(screeningSeat);
+        }
 
+        screeningSeats = screeningSeatRepository.saveAll(screeningSeats);
         return ScreeningDto.from(screening);
     }
 
@@ -65,7 +76,7 @@ public class ScreeningService {
 
     public ScreeningDetailDto readScreeningById(Long id) {
         Screening screening = screeningQueryRepository.findById(id).orElseThrow(() -> new BusinessException(ScreeningExceptionCode.SCREENING_NOT_FOUND));
-        List<ScreeningSeatDto> seats = screeningQueryRepository.findScreeningSeats(screening.getId(), screening.getTheaterId());
+        List<ScreeningSeatDto> seats = screeningQueryRepository.findScreeningSeats(screening.getId());
         return new ScreeningDetailDto(screening, seats);
     }
 }

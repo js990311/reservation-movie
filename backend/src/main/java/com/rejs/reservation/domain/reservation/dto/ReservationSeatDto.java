@@ -18,7 +18,7 @@ public class ReservationSeatDto {
     public static ReservationSeatDto from(ReservationSeat reservationSeat){
         return new ReservationSeatDto(
                 reservationSeat.getId(),
-                reservationSeat.getSeatId(),
+                reservationSeat.getScreeningSeat().getId(),
                 reservationSeat.getReservationId()
         );
     }

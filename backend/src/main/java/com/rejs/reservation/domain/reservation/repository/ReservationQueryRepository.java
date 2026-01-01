@@ -14,8 +14,12 @@ import com.rejs.reservation.domain.reservation.entity.QReservationSeat;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.screening.entity.QScreening;
+import com.rejs.reservation.domain.screening.entity.QScreeningSeat;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeatStatus;
 import com.rejs.reservation.domain.theater.entity.QSeat;
 import com.rejs.reservation.domain.theater.entity.QTheater;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +28,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +45,7 @@ public class ReservationQueryRepository {
     private QTheater theater = QTheater.theater;
     private QSeat seat = QSeat.seat;
     private QPayment payment = QPayment.payment;
+    private QScreeningSeat screeningSeat = QScreeningSeat.screeningSeat;
 
     public Page<ReservationSummaryDto> findMyReservations(Long userId, Pageable pageable){
         List<ReservationSummaryDto> contents = jpaQueryFactory
@@ -126,7 +132,8 @@ public class ReservationQueryRepository {
                         )
                 )
                 .from(reservationSeat)
-                .join(seat).on(reservationSeat.seatId.eq(seat.id))
+                .join(reservationSeat.screeningSeat, screeningSeat)
+                .join(screeningSeat.seat, seat)
                 .where(reservationSeat.reservation.id.eq(id)).fetch();
     }
 
@@ -146,41 +153,16 @@ public class ReservationQueryRepository {
         );
     }
 
-    /*
-                    SELECT s.seat_id
-                FROM seats s
-                WHERE
-                    s.seat_id in (:seatIds)
-                    AND s.theater_id = :theaterId
-                    AND NOT EXISTS(
-                        SELECT 1
-                        FROM reservation_seats rs
-                        JOIN reservations r using (reservation_id)
-                        WHERE rs.seat_id = s.seat_id
-                            AND r.screening_id = :screeningId
-                            AND r.status != 'CANCELED'
-                    )
-                ;
-
-     */
-
-    public List<Long> selectAvailableSeats(List<Long> seatIds, Long theaterId, Long screeningId) {
+    public List<ScreeningSeat> selectAvailableSeats(List<Long> seatIds) {
         return jpaQueryFactory
-                .select(seat.id)
-                .from(seat)
+                .select(screeningSeat)
+                .from(screeningSeat)
                 .where(
-                        seat.id.in(seatIds)
-                                .and(seat.theater.id.eq(theaterId))
-                                .and(
-                                        JPAExpressions.selectOne()
-                                                .from(reservationSeat)
-                                                .join(reservationSeat.reservation, reservation)
-                                                .where(
-                                                        reservationSeat.seatId.eq(seat.id),
-                                                        reservation.screeningId.eq(screeningId),
-                                                        reservation.status.ne(ReservationStatus.CANCELED)
-                                                    ).notExists()
-                                )
-                ).fetch();
+                        screeningSeat.id.in(seatIds)
+                                .and(screeningSeat.status.eq(ScreeningSeatStatus.AVAILABLE))
+                )
+                .orderBy(screeningSeat.id.asc())
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .fetch();
     }
 }
