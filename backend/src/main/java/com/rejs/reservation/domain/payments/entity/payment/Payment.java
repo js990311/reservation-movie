@@ -64,7 +64,6 @@ public class Payment extends BaseEntity {
         this.status = PaymentStatus.TIMEOUT;
     }
 
-
     public boolean isCompleted() {
         return status.equals(PaymentStatus.PAID) || status.equals(PaymentStatus.TIMEOUT) || status.equals(PaymentStatus.ABORTED);
     }

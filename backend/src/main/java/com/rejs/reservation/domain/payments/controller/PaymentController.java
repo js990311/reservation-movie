@@ -1,7 +1,7 @@
 package com.rejs.reservation.domain.payments.controller;
 
 import com.rejs.reservation.domain.payments.dto.CompletePaymentRequest;
-import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
+import com.rejs.reservation.domain.payments.dto.ValidatePaymentInfoDto;
 import com.rejs.reservation.domain.payments.facade.PaymentValidateFacade;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +14,8 @@ public class PaymentController {
     private final PaymentValidateFacade paymentValidateFacade;
 
     @PostMapping("/complete")
-    public BaseResponse<PaymentInfoDto> completePayment(@RequestBody CompletePaymentRequest request){
-        PaymentInfoDto payment = paymentValidateFacade.validate(request.getPaymentId());
+    public BaseResponse<ValidatePaymentInfoDto> completePayment(@RequestBody CompletePaymentRequest request){
+        ValidatePaymentInfoDto payment = paymentValidateFacade.validate(request.getPaymentId());
         return BaseResponse.of(payment);
     }
 }

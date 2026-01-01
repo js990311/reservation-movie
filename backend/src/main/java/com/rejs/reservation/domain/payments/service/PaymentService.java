@@ -1,6 +1,6 @@
 package com.rejs.reservation.domain.payments.service;
 
-import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
+import com.rejs.reservation.domain.payments.dto.ValidatePaymentInfoDto;
 import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancel;
 import com.rejs.reservation.domain.payments.entity.cancel.PaymentCancelReason;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
@@ -59,7 +59,7 @@ public class PaymentService {
      * @return
      */
     @Transactional
-    public PaymentInfoDto validateAndConfirm(Long reservationId, String paymentId, Long totalAmount){
+    public ValidatePaymentInfoDto validateAndConfirm(Long reservationId, String paymentId, Long totalAmount){
         // 스케줄러 등 상태를 변경시키는 race condition으로부터 안전을 위해서 비관적 락 설정
         Reservation reservation = reservationRepository.findWithLockById(reservationId).orElseThrow(() -> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
 
@@ -78,7 +78,7 @@ public class PaymentService {
 
         // 이미 상태가 변화되었으면 상태변화 메서드 호출 없이 그대로
         if(reservation.getStatus().equals(ReservationStatus.CONFIRMED) || payment.getStatus().equals(PaymentStatus.PAID)){
-            return new PaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
+            return new ValidatePaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
         }
 
         // 스케쥴러 등으로 인해 결제보다 취소가 빨랐으면 비즈니스 로직상 결제 취소 후 환불
@@ -88,7 +88,7 @@ public class PaymentService {
 
         reservation.confirm();
         payment.paid();
-        return new PaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
+        return new ValidatePaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), reservation.getId());
     }
 
     @Transactional
@@ -106,9 +106,9 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public PaymentInfoDto getPaymentInfo(String paymentId){
+    public ValidatePaymentInfoDto getPaymentInfo(String paymentId){
         Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
-        return PaymentInfoDto.from(payment);
+        return ValidatePaymentInfoDto.from(payment);
     }
 
     @Transactional

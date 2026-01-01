@@ -3,10 +3,7 @@ package com.rejs.reservation.domain.payments.facade;
 import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
-import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
-import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
-import com.rejs.reservation.domain.payments.exception.PaymentValidateException;
-import com.rejs.reservation.domain.payments.service.PaymentLockResult;
+import com.rejs.reservation.domain.payments.dto.ValidatePaymentInfoDto;
 import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +20,7 @@ public class PaymentValidateFacade {
     private final PaymentService paymentService;
     private final PaymentCancelFacade paymentCancelFacade;
 
-    public PaymentInfoDto validate(String paymentId){
+    public ValidatePaymentInfoDto validate(String paymentId){
         try {
             return tryConfirm(paymentId);
         } catch (BusinessException e) {
@@ -58,7 +55,7 @@ public class PaymentValidateFacade {
         }
     }
 
-    public PaymentInfoDto tryConfirm(String paymentId){
+    public ValidatePaymentInfoDto tryConfirm(String paymentId){
         // 결제가 존재하는지. 누군가 처리했는지 문의
         if(!paymentService.tryLockForVerification(paymentId)){
             // 이미 처리된 검증이거나, 검증 중
