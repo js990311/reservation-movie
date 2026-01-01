@@ -14,6 +14,9 @@ import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeatStatus;
+import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.global.exception.BusinessException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,6 +66,8 @@ class PaymentValidateFacadeIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    private List<ScreeningSeat> seats;
+
     @BeforeEach
     void setUp() {
         // 프로젝트 내의 모든 객체를... 다 생성할 순 없으므로
@@ -70,7 +75,17 @@ class PaymentValidateFacadeIntegrationTest {
 
         // 결제 실패에 대한 테스트가 아니기 때문에 전부 성공한다고
         when(portOneAdaptor.cancelPayment(anyString(), any())).thenReturn(CompletableFuture.completedFuture(true));
+
+        Seat mockSeat = mock(Seat.class);
+        when(mockSeat.getId()).thenReturn(1L);
+
+        seats =List.of(
+                new ScreeningSeat(1L, 10000, mockSeat, null, ScreeningSeatStatus.AVAILABLE),
+                new ScreeningSeat(2L, 10000, mockSeat, null, ScreeningSeatStatus.AVAILABLE),
+                new ScreeningSeat(3L, 10000, mockSeat, null, ScreeningSeatStatus.AVAILABLE)
+        );
     }
+
 
     @AfterEach
     void cleanUp() {
@@ -82,7 +97,6 @@ class PaymentValidateFacadeIntegrationTest {
     @DisplayName("결제 성공시나리오")
     void validate() {
         // 초기데이터 삽입
-        List<Long> seats =  List.of(1L,2L,3L);
         Reservation reservation = Reservation.create(1L, 2L, seats);
         reservation = reservationRepository.save(reservation);
         Payment payment = Payment.create(reservation);
@@ -115,7 +129,6 @@ class PaymentValidateFacadeIntegrationTest {
     @Test
     @DisplayName("결제 검증 통합 테스트")
     void validateAlreadyCompleted() throws InterruptedException {
-        List<Long> seats =  List.of(1L,2L,3L);
         Reservation reservation = Reservation.create(1L, 2L, seats);
         reservation = reservationRepository.save(reservation);
         Payment payment = Payment.create(reservation);
@@ -179,7 +192,6 @@ class PaymentValidateFacadeIntegrationTest {
     @DisplayName("외부 API로 결제정보 취득 실패 시나리오")
     void validateGetPaymentInfoFail(){
         // 초기데이터 삽입
-        List<Long> seats =  List.of(1L,2L,3L);
         Reservation reservation = Reservation.create(1L, 2L, seats);
         reservation = reservationRepository.save(reservation);
         Payment payment = Payment.create(reservation);
@@ -207,7 +219,6 @@ class PaymentValidateFacadeIntegrationTest {
     @DisplayName("결제 메타데이터 실패 시나리오")
     void validatePaymentStatusValidationFail(){
         // 초기데이터 삽입
-        List<Long> seats =  List.of(1L,2L,3L);
         Reservation reservation = Reservation.create(1L, 2L, seats);
         reservation = reservationRepository.save(reservation);
         Payment payment = Payment.create(reservation);
@@ -241,7 +252,6 @@ class PaymentValidateFacadeIntegrationTest {
     @DisplayName("결제 금액 검증 실패 시나리오")
     void validatePaymentFail(){
         // 초기데이터 삽입
-        List<Long> seats =  List.of(1L,2L,3L);
         Reservation reservation = Reservation.create(1L, 2L, seats);
         reservation = reservationRepository.save(reservation);
         Payment payment = Payment.create(reservation);
@@ -275,7 +285,6 @@ class PaymentValidateFacadeIntegrationTest {
     @DisplayName("결제 승인 실패 시나리오")
     void validateConfirmFail(){
         // 초기데이터 삽입
-        List<Long> seats =  List.of(1L,2L,3L);
         Reservation reservation = Reservation.create(1L, 2L, seats);
         reservation = reservationRepository.save(reservation);
         Payment payment = Payment.create(reservation);

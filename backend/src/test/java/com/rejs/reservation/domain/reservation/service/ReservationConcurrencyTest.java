@@ -11,6 +11,8 @@ import com.rejs.reservation.domain.reservation.facade.ReservationFacade;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
+import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.SeatDto;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +63,9 @@ class ReservationConcurrencyTest {
     @Autowired
     private ReservationFacade reservationFacade;
 
+    @Autowired
+    private ScreeningSeatRepository screeningSeatRepository;
+
     private MovieDto movie;
     private TheaterDto theater;
     private ScreeningDto screening;
@@ -69,10 +75,11 @@ class ReservationConcurrencyTest {
     private ExecutorService executorService;
     private CountDownLatch countDownLatch;
     private List<Long> users = new ArrayList<>();
-    private ReservationRequest request;
     private AtomicInteger successCount;
     private AtomicInteger failCount;
     private AtomicInteger exceptionCount;
+    private AtomicInteger deadlockCount;
+    private List<ScreeningSeat> screeningSeats;
 
     @BeforeEach
     void setup(){
@@ -96,13 +103,14 @@ class ReservationConcurrencyTest {
             users.add(user.getId());
         }
 
-        request = new ReservationRequest(screening.getScreeningId(), theater.getSeats().stream().map(SeatDto::getSeatId).toList());
-
         executorService = Executors.newFixedThreadPool(threadCount);
         countDownLatch = new CountDownLatch(threadCount);
         successCount = new AtomicInteger();
         failCount = new AtomicInteger();
         exceptionCount = new AtomicInteger();
+        deadlockCount = new AtomicInteger();
+
+        screeningSeats = screeningSeatRepository.findByScreeningId(screening.getScreeningId());
     }
 
     @Test
@@ -113,7 +121,7 @@ class ReservationConcurrencyTest {
             executorService.submit(()->{
                 try {
                     barrier.await();
-                    ReservationRequest request = new ReservationRequest(screening.getScreeningId(), List.of(theater.getSeats().get(finalI % theater.getSeats().size()).getSeatId()));
+                    ReservationRequest request = new ReservationRequest(screening.getScreeningId(), List.of(screeningSeats.get(finalI % theater.getSeats().size()).getId()));
                     reservationFacade.reservationScreening(request, users.get(finalI));
                     successCount.incrementAndGet();
                 }catch (BusinessException e){
@@ -127,14 +135,13 @@ class ReservationConcurrencyTest {
         }
         countDownLatch.await();
 
-        assertEquals(theater.getSeats().size(), successCount.get());
-        assertEquals(threadCount - theater.getSeats().size(), failCount.get());
-        assertEquals(0, exceptionCount.get());
+        assertEquals(theater.getSeats().size(), successCount.get(), "기대성공");
+        assertEquals(threadCount - theater.getSeats().size(), failCount.get(), "기대실패");
+        assertEquals(0, exceptionCount.get(), "예외가 없어야한다");
     }
 
     @Test
     void reservationCheckDeadLock() throws InterruptedException {
-        // 지금은 데드락이 안걸린다. screening에 락 하나만 잡기 때문에
         CyclicBarrier barrier = new CyclicBarrier(threadCount);
         int seatCount = theater.getSeats().size();
         for (int i=0; i< threadCount; i++){
@@ -144,9 +151,9 @@ class ReservationConcurrencyTest {
                     int base = finalI % seatCount;
                     int prev = (base - 1 + seatCount) % seatCount;
                     int next = (base + 1) % seatCount;
-                    Long sPrev = theater.getSeats().get(prev).getSeatId();
-                    Long sBase = theater.getSeats().get(base).getSeatId();
-                    Long sNext = theater.getSeats().get(next).getSeatId();
+                    Long sPrev = screeningSeats.get(prev).getId();
+                    Long sBase = screeningSeats.get(base).getId();
+                    Long sNext = screeningSeats.get(next).getId();
 
                     List<Long> seats;
                     int mode = finalI % 3;
@@ -164,7 +171,9 @@ class ReservationConcurrencyTest {
                     successCount.incrementAndGet();
                 }catch (BusinessException e){
                     failCount.incrementAndGet();
-                }catch (Exception e){
+                }catch (CannotAcquireLockException ex){
+                    deadlockCount.incrementAndGet();
+                } catch(Exception e){
                     exceptionCount.incrementAndGet();
                 }finally {
                     countDownLatch.countDown();
@@ -173,10 +182,8 @@ class ReservationConcurrencyTest {
         }
         countDownLatch.await();
 
-        assertTrue(successCount.get() <= 3);
-        assertEquals(0, exceptionCount.get());
+        assertTrue(successCount.get() <= 3, "최대 성공건수");
+        assertEquals(0, deadlockCount.get(), "데드락");
+        assertEquals(0, exceptionCount.get(), "예외발생");
     }
-
-
-
 }

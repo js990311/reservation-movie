@@ -2,6 +2,7 @@ package com.rejs.reservation.domain.reservation.entity;
 
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
 import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.user.entity.User;
@@ -83,15 +84,17 @@ public class Reservation extends BaseEntity {
     }
 
     // 생성
-    public static Reservation create(Long userId, Long screeningId, List<Long> seatIds){
-        int totalAmount = seatIds.size() * 10000; // 임시로 하드코딩
+    public static Reservation create(Long userId, Long screeningId, List<ScreeningSeat> screeningSeats){
+        int totalAmount = screeningSeats.stream()
+                .mapToInt(ScreeningSeat::getPrice)
+                .sum();
         Reservation reservation = new Reservation(userId, screeningId, totalAmount);
-
-        for(Long seatId : seatIds){
-            ReservationSeat rs = new ReservationSeat(seatId);
-            rs.assignReservation(reservation);
+        for (ScreeningSeat screeningSeat : screeningSeats) {
+            // ScreeningSeat 상태 변경
+            screeningSeat.reserved();
+            // 예약-좌석 매핑 생성 및 리스트에 추가
+            reservation.addReservationSeat(new ReservationSeat(screeningSeat));
         }
-
         return reservation;
     }
 

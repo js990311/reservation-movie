@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,30 +48,32 @@ public class ScreeningQueryRepository {
     private QReservation reservation = QReservation.reservation;
 
     public List<ScreeningSeatDto> findScreeningSeats(Long screeningId, Long theaterId){
-            return jpaQueryFactory
-                    .select(
-                            Projections.constructor(
-                                    ScreeningSeatDto.class,
-                                    seat.id,
-                                    seat.rowNum,
-                                    seat.colNum,
-                                    new CaseBuilder().when(
-                                            JPAExpressions
-                                                    .selectOne()
-                                                    .from(reservationSeat) // 예약된 좌석 중에
-                                                    .leftJoin(reservationSeat.reservation, reservation)
-                                                    .where(
-                                                            reservationSeat.seatId.eq(seat.id) // seatId에 대한 예약이면서
-                                                            .and(reservation.screeningId.eq(screeningId)) // 이번 상영표에 대한 예약이면서
-                                                            .and(reservation.status.ne(ReservationStatus.CANCELED)) // 취소상태가 아닌 것이
-                                                    ).exists() // 존재하는가?
-                                    ).then(true).otherwise(false) // 존재하면 isReserved=true (이미 예약됨)
-                            )
-                    )
-                    .from(seat)
-                    .where(seat.theater.id.eq(theaterId))
-                    .fetch()
-            ;
+        // TODO
+        return new ArrayList<>();
+//            return jpaQueryFactory
+//                    .select(
+//                            Projections.constructor(
+//                                    ScreeningSeatDto.class,
+//                                    seat.id,
+//                                    seat.rowNum,
+//                                    seat.colNum,
+//                                    new CaseBuilder().when(
+//                                            JPAExpressions
+//                                                    .selectOne()
+//                                                    .from(reservationSeat) // 예약된 좌석 중에
+//                                                    .leftJoin(reservationSeat.reservation, reservation)
+//                                                    .where(
+//                                                            reservationSeat.seatId.eq(seat.id) // seatId에 대한 예약이면서
+//                                                            .and(reservation.screeningId.eq(screeningId)) // 이번 상영표에 대한 예약이면서
+//                                                            .and(reservation.status.ne(ReservationStatus.CANCELED)) // 취소상태가 아닌 것이
+//                                                    ).exists() // 존재하는가?
+//                                    ).then(true).otherwise(false) // 존재하면 isReserved=true (이미 예약됨)
+//                            )
+//                    )
+//                    .from(seat)
+//                    .where(seat.theater.id.eq(theaterId))
+//                    .fetch()
+//            ;
     }
 
     public Optional<Screening> findById(Long id) {
