@@ -19,7 +19,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = """
         UPDATE payments p 
-        SET p.last_attempted_at = :now, p.status = 'VERIFYING'
+        SET p.last_attempted_at = :now, p.status = 'VERIFYING', p.updated_at = NOW()
         WHERE p.payment_uid = :paymentUid
         AND (
             p.status = 'READY' 
@@ -32,6 +32,24 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         )
     """, nativeQuery = true)
     int updateLastAttemptedAt(@Param("paymentUid") String paymentUid, @Param("now") LocalDateTime now, @Param("threshold") LocalDateTime threshold);
+
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query(value = """
+        UPDATE payments p 
+        SET p.last_attempted_at = :now, p.updated_at = NOW()
+        WHERE p.payment_uid = :paymentUid
+        AND (
+            p.status = 'READY' 
+            OR 
+            (p.status = 'VERIFYING'  AND (
+                p.last_attempted_at IS NULL 
+                OR 
+                p.last_attempted_at <= :threshold
+            ))
+        )
+    """, nativeQuery = true)
+    int updateForCleanUp(@Param("paymentUid") String paymentUid, @Param("now") LocalDateTime now, @Param("threshold") LocalDateTime threshold);
 
     boolean existsByPaymentUid(@Param("paymentUid") String paymentUid);
 }

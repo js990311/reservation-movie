@@ -15,7 +15,7 @@ public interface PaymentCancelRepository extends JpaRepository<PaymentCancel, Lo
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query(value = """
         UPDATE payment_cancels pc 
-        SET pc.last_attempted_at = :now 
+        SET pc.last_attempted_at = :now, pc.updated_at = NOW() 
         WHERE pc.payment_uid = :paymentUid 
         AND pc.status = 'REQUIRED' 
         AND (

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 
 @Slf4j
@@ -49,6 +50,7 @@ public class PaymentService {
             throw new PaymentValidateException(PaymentExceptionCode.PAYMENT_NOT_FOUND);
         }
     }
+
 
     /**
      * 불필요하게 나뉜 기존의 검증 트랜잭션과 승인 트랜잭션을 하나로 합침
@@ -107,5 +109,44 @@ public class PaymentService {
     public PaymentInfoDto getPaymentInfo(String paymentId){
         Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
         return PaymentInfoDto.from(payment);
+    }
+
+    @Transactional
+    public boolean processZombiePayment(String paymentUid){
+        LocalDateTime now = LocalDateTime.now();
+        // 생성은 외부에서 다 했어야함
+        int updatedCount = paymentRepository.updateForCleanUp(paymentUid, now, now.minusSeconds(30L));
+        if(updatedCount == 0){
+            return false;
+        }
+
+        // 서버와 합의되지 않은 결제 처리
+        Optional<Payment> opt = paymentRepository.findByPaymentUid(paymentUid);
+        if (opt.isEmpty()){
+            Payment newPayment = Payment.notFoundPayment(paymentUid);
+            paymentRepository.saveAndFlush(newPayment);
+            PaymentCancel paymentCancel = new PaymentCancel(newPayment, PaymentCancelReason.VALIDATION_FAILED);
+            paymentCancelRepository.save(paymentCancel);
+            return true;
+        }
+
+
+        Payment payment = opt.get();
+        if(payment.getStatus().equals(PaymentStatus.READY)){
+            if(!payment.getReservation().getStatus().equals(ReservationStatus.PENDING)){
+                // 아직 결제 시도가 이루어지지 않았는데 예매는 이미 대기상태가 아니다 -> 타임아웃
+                payment.timeout();
+                PaymentCancel paymentCancel = new PaymentCancel(payment, PaymentCancelReason.VALIDATION_FAILED);
+                paymentCancelRepository.save(paymentCancel);
+                return true;
+            }
+        }else if(payment.getStatus().equals(PaymentStatus.VERIFYING)){
+            // 돈이 들어왔는데 검증에 실패했다 -> 결제 거부
+            payment.aborted();
+            PaymentCancel paymentCancel = new PaymentCancel(payment, PaymentCancelReason.VALIDATION_FAILED);
+            paymentCancelRepository.save(paymentCancel);
+            return true;
+        }
+        return false;
     }
 }

@@ -70,6 +70,7 @@ logging:
   level:
     query-logger: DEBUG
     slow-query-logger: WARN
+    com.rejs.reservation: DEBUG
 
 resilience4j:
   circuitbreaker:
