@@ -23,7 +23,7 @@ public class WebhookController {
     ){
         Webhook webhook;
         try {
-            webhook = webhookVerifier.verify(body, webhookSignature, webhookTimestamp, webhookSignature);
+            webhook = webhookVerifier.verify(body, webHookId, webhookTimestamp, webhookSignature);
         } catch (WebhookVerificationException e) {
             throw new RuntimeException(e);
         }
