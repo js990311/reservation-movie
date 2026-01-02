@@ -82,14 +82,16 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(handler -> handler
                         .authenticationEntryPoint(((request, response, ex) -> {
-                            response.setContentType("application/json");
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setCharacterEncoding("UTF-8");
                             AuthenticationExceptionCode code = AuthenticationExceptionCode.INVALID_TOKEN;
                             response.setStatus(code.getStatus().value());
                             PrintWriter writer = response.getWriter();
                             writer.write(mapper.writeValueAsString(new BusinessExceptionResponse(code, request.getRequestURI(), null)));
                         }))
                         .accessDeniedHandler((request, response, ex)->{
-                                    response.setContentType("application/json");
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.setCharacterEncoding("UTF-8");
                                     AuthenticationExceptionCode code = AuthenticationExceptionCode.INVALID_TOKEN;
                                     response.setStatus(code.getStatus().value());
                                     PrintWriter writer = response.getWriter();
