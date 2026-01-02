@@ -104,9 +104,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        corsConfiguration.setAllowedOriginPatterns(List.of("*"));
-        corsConfiguration.setAllowedMethods(List.of("GET", "POST"));
+        // 1. 허용할 도메인 명시 (Vercel 주소와 로컬 주소)
+        corsConfiguration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://reservation-movie.vercel.app"
+        ));
 
+        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.addExposedHeader("Authorization");
 
