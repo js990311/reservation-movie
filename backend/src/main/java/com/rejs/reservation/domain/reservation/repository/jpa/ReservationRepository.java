@@ -29,4 +29,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("threshold")LocalDateTime threshold,
             @Param("limit") int limit
     );
+
+    @Query("SELECT s.startTime FROM Screening s JOIN Reservation r ON r.screeningId = s.id WHERE r.id = :reservationId")
+    Optional<LocalDateTime> findStartTimeByReservationId(@Param("reservationId") Long reservationId);
 }

@@ -17,7 +17,6 @@ spring:
       hibernate:
         jdbc.batch_size: 50
         order_inserts: true
-
   flyway:
     enabled: true
 springdoc:

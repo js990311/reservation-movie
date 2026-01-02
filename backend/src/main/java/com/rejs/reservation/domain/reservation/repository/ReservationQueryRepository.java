@@ -157,12 +157,32 @@ public class ReservationQueryRepository {
         return jpaQueryFactory
                 .select(screeningSeat)
                 .from(screeningSeat)
+                .join(screeningSeat.screening, screening)
                 .where(
-                        screeningSeat.id.in(seatIds)
-                                .and(screeningSeat.status.eq(ScreeningSeatStatus.AVAILABLE))
+                        screeningSeat.id.in(seatIds),
+                        screeningSeat.status.eq(ScreeningSeatStatus.AVAILABLE),
+                        screening.startTime.gt(LocalDateTime.now()),
+                        screening.deletedAt.isNull()
                 )
                 .orderBy(screeningSeat.id.asc())
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .fetch();
+    }
+
+    public void updateScreeningSeatAvailable(Long reservationId){
+        List<Long> screeningSeatIds = jpaQueryFactory
+                .select(reservationSeat.screeningSeat.id)
+                .from(reservationSeat)
+                .where(reservationSeat.reservation.id.in(reservationId))
+                .fetch();
+
+        jpaQueryFactory
+                .update(screeningSeat)
+                .set(screeningSeat.status, ScreeningSeatStatus.AVAILABLE)
+                .where(screeningSeat.id.in(
+                        screeningSeatIds
+                ))
+                .execute();
+        return;
     }
 }

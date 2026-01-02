@@ -25,7 +25,7 @@ export default async function ScreeningIdPage({params}: Readonly<Props>){
         <div>
             <MovieInfo movie={screening.movie}/>
             <ScreeningReservation
-                screeningId={screening.screening.screeningId}
+                screening={screening.screening}
                 seats={screening.seats}
                 theater={screening.theater}
             />

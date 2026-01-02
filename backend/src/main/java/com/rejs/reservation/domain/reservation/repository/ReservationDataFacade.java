@@ -23,30 +23,13 @@ import java.util.Optional;
 @Repository
 public class ReservationDataFacade {
     private final ReservationRepository reservationRepository;
-    private final ReservationSeatRepository reservationSeatRepository;
     private final ReservationQueryRepository reservationQueryRepository;
 
     public Reservation save(Reservation reservation) {
         return reservationRepository.save(reservation);
     }
 
-    public Page<ReservationSummaryDto> findMyReservations(Long userId, Pageable pageable) {
-        return reservationQueryRepository.findMyReservations(userId, pageable);
-    }
-
     public Reservation findById(Long id){
         return reservationRepository.findById(id).orElseThrow(()-> BusinessException.of(ReservationExceptionCode.RESERVATION_NOT_FOUND));
-    }
-
-    public Optional<Reservation> findForCancel(Long id){
-        return reservationQueryRepository.findForCancel(id);
-    }
-
-    public ReservationSummaryDto findReservationSummaryById(Long id) {
-        return reservationQueryRepository.findById(id);
-    }
-
-    public List<ReservationSeatNumberDto> findSeatNumberById(Long id) {
-        return reservationQueryRepository.findSeatNumberById(id);
     }
 }

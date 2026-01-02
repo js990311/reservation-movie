@@ -55,7 +55,7 @@ public class ScreeningQueryRepository {
                 .select(
                         Projections.constructor(
                                 ScreeningSeatDto.class,
-                                seat.id,
+                                screeningSeat.id,
                                 seat.rowNum,
                                 seat.colNum,
                                 screeningSeat.status.eq(ScreeningSeatStatus.RESERVED)

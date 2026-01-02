@@ -1,5 +1,5 @@
 import {Badge} from "@/components/ui/badge";
-import {ArrowRight, CheckCircle2, Clock, CreditCard, Loader2, XCircle} from "lucide-react";
+import {ArrowRight, CheckCircle2, Clock, CreditCard, Loader2, RotateCcw, XCircle} from "lucide-react";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
@@ -75,52 +75,60 @@ export default function MyPayments({payments}: Readonly<Props>) {
             </div>
 
             <div className="grid gap-4">
-                {payments.map((payment) => (
-                    <Card key={payment.paymentUid} className="overflow-hidden hover:shadow-md transition-all group">
-                        <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 bg-muted/10">
-                            <div className="space-y-1">
-                                <CardTitle className="text-base font-medium flex items-center gap-2">
-                                    <span className="text-muted-foreground">결제 ID</span>
-                                    <span className="font-mono text-sm bg-slate-100 px-2 py-0.5 rounded text-slate-700">
-                                        {payment.paymentUid}
-                                    </span>
-                                </CardTitle>
-                                <CardDescription>
-                                    <p>
-                                        관련 예매 번호: <span
-                                        className="font-medium text-foreground">#{payment.reservationId}</span>
-                                    </p>
-                                    <p>
-                                        결제 일시 : <span
-                                        className="font-medium text-foreground">{new Date(payment.createAt).toLocaleString()}</span>
-                                    </p>
-                                </CardDescription>
+                {payments.map((payment) => {
+                    const isCancelled = !!(payment.cancelInfo && payment.cancelInfo.cancelReason);
+                    return (
+                    <Card key={payment.paymentUid}
+                          className={clsx(
+                              "relative overflow-hidden transition-all duration-300",
+                              isCancelled ? "opacity-80 bg-slate-50/50 border-red-100" : "hover:border-primary/50 hover:shadow-lg"
+                          )}
+                    >
+                        {isCancelled && <div className="absolute top-0 left-0 w-full h-1 bg-red-400" />}
+                        <CardHeader className="pb-4">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-3">
+                                            <span className="font-mono text-sm font-bold text-primary">
+                                                {payment.paymentUid}
+                                            </span>
+                                        <PaymentStatusBadge status={payment.paymentStatus} />
+                                    </div>
+                                    <CardDescription className="flex items-center gap-2 mt-1">
+                                        예매 번호 <span className="text-foreground font-semibold">#{payment.reservationId}</span>
+                                        <span className="text-slate-300">|</span>
+                                        <span>{new Date(payment.createAt).toLocaleString()}</span>
+                                    </CardDescription>
+                                </div>
                             </div>
-                            <PaymentStatusBadge status={payment.paymentStatus} />
                         </CardHeader>
 
-                        <CardContent className="pt-4 flex justify-between">
-                            {/* 취소 정보가 있을 경우 노출 */}
-                            {payment.cancelInfo && (
-                                <div className="text-sm p-3 rounded-lg bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 text-red-600 dark:text-red-400">
-                                    <p className="flex items-center gap-1.5 font-medium">
-                                        <XCircle className="w-4 h-4" />
-                                        취소 사유: {payment.cancelInfo.cancelReason || "정보 없음"}
-                                    </p>
-                                    <p className="text-xs mt-1 opacity-80">
-                                        취소 일시: {new Date(payment.cancelInfo.canceledAt).toLocaleString()}
-                                    </p>
+                        <CardContent className="pt-0 space-y-4">
+                            {isCancelled ? (
+                                <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-100 text-red-800">
+                                    <RotateCcw className="w-5 h-5 mt-0.5 shrink-0 text-red-500" />
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-bold">환불 처리가 완료된 결제입니다.</p>
+                                        <p className="text-sm opacity-90">사유: {payment.cancelInfo?.cancelReason}</p>
+                                        <p className="text-[11px] font-medium opacity-70 uppercase tracking-wider">
+                                            취소 일시: {new Date(payment.cancelInfo!.canceledAt).toLocaleString()}
+                                        </p>
+                                    </div>
                                 </div>
+                            ) : (
+                                <div className="h-[1px] bg-slate-100 w-full" />
                             )}
-                            <Button variant="ghost" size="sm" className="gap-1 hover:text-primary hover:bg-primary/10" asChild>
-                                <Link href={`/reservations/${payment.reservationId}`}>
-                                    예매 상세 정보 확인
-                                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                                </Link>
-                            </Button>
+
+                            <div className="flex justify-end items-center gap-3">
+                                <Button variant="outline" size="sm" className="rounded-full px-4 text-xs font-semibold" asChild>
+                                    <Link href={`/reservations/${payment.reservationId}`}>
+                                        상세 보기
+                                    </Link>
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
-                ))}
+                    )})}
             </div>
         </div>
     );}

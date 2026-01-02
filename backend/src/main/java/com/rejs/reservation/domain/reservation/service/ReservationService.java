@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class ReservationService {
 
     // READ
     public Page<ReservationSummaryDto> findMyReservations(long userId, Pageable pageable) {
-        return reservationDataFacade.findMyReservations(userId, pageable);
+        return reservationQueryRepository.findMyReservations(userId, pageable);
     }
 
 

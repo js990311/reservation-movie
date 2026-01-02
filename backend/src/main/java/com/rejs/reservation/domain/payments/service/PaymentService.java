@@ -66,6 +66,10 @@ public class PaymentService {
         // 결제 정보 불러오기
         com.rejs.reservation.domain.payments.entity.payment.Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow(() -> BusinessException.of(PaymentExceptionCode.PAYMENT_NOT_FOUND));
 
+        if(reservationRepository.findStartTimeByReservationId(reservationId).orElseThrow(()->BusinessException.of(ReservationExceptionCode.SCREENING_TIME_EXPIRED)).isBefore(LocalDateTime.now())){
+            throw BusinessException.of(ReservationExceptionCode.SCREENING_TIME_EXPIRED);
+        }
+
         // 혹시라도 payment가 다른 예매에 대한 결제가 아닌 지 검증(reservationId를 custom data에서 가져왔기 때문)
         if(!payment.getReservation().getId().equals(reservation.getId())){
             throw BusinessException.of(PaymentExceptionCode.PAYMENT_INFO_MISMATCH);

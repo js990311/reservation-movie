@@ -9,6 +9,7 @@ interface SeatMapProps{
     rowSize: number;
     colSize: number;
     selectedSeatIds ?: number[];
+    disabled?: boolean;
 }
 
 interface SeatProps {
@@ -18,8 +19,8 @@ interface SeatProps {
     disabled?: boolean;
 }
 
-export default function SeatMap({ seats, onSeatClick, rowSize, colSize, selectedSeatIds }: Readonly<SeatMapProps>) {
-
+export default function SeatMap({ seats, onSeatClick, rowSize, colSize, selectedSeatIds, disabled }: Readonly<SeatMapProps>) {
+    console.log("SeatMap 전체 disabled 상태:", disabled);
     const checkStatus = (seat: Seat) => {
         if(seat.reserved){
             return 'RESERVED';
@@ -52,6 +53,7 @@ export default function SeatMap({ seats, onSeatClick, rowSize, colSize, selected
                         status={checkStatus(seat)}
                         seat={seat}
                         onClick={onSeatClick}
+                        disabled={disabled ?? false}
                     />
                 ))}
             </div>
