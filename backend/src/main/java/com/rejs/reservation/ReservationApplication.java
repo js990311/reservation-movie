@@ -16,7 +16,7 @@ public class ReservationApplication {
 
 	@PostConstruct
 	public void init() {
-		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
 	}
 
 	public static void main(String[] args) {
