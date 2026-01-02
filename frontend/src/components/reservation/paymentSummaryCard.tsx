@@ -140,6 +140,10 @@ export default function PaymentSummaryCard({ reservationDetail }: PaymentSummary
 
             {/* 4. 결제 버튼 (푸터) */}
             <CardFooter className="bg-muted/20 flex flex-col gap-3 pt-6">
+                <span className="text-yellow-600 dark:text-yellow-500">⚠️</span>
+                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                    테스트 결제 모드: 실제 금액이 청구되지 않습니다.
+                </p>
                 <Button
                     className="w-full text-lg h-12 font-bold"
                     size="lg"

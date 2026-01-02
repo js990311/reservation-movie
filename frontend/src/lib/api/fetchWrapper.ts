@@ -28,7 +28,7 @@ export async function fetchList<T>({endpoint, method='GET', headers, withAuth, b
 }
 
 export async function fetchVoid({endpoint, method='GET', headers, withAuth, body} : FetchParams) : Promise<ApiOneResponse<void>> {
-    const respones: ApiOneResponse<void> = await fetchWrapper<ApiOneResponse<T>>({endpoint, method, headers, withAuth, body})
+    const respones: ApiOneResponse<void> = await fetchWrapper<ApiOneResponse<void>>({endpoint, method, headers, withAuth, body})
     return respones;
 }
 

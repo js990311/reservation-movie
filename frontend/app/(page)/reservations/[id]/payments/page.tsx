@@ -13,7 +13,7 @@ export default async function PaymentsPage({params}: Readonly<Props>){
     if(!response.ok){
         return (
             <div>
-                없습니다. 예약정보가
+                예약정보가 없습니다.
             </div>
         )
     }

@@ -14,11 +14,19 @@ import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import {useLogin} from "@/src/hooks/auth/loginHook";
-import {useEffect, useState} from "react";
+import {Suspense, useEffect, useState} from "react";
 import toast from "react-hot-toast";
 import {useRouter, useSearchParams} from "next/navigation";
 
-export default function LoginPage(){
+export default function LoginSuspendPage(){
+    return (
+        <Suspense>
+            <LoginPage></LoginPage>
+        </Suspense>
+    )
+}
+
+function LoginPage(){
     const {status, login} = useLogin();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
