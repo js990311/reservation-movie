@@ -4,10 +4,9 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "backend/**" # backend 폴더 변화 시에만 작동
+      - "backend/**"
 
 env:
-  # 아래서 {{env}}로 사용가능
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: reservation-app
   ECR_PUBLIC_URI: public.ecr.aws/l6e2y7e7/reservation-app
@@ -20,38 +19,46 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ARM64 빌드를 위한 QEMU 설정
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      # Docker Buildx 설정 (멀티 아키텍처 빌드 도구)
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # AWS 자격 증명 설정
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: us-east-1 # Public ECR은 us-east-1 권장
 
-      # Amazon ECR 로그인
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
         with:
           registry-type: public
 
-      # Docker 빌드 및 ECR 푸시
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: ./backend
-          platforms: linux/arm64 # t4g(Graviton)를 위해 ARM64 지정
+          platforms: linux/amd64 # t3.medium(x86)을 위해 amd64로 변경
           push: true
           tags: |
             ${{ env.ECR_PUBLIC_URI }}:${{ github.sha }}
             ${{ env.ECR_PUBLIC_URI }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push # 빌드가 성공해야 배포 시작
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }} # EC2 탄력적 IP
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }} # .pem 키 내용 전체
+          script: |
+            cd ~/deploy
+            docker-compose pull
+            docker-compose up -d
+            docker image prune -f
