@@ -13,9 +13,10 @@ import org.springframework.stereotype.Component;
 public class ReservationCancelScheduler {
     private final AutoCancelRepository autoCancelRepository;
 
-    @Observed
-    @Scheduled(fixedDelay = 20*1000)
+    @Observed(name = "scheduler.reservation.cancel")
+    @Scheduled(fixedDelay = 60*1000)
     public void autoCancelReservation(){
         long target = autoCancelRepository.autoCancel(200);
+        log.debug("[scheduler.reservation.cancel] clean target = {}", target);
     }
 }

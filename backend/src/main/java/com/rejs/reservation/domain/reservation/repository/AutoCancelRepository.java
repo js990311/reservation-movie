@@ -64,7 +64,7 @@ public class AutoCancelRepository {
 
     public long autoCancel(int limit){
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime threshold = now.minusMinutes(10);
+        LocalDateTime threshold = now.minusMinutes(20);
 
         List<Long> targets = reservationRepository.autoCancelReservation(now, threshold, limit);
 

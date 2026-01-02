@@ -5,18 +5,18 @@ import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import lombok.Getter;
 
 @Getter
-public class PaymentInfoDto {
+public class ValidatePaymentInfoDto {
     private String paymentId;
     private PaymentStatus status;
     private Long reservationId;
 
-    public PaymentInfoDto(String paymentId, PaymentStatus status, Long reservationId) {
+    public ValidatePaymentInfoDto(String paymentId, PaymentStatus status, Long reservationId) {
         this.paymentId = paymentId;
         this.status = status;
         this.reservationId = reservationId;
     }
 
-    public static PaymentInfoDto from(Payment payment){
-        return new PaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), payment.optionalReservationId());
+    public static ValidatePaymentInfoDto from(Payment payment){
+        return new ValidatePaymentInfoDto(payment.getPaymentUid(), payment.getStatus(), payment.optionalReservationId());
     }
 }

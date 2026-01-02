@@ -4,12 +4,12 @@ import com.rejs.reservation.TestcontainersConfiguration;
 import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
-import com.rejs.reservation.domain.payments.dto.PaymentInfoDto;
+import com.rejs.reservation.domain.payments.dto.ValidatePaymentInfoDto;
 import com.rejs.reservation.domain.payments.entity.payment.Payment;
 import com.rejs.reservation.domain.payments.entity.payment.PaymentStatus;
 import com.rejs.reservation.domain.payments.exception.PaymentExceptionCode;
+import com.rejs.reservation.domain.payments.exception.PaymentValidateException;
 import com.rejs.reservation.domain.payments.repository.PaymentRepository;
-import com.rejs.reservation.domain.payments.service.PaymentLockResult;
 import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
@@ -33,12 +33,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -154,7 +152,7 @@ class PaymentValidateFacadeIntegrationTest {
             executorService.submit(()-> {
                 try {
                     barrier.await();
-                    PaymentInfoDto validate = paymentValidateFacade.validate(paymentId);
+                    ValidatePaymentInfoDto validate = paymentValidateFacade.validate(paymentId);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 } catch (BrokenBarrierException e) {
@@ -179,12 +177,11 @@ class PaymentValidateFacadeIntegrationTest {
         String paymentId = "123456";
 
         // 환불해야함
-        PaymentInfoDto paymentInfo = paymentValidateFacade.validate(paymentId);
+        assertThrows(PaymentValidateException.class,()->paymentValidateFacade.validate(paymentId));
 
-        Optional<Payment> opt = paymentRepository.findByPaymentUid(paymentId);
-        assertTrue(opt.isPresent());
-        Payment payment = opt.get();
-        assertEquals(paymentInfo.getPaymentId(), payment.getPaymentUid());
+        // t
+        // 상태 확인
+        Payment payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
         assertEquals(PaymentStatus.ABORTED, payment.getStatus());
     }
 
@@ -201,15 +198,15 @@ class PaymentValidateFacadeIntegrationTest {
         Long amount = Long.valueOf(reservation.getTotalAmount());
 
         // 외부 API가 비정상적으로 작동 = 결제 시도 정보 획득에 실패
-        when(portOneAdaptor.getPayment(paymentId)).thenThrow(BusinessException.of(PaymentExceptionCode.PAYMENT_API_ERROR));
+        when(portOneAdaptor.getPayment(paymentId)).thenThrow(new PaymentValidateException(PaymentExceptionCode.PAYMENT_API_ERROR));
 
         // w
-        assertThrows(BusinessException.class,()->paymentValidateFacade.validate(paymentId));
+        assertThrows(PaymentValidateException.class,()->paymentValidateFacade.validate(paymentId));
 
         // t
         // 상태 확인
         payment = paymentRepository.findByPaymentUid(paymentId).orElseThrow();
-        assertEquals(PaymentStatus.VERIFYING, payment.getStatus());
+        assertEquals(PaymentStatus.ABORTED, payment.getStatus());
 
         reservation = reservationRepository.findById(reservation.getId()).orElseThrow();
         assertEquals(ReservationStatus.PENDING, reservation.getStatus());

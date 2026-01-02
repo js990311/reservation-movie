@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.time.LocalDateTime;
+
 @NoArgsConstructor
 @Getter
 @Table(name = "payments")
@@ -33,6 +35,9 @@ public class Payment extends BaseEntity {
     @Column
     private PaymentStatus status;
 
+    @Column(name = "last_attempted_at")
+    private LocalDateTime lastAttemptedAt;
+
     /* 관계 */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id")
@@ -55,8 +60,12 @@ public class Payment extends BaseEntity {
         this.status = PaymentStatus.ABORTED;
     }
 
+    public void timeout(){
+        this.status = PaymentStatus.TIMEOUT;
+    }
+
     public boolean isCompleted() {
-        return status.equals(PaymentStatus.PAID) || status.equals(PaymentStatus.FAILED) || status.equals(PaymentStatus.ABORTED);
+        return status.equals(PaymentStatus.PAID) || status.equals(PaymentStatus.TIMEOUT) || status.equals(PaymentStatus.ABORTED);
     }
 
     // 생성

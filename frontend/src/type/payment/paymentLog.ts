@@ -1,5 +1,8 @@
+import {PaymentStatus} from "@/src/type/payment/paymentStatus";
+
 export type PaymentLog = {
     paymentId: string;
-    status: 'PAID' | 'FAILED' | 'CANCELLED';
+    status: PaymentStatus;
     reservationId: number;
 }
+

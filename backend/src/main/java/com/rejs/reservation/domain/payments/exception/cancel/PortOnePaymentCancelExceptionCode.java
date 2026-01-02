@@ -1,4 +1,4 @@
-package com.rejs.reservation.domain.payments.adapter.exception.cancel;
+package com.rejs.reservation.domain.payments.exception.cancel;
 
 import com.rejs.reservation.global.exception.code.BusinessExceptionCode;
 import lombok.AllArgsConstructor;
@@ -16,6 +16,7 @@ public enum PortOnePaymentCancelExceptionCode implements BusinessExceptionCode {
     NOT_PAID("PO_NOT_PAID", "결제되지 않은 주문은 취소할 수 없습니다.", HttpStatus.BAD_REQUEST),
     INVALID_AMOUNT("PO_INVALID_AMOUNT", "취소 금액이 올바르지 않거나 잔액이 부족합니다.", HttpStatus.BAD_REQUEST),
     FORBIDDEN("PO_FORBIDDEN", "취소 권한이 없거나 상점 설정이 올바르지 않습니다.", HttpStatus.FORBIDDEN),
+    LOGIC_ERROR("PO_LOGIC_ERROR", "취소 관련 로직이 실패하여 취소할 수 없습니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 3. 재시도 필요 (REQUIRED 상태 유지 - 시스템/네트워크 문제)
     PG_PROVIDER_ERROR("PO_PROVIDER_ERROR", "PG사 통신 중 오류가 발생했습니다.", HttpStatus.SERVICE_UNAVAILABLE),

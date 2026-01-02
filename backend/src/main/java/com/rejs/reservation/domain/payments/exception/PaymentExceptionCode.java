@@ -20,7 +20,8 @@ public enum PaymentExceptionCode implements BusinessExceptionCode {
     PAYMENT_CANCEL_FAIL("PAYMENT_CANCEL_FAIL", "결제 취소 실패", HttpStatus.INTERNAL_SERVER_ERROR),
     ALREADY_PAID_RESERVATION("ALREADY_PAID_RESERVATION", "이미 결제된 예매입니다", HttpStatus.CONFLICT),
     PAYMENT_NOT_FOUND("PAYMENT_NOT_FOUND", "존재하지 않는 결제 내역입니다", HttpStatus.NOT_FOUND),
-    RESERVATION_ALREADY_CANCELED("RESERVATION_ALREADY_CANCELED", "결제가 이미 실패했습니다", HttpStatus.CONFLICT)
+    RESERVATION_ALREADY_CANCELED("RESERVATION_ALREADY_CANCELED", "결제가 이미 실패했습니다", HttpStatus.CONFLICT),
+    UNKNOWN_EXCEPTION("UNKNOWN_EXCEPTION", "예상치못하게 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR)
     ;
 
     private final String type;

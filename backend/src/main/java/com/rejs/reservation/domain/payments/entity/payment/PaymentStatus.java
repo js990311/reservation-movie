@@ -5,5 +5,5 @@ public enum PaymentStatus {
     VERIFYING,
     PAID,
     ABORTED,
-    FAILED
+    TIMEOUT
 }

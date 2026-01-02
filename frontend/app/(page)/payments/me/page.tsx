@@ -28,7 +28,7 @@ export default async function PaymentsMePage({searchParams}: Readonly<Props>) {
     return (
         <div>
             <MyPayments payments={payments}></MyPayments>
-            <PaginationRemote pagination={pagination}/>
+            <PaginationRemote baseUrl={'/payments/me'} pagination={pagination}/>
         </div>
     );
 }
