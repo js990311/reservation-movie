@@ -16,6 +16,5 @@ RUN ./gradlew clean bootJar -x test
 FROM amazoncorretto:21-alpine
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
-COPY grafana-opentelemetry-java.jar agent.jar
 RUN wget -O agent.jar https://github.com/grafana/grafana-opentelemetry-java/releases/latest/download/grafana-opentelemetry-java.jar
 ENTRYPOINT ["java", "-javaagent:agent.jar", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
