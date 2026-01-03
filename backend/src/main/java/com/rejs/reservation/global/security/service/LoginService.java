@@ -46,12 +46,12 @@ public class LoginService {
             return jwtUtils.generateToken(authenticate.getName(), authenticate.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
         }catch (BusinessException ex){
             if(ex.getCode().equals(UserBusinessExceptionCode.USER_NOT_FOUND)){
-                throw BusinessException.of(AuthenticationExceptionCode.USER_INFO_MISMATCH, ex.getMessage());
+                throw BusinessException.of(AuthenticationExceptionCode.USER_INFO_MISMATCH, ex);
             }else {
                 throw ex;
             }
         }catch (BadCredentialsException ex){ // BadCredentialException
-            throw BusinessException.of(AuthenticationExceptionCode.USER_INFO_MISMATCH, ex.getMessage());
+            throw BusinessException.of(AuthenticationExceptionCode.USER_INFO_MISMATCH, ex);
         }catch (RuntimeException ex){
             throw ex;
         }

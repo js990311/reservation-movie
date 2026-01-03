@@ -20,6 +20,7 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(value = BusinessException.class)
     public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException ex, HttpServletRequest request){
+        log.warn("[BusinessException] cause = ", ex.getCause());
         return ResponseEntity.status(ex.getCode().getStatus()).body(BusinessExceptionResponse.of(ex.getCode(), request.getRequestURI(), ex.getDetail()));    }
 
     @ExceptionHandler(value = RuntimeException.class)

@@ -51,17 +51,17 @@ public class PortOneAdaptor {
                     Throwable cause = (e instanceof CompletionException) ? e.getCause() : e;
                     throw switch (cause) {
                         // 1. [RETRY] 일시적 장애 (Unknown) -> 재시도
-                        case UnknownException ue -> new GetPaymentInfoFailException(PaymentExceptionCode.PAYMENT_API_ERROR);
+                        case UnknownException ue -> new GetPaymentInfoFailException(ue, PaymentExceptionCode.PAYMENT_API_ERROR);
 
                         // 2. [FAIL] 데이터 없음 (Not Found) -> 404
-                        case PaymentNotFoundException pe -> new GetPaymentInfoFailException(PaymentExceptionCode.PAYMENT_NOT_FOUND);
+                        case PaymentNotFoundException pe -> new GetPaymentInfoFailException(pe, PaymentExceptionCode.PAYMENT_NOT_FOUND);
 
                         // 3. [FAIL] 잘못된 요청 (Invalid Request) -> 400
-                        case InvalidRequestException ire -> new GetPaymentInfoFailException(PaymentExceptionCode.INVALID_PAYMENT_STATE);
+                        case InvalidRequestException ire -> new GetPaymentInfoFailException(ire, PaymentExceptionCode.INVALID_PAYMENT_STATE);
 
                         // 4. [FAIL] 인증/권한 오류 (Auth/Forbidden) -> 500 (서버 설정 문제)
-                        case UnauthorizedException ue -> new GetPaymentInfoFailException(PaymentExceptionCode.PAYMENT_API_ERROR);
-                        case ForbiddenException fe -> new GetPaymentInfoFailException(PaymentExceptionCode.PAYMENT_API_ERROR);
+                        case UnauthorizedException ue -> new GetPaymentInfoFailException(ue, PaymentExceptionCode.PAYMENT_API_ERROR);
+                        case ForbiddenException fe -> new GetPaymentInfoFailException(fe, PaymentExceptionCode.PAYMENT_API_ERROR);
 
                         // [DEFAULT] 시스템 에러
                         default -> new GetPaymentInfoFailException(PaymentExceptionCode.UNKNOWN_EXCEPTION);

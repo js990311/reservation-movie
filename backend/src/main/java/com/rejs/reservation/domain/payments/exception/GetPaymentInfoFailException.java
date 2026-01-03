@@ -8,7 +8,15 @@ public class GetPaymentInfoFailException extends BusinessException {
         super(code, detail);
     }
 
+    public GetPaymentInfoFailException(Throwable cause, BusinessExceptionCode code, String detail) {
+        super(cause, code, detail);
+    }
+
     public GetPaymentInfoFailException(BusinessExceptionCode code) {
         super(code);
+    }
+
+    public GetPaymentInfoFailException(Throwable cause, BusinessExceptionCode code) {
+        super(cause, code);
     }
 }

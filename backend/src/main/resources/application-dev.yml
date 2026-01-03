@@ -3,11 +3,11 @@ server:
     context-path: /api
 
 spring:
+  application:
+    name: reservation-app
   web:
     resources:
       add-mappings: false
-  application:
-    name: reservation-dev
   datasource:
     url: jdbc:mariadb://localhost:3306/movie_db?serverTimezone=Asia/Seoul&useLegacyDatetimeCode=false
     username: ${DATASOURCE_USERNAME}
@@ -32,17 +32,20 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health, prometheus
   endpoint:
     health:
       show-details: always
   otlp:
     tracing:
-      endpoint: http://localhost:4318/v1/traces
+      endpoint: http://tempo-prod-20-prod-ap-northeast-0.grafana.net:443
+      headers:
+        Authorization: "Basic MTIwOTE2MzpnbGNfZXlKdklqb2lNVFF5T1RNeU5DSXNJbTRpT2lKeVpYTmxjblpoZEdsdmJpMTBkSFIwZEhSMElpd2lheUk2SWpCUGRUazNObE5yWVRnd1VsRllNemgxVW5VMU9FbFhieUlzSW0waU9uc2ljaUk2SW5WekluMTk="
+      transport: http
   tracing:
     sampling:
       probability: 1
-
+    # 2. 뒤에 포트 443을 붙이세요
 jwt:
   secret-key: ${JWT_SECRET_KEY}
 
@@ -50,9 +53,6 @@ portone.secret:
   storeId: ${PORTONE_API_STOREID}
   apiSecret: ${PORTONE_API_SECRET}
   webhookSecret: ${PORTONE_WEBHOOK_SECRET}
-
-loki:
-  endpoint: http://localhost:3100/loki/api/v1/push
 
 jdbc:
   datasource-proxy:

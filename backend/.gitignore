@@ -42,3 +42,4 @@ diff.txt
 
 .env
 application-test.yml
+grafana-opentelemetry-java.jar

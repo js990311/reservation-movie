@@ -71,17 +71,18 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	// trace
-	// OpenTelemetry
-	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
-	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
-	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:1.2.1'
-
-	// loki4j
-	implementation("com.github.loki4j:loki-logback-appender:2.0.2")
+	// trace	// OpenTelemetry
+	//	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+	//	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'
+	//	implementation 'net.ttddyy.observation:datasource-micrometer-spring-boot:1.2.1'
+	//
+	//	// loki4j
+	//	implementation("com.github.loki4j:loki-logback-appender:2.0.2")
 
 	// 서킷 브레이커
 	implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.3.0'
+
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 tasks.named('test') {

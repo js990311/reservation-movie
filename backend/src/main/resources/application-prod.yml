@@ -34,13 +34,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health, prometheus
   endpoint:
     health:
       show-details: always
   otlp:
     tracing:
       endpoint: ${TEMPO_ENDPOINT} # Tempo의 HTTP 수신 포트
+      headers:
+        Authorization: "Basic ${TEMPO_BASIC}" # "user:token"을 Base64 인코딩한 값
   tracing:
     sampling:
       probability: 0.1
@@ -52,9 +54,6 @@ portone.secret:
   storeId: ${PORTONE_API_STOREID}
   apiSecret: ${PORTONE_API_SECRET}
   webhookSecret: ${PORTONE_WEBHOOK_SECRET}
-
-loki:
-  endpoint: ${LOKI_URL}/loki/api/v1/push
 
 jdbc:
   datasource-proxy:
