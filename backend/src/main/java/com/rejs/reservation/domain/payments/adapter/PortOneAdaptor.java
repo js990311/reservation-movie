@@ -12,6 +12,7 @@ import com.rejs.reservation.domain.payments.exception.cancel.PaymentCancelFailed
 import com.rejs.reservation.domain.payments.exception.cancel.PaymentCancelRetryableException;
 import com.rejs.reservation.domain.payments.exception.cancel.PortOnePaymentCancelExceptionCode;
 import com.rejs.reservation.global.exception.BusinessException;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import io.portone.sdk.server.errors.*;
 import io.portone.sdk.server.payment.*;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class PortOneAdaptor {
     private final ObjectMapper objectMapper;
     private final PortOneClient portOneClient;
 
+    @WithSpan("portone.payment.get")
     public CompletableFuture<PaymentStatusDto> getPayment(String paymentId){
         return portOneClient.getPayment(paymentId)
                 .thenApply(payment-> {
@@ -69,6 +71,7 @@ public class PortOneAdaptor {
                 });
     }
 
+    @WithSpan("portone.payment.cancel")
     public CompletableFuture<Boolean> cancelPayment(String paymentId, PaymentCancelReason reason){
         return portOneClient.cancelPayment(paymentId, reason.toString()).thenApply(cancelPaymentResponse -> {
             if (cancelPaymentResponse.getCancellation() instanceof SucceededPaymentCancellation) {

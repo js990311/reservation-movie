@@ -6,6 +6,7 @@ import com.rejs.reservation.domain.payments.repository.PaymentCancelQueryReposit
 import com.rejs.reservation.domain.payments.repository.PaymentQueryRepository;
 import com.rejs.reservation.domain.payments.service.PaymentCleanUpService;
 import io.micrometer.observation.annotation.Observed;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,7 +25,7 @@ public class PaymentScheduler {
     private final PaymentCancelFacade paymentCancelFacade;
     private final PaymentCleanUpService paymentCleanUpService;
 
-    @Observed(name = "scheduler.payment.cancel")
+    @WithSpan("scheduler.payment.cancel")
     @Scheduled(fixedDelay = 5*60*1000) // 이전 작업으로부터 5분마다 실행
     public void autoCancelPayment(){
         List<String> paymentIds = paymentCancelQueryRepository.findAbandonedPaymentCancels(LocalDateTime.now().minusMinutes(5), 10);

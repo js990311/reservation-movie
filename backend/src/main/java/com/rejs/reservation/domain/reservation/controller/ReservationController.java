@@ -35,6 +35,14 @@ public class ReservationController {
         return BaseResponse.of(reservationService.reservationScreening(request, userId));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/v0")
+    public BaseResponse<ReservationDto> reservationScreeningLock(@RequestBody ReservationRequest request, @TokenClaim ClaimsDto claimsDto){
+        long userId = Long.parseLong(claimsDto.getUsername());
+        return BaseResponse.of(reservationService.reservationScreeningLock(request, userId));
+    }
+
+
     @GetMapping("/me")
     public BaseResponse<List<ReservationSummaryDto>> getMyReservation(
             @PageableDefault Pageable pageable,

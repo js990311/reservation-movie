@@ -6,6 +6,7 @@ import com.rejs.reservation.domain.payments.dto.CustomDataDto;
 import com.rejs.reservation.domain.payments.dto.ValidatePaymentInfoDto;
 import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.global.exception.BusinessException;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class PaymentValidateFacade {
     private final PaymentService paymentService;
     private final PaymentCancelFacade paymentCancelFacade;
 
+    @WithSpan("payment.validate")
     public ValidatePaymentInfoDto validate(String paymentId){
         try {
             return tryConfirm(paymentId);
@@ -41,6 +43,7 @@ public class PaymentValidateFacade {
         }
     }
 
+    @WithSpan("payment.validate.cancel")
     public void cancel(String paymentId){
         try {
             // 0. reservation의 상태는 변경되지 않는다.
@@ -55,6 +58,7 @@ public class PaymentValidateFacade {
         }
     }
 
+    @WithSpan("payment.validate.tryConfirm")
     public ValidatePaymentInfoDto tryConfirm(String paymentId){
         // 결제가 존재하는지. 누군가 처리했는지 문의
         if(!paymentService.tryLockForVerification(paymentId)){

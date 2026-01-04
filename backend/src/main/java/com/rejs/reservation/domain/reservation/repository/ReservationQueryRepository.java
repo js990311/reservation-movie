@@ -153,7 +153,7 @@ public class ReservationQueryRepository {
         );
     }
 
-    public List<ScreeningSeat> selectAvailableSeats(List<Long> seatIds) {
+    public List<ScreeningSeat> selectAvailableSeats(List<Long> seatIds, boolean isLock) {
         List<Long> sortedIds = seatIds.stream().sorted().toList();
         return jpaQueryFactory
                 .select(screeningSeat)
@@ -163,7 +163,7 @@ public class ReservationQueryRepository {
                         screeningSeat.status.eq(ScreeningSeatStatus.AVAILABLE)
                 )
                 .orderBy(screeningSeat.id.asc())
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .setLockMode(isLock ? LockModeType.PESSIMISTIC_WRITE : LockModeType.NONE)
                 .fetch();
     }
 

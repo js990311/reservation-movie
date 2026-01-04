@@ -5,7 +5,7 @@ import { randomString } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { Counter, Trend } from 'k6/metrics';
 
 const MAX_VUS = 80;
-const BASE_URL='http://localhost:8080/api';
+const BASE_URL='https://movie.rejs.link/api';
 const ATTEMPTS_PER_ITER = 1; 
 const ADMIN_USER = { username: 'k6_admin@admin.com', password: 'k6_admin' };
 const THEATER_ROWS = 20;          
