@@ -66,8 +66,13 @@ export function setup() {
   );
   const theaterId = theaterRes.json('data.theaterId');
 
-  const startTime = new Date(Date.now() + 3600 * 1000).toISOString();
-  const screeningRes = http.post(
+    // 현재 시간 + 1시간 뒤의 KST 시간 생성
+    const now = new Date();
+    const kstOffset = 9 * 60 * 60 * 1000; // 9시간 밀리초
+    const kstTime = new Date(now.getTime() + kstOffset + (3600 * 1000)); 
+
+    // ISO 형식에서 'Z'를 제거하고 필요한 부분만 추출 (YYYY-MM-DDTHH:mm:ss)
+    const startTime = kstTime.toISOString().replace('Z', '');  const screeningRes = http.post(
     `${BASE_URL}/screenings`,
     JSON.stringify({ movieId, theaterId, startTime }),
     { headers: authHeaders , responseType: 'text'}

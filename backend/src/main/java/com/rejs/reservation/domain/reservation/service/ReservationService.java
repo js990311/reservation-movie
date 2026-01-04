@@ -31,7 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class ReservationService {
-    private final ReservationDataFacade reservationDataFacade;
+    private final ScreeningRepository screeningRepository;
     private final ReservationRepository reservationRepository;
     private final ReservationQueryRepository reservationQueryRepository;
 
@@ -44,6 +44,10 @@ public class ReservationService {
         List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
                 request.getSeats()
         );
+
+        if(!reservationQueryRepository.isScreeningTimeValid(request.getScreeningId())){
+            throw new BusinessException(ReservationExceptionCode.SCREENING_TIME_EXPIRED);
+        }
 
         if(availableSeats.size() != request.getSeats().size()){
             throw new BusinessException(ReservationExceptionCode.INVALID_OR_UNAVAILABLE_SEATS);

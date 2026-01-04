@@ -2,9 +2,11 @@ package com.rejs.reservation.domain.reservation.dto.request;
 
 import com.rejs.reservation.domain.theater.dto.SeatDto;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.List;
 
+@ToString
 @Getter
 public class ReservationRequest {
     private Long screeningId;

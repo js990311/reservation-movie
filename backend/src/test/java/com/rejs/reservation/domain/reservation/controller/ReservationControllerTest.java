@@ -115,7 +115,7 @@ class ReservationControllerTest extends AbstractControllerTest {
         theaterId = theater.getTheaterId();
 
         // 상영표 생성
-        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now());
+        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plusDays(3));
         ScreeningDto screening = screeningService.createScreening(screeningRequest);
         screeningId = screening.getScreeningId();
 

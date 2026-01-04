@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
-@Import(TestcontainersConfiguration.class)
+//@Import(TestcontainersConfiguration.class)
 @SpringBootTest
 class ReservationConcurrencyTest {
     @Autowired
@@ -92,7 +92,7 @@ class ReservationConcurrencyTest {
         theater = theaterService.createTheater(theaterRequest);
 
         // 상영표 생성
-        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now());
+        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plusDays(3));
         screening = screeningService.createScreening(screeningRequest);
 
 

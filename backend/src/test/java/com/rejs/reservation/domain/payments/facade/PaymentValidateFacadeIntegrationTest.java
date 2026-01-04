@@ -1,6 +1,8 @@
 package com.rejs.reservation.domain.payments.facade;
 
 import com.rejs.reservation.TestcontainersConfiguration;
+import com.rejs.reservation.domain.movie.entity.Movie;
+import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.payments.adapter.PortOneAdaptor;
 import com.rejs.reservation.domain.payments.adapter.dto.PaymentStatusDto;
 import com.rejs.reservation.domain.payments.dto.CustomDataDto;
@@ -14,9 +16,13 @@ import com.rejs.reservation.domain.payments.service.PaymentService;
 import com.rejs.reservation.domain.reservation.entity.Reservation;
 import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
 import com.rejs.reservation.domain.reservation.repository.jpa.ReservationRepository;
+import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
 import com.rejs.reservation.domain.screening.entity.ScreeningSeatStatus;
+import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.theater.entity.Seat;
+import com.rejs.reservation.domain.theater.entity.Theater;
+import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +38,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -66,6 +73,15 @@ class PaymentValidateFacadeIntegrationTest {
 
     private List<ScreeningSeat> seats;
 
+    @Autowired
+    private ScreeningRepository screeningRepository;
+
+    @Autowired
+    private MovieRepository movieRepository;
+
+    @Autowired
+    private TheaterRepository theaterRepository;
+
     @BeforeEach
     void setUp() {
         // 프로젝트 내의 모든 객체를... 다 생성할 순 없으므로
@@ -73,6 +89,18 @@ class PaymentValidateFacadeIntegrationTest {
 
         // 결제 실패에 대한 테스트가 아니기 때문에 전부 성공한다고
         when(portOneAdaptor.cancelPayment(anyString(), any())).thenReturn(CompletableFuture.completedFuture(true));
+
+        Movie movie = Movie.builder()
+                .title("title")
+                .duration(10)
+                .build();
+        movie = movieRepository.save(movie);
+
+        Theater theater = Theater.create("name", 1, 2);
+        theater = theaterRepository.save(theater);
+
+        Screening screening = new Screening(LocalDateTime.now().plusDays(1L),  theater, movie);
+        screeningRepository.save(screening);
 
         Seat mockSeat = mock(Seat.class);
         lenient().when(mockSeat.getId()).thenReturn(1L);
