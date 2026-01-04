@@ -69,7 +69,7 @@ public class ReservationService {
         // 락이 걸려있는 쿼리임
         Screening screening = screeningRepository.findWithLock(request.getScreeningId());
 
-        if(!reservationQueryRepository.isScreeningTimeValid(request.getScreeningId())){
+        if(!screening.getStartTime().isAfter(LocalDateTime.now())){
             throw new BusinessException(ReservationExceptionCode.SCREENING_TIME_EXPIRED);
         }
 
