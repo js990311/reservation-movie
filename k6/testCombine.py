@@ -42,7 +42,7 @@ def extract_k6_metrics(json_file):
 
 def main():
     input_folder = './reports' # JSON 파일들이 있는 폴더명
-    output_file = './reportsperformance_comparison_final.csv'
+    output_file = './reports/performance_comparison_final.csv'
     
     if not os.path.exists(input_folder):
         print(f"오류: '{input_folder}' 폴더를 생성하고 JSON 파일들을 넣어주세요.")
