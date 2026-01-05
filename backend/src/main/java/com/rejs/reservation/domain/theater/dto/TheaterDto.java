@@ -11,12 +11,10 @@ public class TheaterDto {
     private String name;
     private Integer rowSize;
     private Integer colSize;
-    private List<SeatDto> seats;
 
-    public TheaterDto(Long theaterId, String name, Integer rowSize, Integer colSize, List<SeatDto> seats) {
+    public TheaterDto(Long theaterId, String name, Integer rowSize, Integer colSize) {
         this.theaterId = theaterId;
         this.name = name;
-        this.seats = seats;
         this.rowSize = rowSize;
         this.colSize = colSize;
     }
@@ -26,8 +24,7 @@ public class TheaterDto {
                 theater.getId(),
                 theater.getName(),
                 theater.getRowSize(),
-                theater.getColSize(),
-                theater.getSeats().stream().map(SeatDto::from).toList()
+                theater.getColSize()
         );
     }
 }

@@ -115,11 +115,6 @@ class TheaterControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.data.name").value(name))
                 .andExpect(jsonPath("$.data.rowSize").isNumber())
                 .andExpect(jsonPath("$.data.colSize").isNumber())
-                .andExpect(jsonPath("$.data.seats").isArray())
-                .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].theaterId").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
 
         result
@@ -154,11 +149,6 @@ class TheaterControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.data.name").value(name))
                 .andExpect(jsonPath("$.data.rowSize").isNumber())
                 .andExpect(jsonPath("$.data.colSize").isNumber())
-                .andExpect(jsonPath("$.data.seats").isArray())
-                .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].theaterId").value(id))
-                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
 
         result
