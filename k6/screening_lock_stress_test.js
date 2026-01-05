@@ -32,9 +32,9 @@ noConnectionReuse: false,
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
-        { duration: '20s', target: 50 }, // 2단계: 중부하 (경합 시작 구간)
-        { duration: '30s', target: 80 }, // 3단계: 고부하 (시스템 한계 및 락 경합 폭발 구간)
-        { duration: '10s', target: 0 },  // 정리
+        { duration: '20s', target: 50 }, 
+        { duration: '30s', target: 80 }, 
+        { duration: '10s', target: 0 },  
       ],
       gracefulRampDown: '30s',
     },
@@ -43,14 +43,6 @@ noConnectionReuse: false,
     http_req_failed: ['rate>0.05'], 
   },
 };
-
-function pickSeats(pool, k) {
-  const picked = new Set();
-  while (picked.size < k) {
-    picked.add(pool[randomIntBetween(0, pool.length - 1)]);
-  }
-  return Array.from(picked);
-}
 
 // 유저 생성기
 function generateRandomUser() {
@@ -121,6 +113,14 @@ export function setup() {
   return { screeningId, seatPool, tokens };
 }
 
+function pickSeats(pool, k) {
+  const picked = new Set();
+  while (picked.size < k) {
+    picked.add(pool[randomIntBetween(0, pool.length - 1)]);
+  }
+  return Array.from(picked);
+}
+
 export default function (data) {
   const token = data.tokens[(__VU - 1) % data.tokens.length];
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
@@ -136,7 +136,7 @@ export default function (data) {
       seats: selectedSeats // 이제 여러 개의 좌석 아이디가 들어감
     });
 
-    const res = http.post(`${BASE_URL}/reservations`, payload, { headers });
+    const res = http.post(`${BASE_URL}/reservations/v0`, payload, { headers });
 
     // ... 후속 로직 (성공/실패 체크 등)
     if (res.status === 201) ReservationSuccess.add(1);

@@ -1,30 +1,34 @@
 package com.rejs.reservation.domain.theater.dto;
 
+import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
-public class TheaterDto {
+public class TheaterWithSeatDto {
     private Long theaterId;
     private String name;
     private Integer rowSize;
     private Integer colSize;
+    private List<SeatDto> seats;
 
-    public TheaterDto(Long theaterId, String name, Integer rowSize, Integer colSize) {
+    public TheaterWithSeatDto(Long theaterId, String name, Integer rowSize, Integer colSize, List<SeatDto> seats) {
         this.theaterId = theaterId;
         this.name = name;
         this.rowSize = rowSize;
         this.colSize = colSize;
+        this.seats = seats;
     }
 
-    public static TheaterDto from(Theater theater){
-        return new TheaterDto(
+    public static TheaterWithSeatDto from(Theater theater, List<Seat> seats){
+        return new TheaterWithSeatDto(
                 theater.getId(),
                 theater.getName(),
                 theater.getRowSize(),
-                theater.getColSize()
+                theater.getColSize(),
+                seats.stream().map(SeatDto::from).toList()
         );
     }
 }

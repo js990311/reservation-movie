@@ -20,16 +20,14 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(value = BusinessException.class)
     public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException ex, HttpServletRequest request){
-        log.warn("[BusinessException] cause = ", ex.getCause());
+        log.warn("[BusinessException] instance = {} type = {} detail = {} cause = ", request.getRequestURI(), ex.getCode().getType(), ex.getDetail(), ex.getCause());
         return ResponseEntity.status(ex.getCode().getStatus()).body(BusinessExceptionResponse.of(ex.getCode(), request.getRequestURI(), ex.getDetail()));    }
 
     @ExceptionHandler(value = RuntimeException.class)
     public ResponseEntity<BaseResponse<?>> handleBaseException(RuntimeException ex, HttpServletRequest request){
         BusinessExceptionCode code = InternalServerExceptionCode.INTERNAL_SERVER_ERROR;
         String instance = request.getRequestURI();
-        StringBuilder sb = new StringBuilder();
-        sb.append("[").append(instance).append("] ").append(ex.getMessage());
-        log.warn(sb.toString());
+        log.warn("[BusinessException] instance = {} type = {} cause = ", instance, code.getType(), ex);
         return ResponseEntity.status(code.getStatus()).body(BusinessExceptionResponse.of(code, instance));
     }
 

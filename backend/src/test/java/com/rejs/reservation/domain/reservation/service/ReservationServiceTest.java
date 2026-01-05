@@ -85,7 +85,7 @@ class ReservationServiceTest {
         theater = theaterService.createTheater(theaterRequest);
 
         // 상영표 생성
-        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now());
+        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plusDays(3));
         screening = screeningService.createScreening(screeningRequest);
 
         User usere = new User("username", "password");
@@ -144,7 +144,7 @@ class ReservationServiceTest {
     @Test
     void 다른상영시간의영향을받는지(){
         // 다른 상영표 생성
-        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plus(999, ChronoUnit.MINUTES));
+        CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plusDays(2));
         ScreeningDto screening2 = screeningService.createScreening(screeningRequest);
         List<ScreeningSeat> seats2 = screeningSeatRepository.findByScreeningId(screening2.getScreeningId());
         // 기존 상영표의 예약이 모두 완료되었다고 가정

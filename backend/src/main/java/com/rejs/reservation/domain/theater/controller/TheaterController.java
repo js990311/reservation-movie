@@ -2,6 +2,7 @@ package com.rejs.reservation.domain.theater.controller;
 
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
 import com.rejs.reservation.domain.theater.dto.TheaterSummaryDto;
+import com.rejs.reservation.domain.theater.dto.TheaterWithSeatDto;
 import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
 import com.rejs.reservation.domain.theater.service.TheaterService;
 import com.rejs.reservation.global.dto.response.BaseResponse;
@@ -28,8 +29,8 @@ public class TheaterController {
     }
 
     @GetMapping("/{id}")
-    public BaseResponse<TheaterDto> readTheaterById(@PathVariable("id") Long id){
-        TheaterDto theaterDto = theaterService.readById(id);
+    public BaseResponse<TheaterWithSeatDto> readTheaterById(@PathVariable("id") Long id){
+        TheaterWithSeatDto theaterDto = theaterService.readById(id);
         return BaseResponse.of(theaterDto);
     }
 

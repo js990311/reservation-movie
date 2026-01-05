@@ -153,19 +153,17 @@ public class ReservationQueryRepository {
         );
     }
 
-    public List<ScreeningSeat> selectAvailableSeats(List<Long> seatIds) {
+    public List<ScreeningSeat> selectAvailableSeats(List<Long> seatIds, boolean isLock) {
+        List<Long> sortedIds = seatIds.stream().sorted().toList();
         return jpaQueryFactory
                 .select(screeningSeat)
                 .from(screeningSeat)
-                .join(screeningSeat.screening, screening)
                 .where(
-                        screeningSeat.id.in(seatIds),
-                        screeningSeat.status.eq(ScreeningSeatStatus.AVAILABLE),
-                        screening.startTime.gt(LocalDateTime.now()),
-                        screening.deletedAt.isNull()
+                        screeningSeat.id.in(sortedIds),
+                        screeningSeat.status.eq(ScreeningSeatStatus.AVAILABLE)
                 )
                 .orderBy(screeningSeat.id.asc())
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .setLockMode(isLock ? LockModeType.PESSIMISTIC_WRITE : LockModeType.NONE)
                 .fetch();
     }
 
@@ -183,6 +181,18 @@ public class ReservationQueryRepository {
                         screeningSeatIds
                 ))
                 .execute();
-        return;
+    }
+
+
+    public boolean isScreeningTimeValid(Long screeningId){
+        Integer fetchOne = jpaQueryFactory
+                .selectOne()
+                .from(screening)
+                .where(
+                        screening.id.eq(screeningId),
+                        screening.startTime.after(LocalDateTime.now())
+                )
+                .fetchFirst();
+        return fetchOne != null;
     }
 }

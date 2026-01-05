@@ -99,7 +99,7 @@ class ReservationQueryRepositoryTest {
         ReservationRequest reservationRequest = new ReservationRequest(screening.getScreeningId(), seats);
 
         List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
-                reservationRequest.getSeats()
+                reservationRequest.getSeats(), true
         );
 
         assertEquals(seats.size(), availableSeats.size());
@@ -117,7 +117,7 @@ class ReservationQueryRepositoryTest {
 
         //
         List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
-                seats.stream().map(ScreeningSeat::getId).toList()
+                seats.stream().map(ScreeningSeat::getId).toList(), true
         );
         assertEquals(seats.size() - reservationSeatCount, availableSeats.size());
     }
@@ -133,7 +133,7 @@ class ReservationQueryRepositoryTest {
 
         //
         List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
-                seats.stream().map(ScreeningSeat::getId).toList()
+                seats.stream().map(ScreeningSeat::getId).toList(), true
         );
         assertEquals(0, availableSeats.size());
     }
@@ -154,7 +154,7 @@ class ReservationQueryRepositoryTest {
         seats = screeningSeatRepository.findByScreeningId(screening2.getScreeningId());
         // 다른 상영표는 모두 예매 가능
         List<ScreeningSeat> availableSeats = reservationQueryRepository.selectAvailableSeats(
-                seats.stream().map(ScreeningSeat::getId).toList()
+                seats.stream().map(ScreeningSeat::getId).toList(), true
         );
         assertEquals(seats.size(), availableSeats.size());
     }

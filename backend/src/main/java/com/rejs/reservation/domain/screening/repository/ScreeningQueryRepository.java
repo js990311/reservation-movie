@@ -46,8 +46,6 @@ public class ScreeningQueryRepository {
     private QMovie movie = QMovie.movie;
     private QTheater theater = QTheater.theater;
     private QSeat seat = QSeat.seat;
-    private QReservationSeat reservationSeat = QReservationSeat.reservationSeat;
-    private QReservation reservation = QReservation.reservation;
     private QScreeningSeat screeningSeat = QScreeningSeat.screeningSeat;
 
     public List<ScreeningSeatDto> findScreeningSeats(Long screeningId){

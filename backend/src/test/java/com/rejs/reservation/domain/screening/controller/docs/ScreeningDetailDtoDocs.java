@@ -19,7 +19,8 @@ public class ScreeningDetailDtoDocs {
                 fieldWithPath("seats[].seatId").description("좌석 고유번호").type(JsonFieldType.NUMBER),
                 fieldWithPath("seats[].row").description("좌석의 행번호").type(JsonFieldType.NUMBER),
                 fieldWithPath("seats[].col").description("좌석의 열번호").type(JsonFieldType.NUMBER),
-                fieldWithPath("seats[].reserved").description("예약된 좌석인지").type(JsonFieldType.BOOLEAN)
+                fieldWithPath("seats[].reserved").description("예약된 좌석인지").type(JsonFieldType.BOOLEAN),
+                fieldWithPath("disable").description("상영시간이 지나서 예매가 불가능한지").type(JsonFieldType.BOOLEAN)
         )
                 .andWithPrefix("screening.", DocsUtils.mergeFields(ScreeningDtoDocs.fields()))
                 .andWithPrefix("movie.", DocsUtils.mergeFields(MovieDtoDocs.fields()))

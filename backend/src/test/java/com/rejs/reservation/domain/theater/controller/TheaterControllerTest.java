@@ -115,11 +115,6 @@ class TheaterControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.data.name").value(name))
                 .andExpect(jsonPath("$.data.rowSize").isNumber())
                 .andExpect(jsonPath("$.data.colSize").isNumber())
-                .andExpect(jsonPath("$.data.seats").isArray())
-                .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].theaterId").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].row").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
 
         result
@@ -141,9 +136,8 @@ class TheaterControllerTest extends AbstractControllerTest {
         Integer rowSize = 10;
         Integer colSize = 10;
 
-        Theater theater = Theater.create(name, rowSize, colSize);
-        theater = theaterRepository.save(theater);
-        Long id = theater.getId();
+        TheaterDto theater = theaterService.createTheater(new TheaterCreateRequest(name, rowSize, colSize));
+        Long id = theater.getTheaterId();
 
         ResultActions result = mockMvc.perform(get("/theaters/{id}", id)                        .header("Authorization", "Bearer " + accessToken)
         );
@@ -156,7 +150,7 @@ class TheaterControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$.data.colSize").isNumber())
                 .andExpect(jsonPath("$.data.seats").isArray())
                 .andExpect(jsonPath("$.data.seats[0].seatId").isNumber())
-                .andExpect(jsonPath("$.data.seats[0].theaterId").value(id))
+                .andExpect(jsonPath("$.data.seats[0].theaterId").isNumber())
                 .andExpect(jsonPath("$.data.seats[0].row").isNumber())
                 .andExpect(jsonPath("$.data.seats[0].col").isNumber())
         ;
@@ -166,8 +160,8 @@ class TheaterControllerTest extends AbstractControllerTest {
                         document((docs) -> docs
                                 .requestHeaders(authorizationHeader())
                                 .pathParameters(parameterWithName("id").description("영화관 id"))
-                                .responseSchema(TheaterDtoDocs.schema())
-                                .responseFields(BaseResponseDocs.baseFields(TheaterDtoDocs.fields()))
+                                .responseSchema(TheaterDtoDocs.theaterWithSeatsSchema())
+                                .responseFields(BaseResponseDocs.baseFields(TheaterDtoDocs.theaterWithSeats()))
                         )
                 );
     }

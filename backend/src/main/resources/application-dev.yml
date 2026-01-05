@@ -36,16 +36,6 @@ management:
   endpoint:
     health:
       show-details: always
-  otlp:
-    tracing:
-      endpoint: http://tempo-prod-20-prod-ap-northeast-0.grafana.net:443
-      headers:
-        Authorization: "Basic MTIwOTE2MzpnbGNfZXlKdklqb2lNVFF5T1RNeU5DSXNJbTRpT2lKeVpYTmxjblpoZEdsdmJpMTBkSFIwZEhSMElpd2lheUk2SWpCUGRUazNObE5yWVRnd1VsRllNemgxVW5VMU9FbFhieUlzSW0waU9uc2ljaUk2SW5WekluMTk="
-      transport: http
-  tracing:
-    sampling:
-      probability: 1
-    # 2. 뒤에 포트 443을 붙이세요
 jwt:
   secret-key: ${JWT_SECRET_KEY}
 

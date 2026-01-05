@@ -16,6 +16,8 @@ import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.screening.service.ScreeningService;
+import com.rejs.reservation.domain.theater.dto.TheaterDto;
+import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
@@ -28,6 +30,7 @@ import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import com.rejs.reservation.global.security.service.LoginService;
+import jakarta.persistence.EntityManager;
 import jdk.jfr.ContentType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +42,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -55,6 +59,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
+@Transactional
 @SpringBootTest
 class ScreeningControllerTest extends AbstractControllerTest {
     @Autowired
@@ -92,6 +97,9 @@ class ScreeningControllerTest extends AbstractControllerTest {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @BeforeEach
     void setToken(){
         User user = new User(UUID.randomUUID().toString(), "pw", UserRole.ROLE_ADMIN);
@@ -106,24 +114,23 @@ class ScreeningControllerTest extends AbstractControllerTest {
 
     @BeforeEach
     void setUp(){
-        String movieName = "some-movie";
-
         Movie movie = Movie.builder()
-                .title(movieName)
+                .title("some-movie")
                 .duration(duration)
                 .build();
         movie = movieRepository.save(movie);
         movieId = movie.getId();
 
-        String name = "theater-name";
-        Integer rowSize = 10;
-        Integer colSize = 10;
+        TheaterDto theaterDto = theaterService.createTheater(
+                new TheaterCreateRequest("theater-name", 10, 10)
+        );
+        theaterId = theaterDto.getTheaterId();
 
-        Theater theater = Theater.create(name, rowSize, colSize);
-        theater = theaterRepository.save(theater);
-        theaterId = theater.getId();
         startTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
         endTime = startTime.plusMinutes(duration);
+
+        entityManager.flush();
+        entityManager.clear();
     }
 
     @Test

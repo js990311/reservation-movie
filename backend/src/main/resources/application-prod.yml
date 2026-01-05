@@ -38,14 +38,6 @@ management:
   endpoint:
     health:
       show-details: always
-  otlp:
-    tracing:
-      endpoint: ${TEMPO_ENDPOINT} # Tempo의 HTTP 수신 포트
-      headers:
-        Authorization: "Basic ${TEMPO_BASIC}" # "user:token"을 Base64 인코딩한 값
-  tracing:
-    sampling:
-      probability: 0.1
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}

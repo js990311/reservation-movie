@@ -35,21 +35,6 @@ public class Theater extends BaseEntity {
     @Column
     private Integer colSize;
 
-    /* # 관계 - Seat */
-    @OneToMany(mappedBy = "theater", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Seat> seats = new ArrayList<>();
-
-    public void addSeats(Seat seat) {
-        this.seats.add(seat);
-        seat.mapTheater(this);
-    }
-
-    public void removeSeats(Seat seat) {
-        this.seats.remove(seat);
-        seat.mapTheater(null);
-    }
-
-
     // # 관계 - Screening
     @OneToMany(mappedBy = "theater")
     private List<Screening> screenings = new ArrayList<>();
@@ -80,12 +65,6 @@ public class Theater extends BaseEntity {
 
     public static Theater create(String name, Integer rowSize, Integer colSize){
         Theater theater = new Theater(name, rowSize, colSize);
-        for(int row=1;row<=rowSize;row++){
-            for(int col=1;col<=colSize;col++){
-                Seat seat = new Seat(row, col);
-                theater.addSeats(seat);
-            }
-        }
         return theater;
     }
 }
