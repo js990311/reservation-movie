@@ -1,17 +1,17 @@
 @echo off
 
-set SCRIPT_NAME=stress_test.js
+set SCRIPT_NAME=batch_insert.js
 
 :: 워밍업 2회
-for /l %%i in (1,1,5) do (
+for /l %%i in (1,1,2) do (
     echo [Warm-up %%i] 실행 중...
-    k6 run --summary-export=./reports/seat__warmup__%%i.json %SCRIPT_NAME% > nul
+    k6 run --summary-export=./reports/batch_insert_warmup_%%i.json %SCRIPT_NAME% > nul
 )
 
 :: 본 테스트 5회
 for /l %%i in (1,1,5) do (
     echo [Main Test %%i] 실행 중...
-    k6 run --summary-export=./reports/seat__main__%%i.json %SCRIPT_NAME%
+    k6 run --summary-export=./reports/batch_insert_%%i.json %SCRIPT_NAME%
 )
 
 echo.

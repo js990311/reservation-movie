@@ -10,6 +10,7 @@ import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
 import com.rejs.reservation.domain.screening.exception.ScreeningExceptionCode;
 import com.rejs.reservation.domain.screening.repository.ScreeningQueryRepository;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
+import com.rejs.reservation.domain.screening.repository.ScreeningSeatJdbcRepository;
 import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
 import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
@@ -37,28 +38,22 @@ public class ScreeningService {
     private final MovieRepository movieRepository;
     private final TheaterRepository theaterRepository;
     private final ScreeningSeatRepository screeningSeatRepository;
+    private final ScreeningSeatJdbcRepository screeningSeatJdbcRepository;
 
     // CREATE
 
     @Transactional
     public ScreeningDto createScreening(CreateScreeningRequest request){
         Movie movie = movieRepository.findById(request.getMovieId()).orElseThrow(()-> BusinessException.of(MovieBusinessExceptionCode.MOVIE_NOT_FOUND, request.getMovieId() + " NOT FOUND"));
-        Theater theater = theaterRepository.findWithSeatsById(request.getTheaterId()).orElseThrow(() -> BusinessException.of(TheaterExceptionCode.THEATER_NOT_FOUND, request.getTheaterId() + " THEATER NOT FOUND"));
+        Theater theater = theaterRepository.findById(request.getTheaterId()).orElseThrow(() -> BusinessException.of(TheaterExceptionCode.THEATER_NOT_FOUND, request.getTheaterId() + " THEATER NOT FOUND"));
         Screening screening = Screening.create(request.getStartTime(), theater, movie);
         boolean isExists = screeningRepository.existsByScreeningTime(screening.getTheaterId(), screening.getStartTime(), screening.getEndTime());
 
         if(isExists){
             throw BusinessException.of(ScreeningExceptionCode.SCREENING_TIME_CONFLICT);
         }
-
-        screening = screeningRepository.save(screening);
-        List<ScreeningSeat> screeningSeats = new ArrayList<>();
-        for (Seat seat : theater.getSeats()){
-            ScreeningSeat screeningSeat = new ScreeningSeat(screening, seat);
-            screeningSeats.add(screeningSeat);
-        }
-
-        screeningSeats = screeningSeatRepository.saveAll(screeningSeats);
+        screening = screeningRepository.saveAndFlush(screening);
+        screeningSeatJdbcRepository.batchInsertScreeningSeat(screening.getId(), request.getTheaterId());
         return ScreeningDto.from(screening);
     }
 

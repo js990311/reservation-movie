@@ -45,18 +45,7 @@ public class Seat extends BaseEntity {
         this.theater = theater;
     }
 
-    public void assignTheater(Theater theater){
-        if(this.theater != null){
-            theater.removeSeats(this);
-        }
-
-        if(theater!=null){
-            theater.addSeats(this);
-        }
-    }
-
     // 생성
-
     public Seat(Integer rowNum, Integer colNum) {
         this.rowNum = rowNum;
         this.colNum = colNum;
