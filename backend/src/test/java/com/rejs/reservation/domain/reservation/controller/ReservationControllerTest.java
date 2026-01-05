@@ -114,12 +114,12 @@ class ReservationControllerTest extends AbstractControllerTest {
         TheaterDto theater = theaterService.createTheater(theaterRequest);
         theaterId = theater.getTheaterId();
 
+        entityManager.flush();
+
         // 상영표 생성
         CreateScreeningRequest screeningRequest = new CreateScreeningRequest(theater.getTheaterId(), movie.getMovieId(), LocalDateTime.now().plusDays(3));
         ScreeningDto screening = screeningService.createScreening(screeningRequest);
         screeningId = screening.getScreeningId();
-
-        seatIds = theater.getSeats().stream().map(SeatDto::getSeatId).collect(Collectors.toList());
 
         User user = new User("username", "password");
         user = userRepository.save(user);

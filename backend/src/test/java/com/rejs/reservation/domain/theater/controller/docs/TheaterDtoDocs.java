@@ -12,16 +12,30 @@ public class TheaterDtoDocs {
     public static Schema schema(){
         return new Schema("theater");
     }
-    
+
+    public static Schema theaterWithSeatsSchema(){
+        return new Schema("theaterWithSeats");
+    }
+
+
     public static FieldDescriptors fields(){
         return new FieldDescriptors(
                 fieldWithPath("theaterId").description("영화관 고유번호").type(JsonFieldType.NUMBER),
                 fieldWithPath("name").description("영화관이름").type(JsonFieldType.STRING),
-                fieldWithPath("seats").description("좌석들").type(JsonFieldType.ARRAY),
+                fieldWithPath("rowSize").description("영화관의 row 사이즈").type(JsonFieldType.NUMBER),
+                fieldWithPath("colSize").description("영화관의 col 사이즈").type(JsonFieldType.NUMBER)
+        );
+    }
+
+    public static FieldDescriptors theaterWithSeats(){
+        return new FieldDescriptors(
+                fieldWithPath("theaterId").description("영화관 고유번호").type(JsonFieldType.NUMBER),
+                fieldWithPath("name").description("영화관이름").type(JsonFieldType.STRING),
                 fieldWithPath("rowSize").description("영화관의 row 사이즈").type(JsonFieldType.NUMBER),
                 fieldWithPath("colSize").description("영화관의 col 사이즈").type(JsonFieldType.NUMBER)
         ).andWithPrefix("seats[].", DocsUtils.mergeFields(seatFields()));
     }
+
 
     private static FieldDescriptors seatFields(){
         return new FieldDescriptors(

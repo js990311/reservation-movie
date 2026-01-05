@@ -121,7 +121,7 @@ class ReservationConcurrencyTest {
             executorService.submit(()->{
                 try {
                     barrier.await();
-                    ReservationRequest request = new ReservationRequest(screening.getScreeningId(), List.of(screeningSeats.get(finalI % theater.getSeats().size()).getId()));
+                    ReservationRequest request = new ReservationRequest(screening.getScreeningId(), List.of(screeningSeats.get(finalI % screeningSeats.size()).getId()));
                     reservationFacade.reservationScreening(request, users.get(finalI));
                     successCount.incrementAndGet();
                 }catch (BusinessException e){
@@ -135,15 +135,15 @@ class ReservationConcurrencyTest {
         }
         countDownLatch.await();
 
-        assertEquals(theater.getSeats().size(), successCount.get(), "기대성공");
-        assertEquals(threadCount - theater.getSeats().size(), failCount.get(), "기대실패");
+        assertEquals(screeningSeats.size(), successCount.get(), "기대성공");
+        assertEquals(threadCount - screeningSeats.size(), failCount.get(), "기대실패");
         assertEquals(0, exceptionCount.get(), "예외가 없어야한다");
     }
 
     @Test
     void reservationCheckDeadLock() throws InterruptedException {
         CyclicBarrier barrier = new CyclicBarrier(threadCount);
-        int seatCount = theater.getSeats().size();
+        int seatCount = screeningSeats.size();
         for (int i=0; i< threadCount; i++){
             int finalI = i;
             executorService.submit(()->{
