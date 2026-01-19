@@ -13,6 +13,7 @@ import com.rejs.reservation.domain.screening.service.ScreeningService;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
 import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
 import com.rejs.reservation.domain.theater.service.TheaterService;
+import com.rejs.reservation.domain.user.dto.LoginResponse;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
 import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
@@ -55,8 +56,8 @@ class ScreeningMappingControllerTest extends AbstractControllerTest {
 
     @BeforeEach
     void setToken(){
-        Tokens tokens = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
-        accessToken = tokens.getAccessToken();
+        LoginResponse loginResponse = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
+        accessToken = loginResponse.getTokens().getAccessToken().getToken();
     }
 
     @AfterEach

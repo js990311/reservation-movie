@@ -1,4 +1,6 @@
-import {getAccessToken} from "@/src/lib/api/tokenUtil";
+import {getSession} from "next-auth/react";
+import {getServerSession, Session} from "next-auth";
+import {authOptions} from "@/app/api/auth/[...nextauth]/route";
 
 export function toQuery(params?: Record<string, any>): string {
     if(!params) {
@@ -35,9 +37,14 @@ export async function setHeader({headers, withAuth} : SetHeaderParams) : Promise
     };
 
     if(withAuth){
-        const accessToken = await getAccessToken();
-        if(accessToken){
-            requestHeaders['Authorization'] = `Bearer ${accessToken}`;
+        let session: Session | null;
+        if (typeof window === "undefined") {
+            session = await getServerSession(authOptions);
+        } else {
+            session = await getSession();
+        }
+        if (session?.accessToken) {
+            requestHeaders['Authorization'] = `Bearer ${session.accessToken}`;
         }
     }
 
