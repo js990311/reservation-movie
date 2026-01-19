@@ -56,6 +56,9 @@ export const authOptions = {
             session.accessTokenExpire = token.accessTokenExpire;
             return session;
         }
+    },
+    pages:{
+        singIn: '/login',
     }
 }
 
