@@ -1,5 +1,3 @@
-import {getAccessToken} from "@/src/lib/api/tokenUtil";
-
 export function toQuery(params?: Record<string, any>): string {
     if(!params) {
         return '';
@@ -35,7 +33,7 @@ export async function setHeader({headers, withAuth} : SetHeaderParams) : Promise
     };
 
     if(withAuth){
-        const accessToken = await getAccessToken();
+        const accessToken = '';
         if(accessToken){
             requestHeaders['Authorization'] = `Bearer ${accessToken}`;
         }
