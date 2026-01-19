@@ -8,10 +8,8 @@ import {
 } from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import AuthDropdown from "@/src/components/nav/AuthDropdown";
-import {isAuthenticated} from "@/src/lib/api/tokenUtil";
 
 export default async function Navigation() {
-    const isLogin = await isAuthenticated();
     return (
         <NavigationMenu className={"flex-1 container mx-auto px-1 py-2 max-w-md md:max-w-2xl lg:max-w-4xl"}>
             <div className={"w-full"}>
@@ -35,9 +33,7 @@ export default async function Navigation() {
                     </div>
                     <div>
                         <NavigationMenuItem>
-                            <AuthDropdown
-                                isLogin={isLogin}
-                            />
+                            <AuthDropdown/>
                         </NavigationMenuItem>
                     </div>
 

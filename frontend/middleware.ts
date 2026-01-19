@@ -1,23 +1,12 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import {ACCESS_TOKEN_KEY} from "@/src/lib/api/tokenUtil";
+import {withAuth} from "next-auth/middleware";
 
-export function middleware(request: NextRequest) {
-    const token = request.cookies.get(ACCESS_TOKEN_KEY);
-    const { pathname } = request.nextUrl;
-
-    const isProtectedPage = pathname.startsWith('/reservations') ||
-        pathname.startsWith('/screenings') ||
-        pathname.startsWith('/mypage');
-
-    if (isProtectedPage && !token) {
-        const url = new URL('/login', request.url);
-        url.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(url);
+export default withAuth({
+    callbacks: {
+        authorized: ({token}) => {
+            return !!token;
+        }
     }
-
-    return NextResponse.next();
-}
+})
 
 export const config = {
     matcher: [
@@ -25,4 +14,4 @@ export const config = {
         '/screenings/:path*',
         '/mypage',
     ],
-};
+}
