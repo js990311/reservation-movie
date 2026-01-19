@@ -47,8 +47,14 @@ export const authOptions = {
         },
         async session({session, token}){
             // 브라우저에서 접근가능한 객체
-            console.log("session");
-            console.log(token);
+            session.user = {
+                email: token.email,
+                name: token.name,
+                role: token.role,
+            };
+            session.accessToken = token.accessToken;
+            session.accessTokenExpire = token.accessTokenExpire;
+            return session;
         }
     }
 }
