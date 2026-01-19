@@ -109,7 +109,7 @@ class ScreeningControllerTest extends AbstractControllerTest {
                 String.valueOf(userDto.getUserId()),
                 Collections.singletonList(user.getRole().name())
         );
-        accessToken = tokens.getAccessToken();
+        accessToken = tokens.getAccessToken().getToken();
     }
 
     @BeforeEach

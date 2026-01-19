@@ -65,8 +65,11 @@ class LoginControllerTest extends AbstractControllerTest {
 
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken").isString())
-                .andExpect(jsonPath("$.data.refreshToken").isString())
+                .andExpect(jsonPath("$.data.email").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.expiresAt").isNumber())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.expiresAt").isNumber())
         ;
         result.andDo(
                 document((docs)->docs
@@ -127,8 +130,11 @@ class LoginControllerTest extends AbstractControllerTest {
 
         result
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.accessToken").isString())
-                .andExpect(jsonPath("$.data.refreshToken").isString())
+                .andExpect(jsonPath("$.data.email").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.expiresAt").isNumber())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.expiresAt").isNumber())
         ;
 
         result.andDo(
