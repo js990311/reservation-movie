@@ -1,5 +1,7 @@
-import NextAuth from 'next-auth';
+import NextAuth, {NextAuthOptions} from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials'
+import {ApiOneResponse} from "@/src/type/response/apiResponse";
+import {LoginResponse} from "@/src/type/token/tokens";
 
 export const authOptions: NextAuthOptions = {
     providers:[
@@ -20,7 +22,7 @@ export const authOptions: NextAuthOptions = {
                     headers:{"Content-Type":"application/json"}
                 });
 
-                const loginResponse = await response.json();
+                const loginResponse:ApiOneResponse<LoginResponse> = await response.json();
                 if(response.ok && loginResponse.data){
                     return loginResponse.data;
                 }
@@ -42,6 +44,28 @@ export const authOptions: NextAuthOptions = {
                 token.refreshToken= user.tokens.refreshToken.token;
                 token.accessTokenExpire = user.tokens.accessToken.expiresAt;
                 token.refreshTokenExpire = user.tokens.refreshToken.expiresAt;
+            }
+            if(Date.now() < (token.accessTokenExpire as number)){
+                return token;
+            }else {
+                console.log("REFRESH");
+                const response = await fetch("http://localhost:8080/api/refresh",{
+                    method:'POST',
+                    body:JSON.stringify({
+                        refreshToken:token.refreshToken,
+                    }),
+                    headers:{"Content-Type":"application/json"}
+                });
+                const loginResponse:ApiOneResponse<LoginResponse> = await response.json();
+                if(loginResponse){
+                    return {
+                        ...token,
+                        accessToken: loginResponse.data.tokens.accessToken.token,
+                        refreshToken: loginResponse.data.tokens.refreshToken.token,
+                        accessTokenExpire: loginResponse.data.tokens.accessToken.expiresAt,
+                        refreshTokenExpire: loginResponse.data.tokens.refreshToken.expiresAt
+                    }
+                }
             }
             return token;
         },
