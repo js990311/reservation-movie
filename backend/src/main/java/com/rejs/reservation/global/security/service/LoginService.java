@@ -3,10 +3,12 @@ package com.rejs.reservation.global.security.service;
 import com.rejs.reservation.domain.user.dto.LoginResponse;
 import com.rejs.reservation.domain.user.dto.UserDto;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.dto.request.RefreshRequest;
 import com.rejs.reservation.domain.user.exception.UserBusinessExceptionCode;
 import com.rejs.reservation.domain.user.service.UserService;
 import com.rejs.reservation.global.exception.BusinessException;
 import com.rejs.reservation.global.security.exception.AuthenticationExceptionCode;
+import com.rejs.reservation.global.security.jwt.token.ClaimsDto;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Collections;
+
+import static com.rejs.reservation.global.security.jwt.utils.JwtUtils.TYPE_REFRESH;
 
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -58,5 +62,17 @@ public class LoginService {
         }catch (RuntimeException ex){
             throw ex;
         }
+    }
+
+    public LoginResponse refresh(RefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+        if (!jwtUtils.validateRefreshToken(refreshToken)) {
+            throw BusinessException.of(AuthenticationExceptionCode.INVALID_REFRESH_TOKEN);
+        }
+        ClaimsDto claims = jwtUtils.getClaims(refreshToken);
+        long userId = Long.parseLong(claims.getUsername());
+        UserDto user = userService.findById(userId);
+        Tokens tokens = jwtUtils.generateToken(user.getUserId().toString(), Collections.singletonList(user.getRole().name()));
+        return new LoginResponse(tokens, user);
     }
 }
