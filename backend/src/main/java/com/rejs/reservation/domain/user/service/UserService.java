@@ -34,4 +34,9 @@ public class UserService {
         return UserDto.of(user);
     }
 
+    public UserDto findById(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> BusinessException.of(UserBusinessExceptionCode.USER_NOT_FOUND));
+        return UserDto.of(user);
+    }
+
 }

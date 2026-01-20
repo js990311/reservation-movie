@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers("/docs/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/movies/**", "/theaters/**").permitAll()
+                        .requestMatchers("/refresh").permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().hasAnyRole(UserRole.ROLE_USER.getRoleName(), UserRole.ROLE_ADMIN.getRoleName())
                 )
