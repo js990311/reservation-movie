@@ -17,11 +17,13 @@ def extract_k6_metrics(json_file, category):
         return metrics.get(metric_name, {}).get(field, 0)
 
     filename = os.path.basename(json_file)
-    
+    execution_type = 'WARMUP' if 'warmup' in filename.lower() else 'TEST'
+
     # 데이터 추출
     row = {
         '파일명': filename,
-        '구분': category,  # before 또는 after
+        '구분': category,  
+        '유형': execution_type,
         '총요청수': int(get_val('http_reqs', 'count')),
         '실제RPS': round(get_val('http_reqs', 'rate'), 2),
         '누락율(dropped/s)': round(get_val('dropped_iterations', 'rate'), 2),
@@ -39,7 +41,7 @@ def main():
     output_file = './reports/performance_comparison_final.csv'
     
     # 비교할 타겟 폴더 정의
-    categories = ['before', 'after']
+    categories = ['identity', 'jdbc', 'tsid']
     results = []
 
     for cat in categories:
