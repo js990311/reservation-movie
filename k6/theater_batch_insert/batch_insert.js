@@ -4,7 +4,8 @@ import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { randomString } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 import { Counter, Trend } from 'k6/metrics';
 
-const BASE_URL='https://movie.rejs.link/api';
+// const BASE_URL='https://movie.rejs.link/api';
+const BASE_URL='http://localhost:8080/api';
 const ADMIN_USER = { username: 'k6_admin@admin.com', password: 'k6_admin' };
 const THEATER_ROWS = 20;          
 const THEATER_COLS = 20;
@@ -35,7 +36,7 @@ export function setup() {
   const loginRes = http.post(`${BASE_URL}/login`, JSON.stringify(ADMIN_USER), { headers: jsonHeaders, responseType: 'text' });
   check(loginRes, { 'admin login': (r) => r.status === 200 });
 
-  const adminToken = loginRes.json('data.accessToken');
+  const adminToken = loginRes.json('data.tokens.accessToken.token');
   return {adminToken}
 }
 

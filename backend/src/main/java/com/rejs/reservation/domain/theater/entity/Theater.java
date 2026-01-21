@@ -2,6 +2,7 @@ package com.rejs.reservation.domain.theater.entity;
 
 import com.rejs.reservation.domain.screening.entity.Screening;
 import com.rejs.reservation.global.entity.BaseEntity;
+import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,7 @@ import java.util.List;
 @Table(name = "theaters")
 public class Theater extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Tsid
     @Column(name = "theater_id")
     private Long id;
 

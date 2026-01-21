@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Observed
@@ -34,8 +35,14 @@ public class TheaterService {
     @WithSpan("create.theater")
     public TheaterDto createTheater(TheaterCreateRequest theaterCreateRequest){
         Theater theater = Theater.create(theaterCreateRequest.getName(), theaterCreateRequest.getRowSize(), theaterCreateRequest.getColSize());
-        theater = theaterRepository.saveAndFlush(theater);
-        seatJdbcRepository.batchInsertSeats(theater.getId(), theaterCreateRequest.getRowSize(), theaterCreateRequest.getColSize());
+        theater = theaterRepository.save(theater);
+        List<Seat> seats = new ArrayList<>();
+        for(int row = 1; row <= theaterCreateRequest.getRowSize();row++){
+            for(int col = 1; col <= theaterCreateRequest.getColSize();col++){
+                seats.add(Seat.create(theater, row, col));
+            }
+        }
+        seatRepository.saveAll(seats);
         return TheaterDto.from(theater);
     }
 

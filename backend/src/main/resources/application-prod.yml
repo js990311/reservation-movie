@@ -18,9 +18,8 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        jdbc.batch_size: 50
+        jdbc.batch_size: 100
         order_inserts: true
-
   flyway:
     enabled: true
 
