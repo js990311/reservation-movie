@@ -18,8 +18,9 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        jdbc.batch_size: 50
+        jdbc.batch_size: 100
         order_inserts: true
+        generate_statistics: true
   flyway:
     enabled: true
 springdoc:
@@ -63,7 +64,7 @@ logging:
     query-logger: DEBUG
     slow-query-logger: WARN
     com.rejs.reservation: DEBUG
-
+    org.hibernate.engine.internal.StatisticalLoggingSessionEventListener: info
 resilience4j:
   circuitbreaker:
     instances:

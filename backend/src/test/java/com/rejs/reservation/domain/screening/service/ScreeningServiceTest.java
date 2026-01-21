@@ -5,11 +5,13 @@ import com.rejs.reservation.domain.movie.repository.MovieRepository;
 import com.rejs.reservation.domain.screening.dto.ScreeningDto;
 import com.rejs.reservation.domain.screening.dto.request.CreateScreeningRequest;
 import com.rejs.reservation.domain.screening.entity.Screening;
+import com.rejs.reservation.domain.screening.entity.ScreeningSeat;
 import com.rejs.reservation.domain.screening.repository.ScreeningRepository;
 import com.rejs.reservation.domain.screening.repository.ScreeningSeatJdbcRepository;
 import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
 import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
+import com.rejs.reservation.domain.theater.repository.SeatRepository;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
@@ -49,6 +51,9 @@ class ScreeningServiceTest {
     private ScreeningSeatRepository screeningSeatRepository;
 
     @Mock
+    private SeatRepository seatRepository;
+
+    @Mock
     private ScreeningSeatJdbcRepository screeningSeatJdbcRepository;
 
     @Test
@@ -61,35 +66,49 @@ class ScreeningServiceTest {
         LocalDateTime startTime = LocalDateTime.of(2026, 1, 1, 14, 0);
         CreateScreeningRequest request = new CreateScreeningRequest(movieId, theaterId, startTime);
 
+        // Movie Mock
         Movie movie = Mockito.mock(Movie.class);
-        given(movie.getId()).willReturn(movieId);
         given(movie.getDuration()).willReturn(120);
 
-        // 상영관에 좌석 2개가 있다고 가정
+        // Theater Mock
         Theater theater = Mockito.mock(Theater.class);
-        Seat seat1 = Mockito.mock(Seat.class);
-        Seat seat2 = Mockito.mock(Seat.class);
         given(theater.getId()).willReturn(theaterId);
 
+        // Seat Mock (상영관에 좌석 2개가 있다고 가정)
+        Seat seat1 = Mockito.mock(Seat.class);
+        Seat seat2 = Mockito.mock(Seat.class);
+        List<Seat> seats = List.of(seat1, seat2);
 
+        // Repository Mocking
         given(movieRepository.findById(movieId)).willReturn(Optional.of(movie));
         given(theaterRepository.findById(theaterId)).willReturn(Optional.of(theater));
         given(screeningRepository.existsByScreeningTime(any(), any(), any())).willReturn(false);
 
+        // Screening 저장 시 시뮬레이션
         Screening screening = Screening.create(startTime, theater, movie);
         ReflectionTestUtils.setField(screening, "id", generatedScreeningId);
         given(screeningRepository.saveAndFlush(any(Screening.class))).willReturn(screening);
+
+        // 중요: 변경된 로직인 좌석 조회를 Mocking 함
+        given(seatRepository.findByTheater(theater)).willReturn(seats);
 
         // When
         ScreeningDto result = screeningService.createScreening(request);
 
         // Then
         assertNotNull(result);
-        // 1. ScreeningSeatRepository.saveAll()이 호출되었는지 확인
-        verify(screeningSeatJdbcRepository).batchInsertScreeningSeat(generatedScreeningId, theaterId);
-        verify(screeningRepository, times(1)).saveAndFlush(any(Screening.class));
-    }
+        assertEquals(generatedScreeningId, result.getScreeningId());
 
+        // 1. Screening.saveAndFlush()가 한 번 호출되었는지 확인
+        verify(screeningRepository, times(1)).saveAndFlush(any(Screening.class));
+
+        // 2. seatRepository.findByTheater()가 한 번 호출되었는지 확인
+        verify(seatRepository, times(1)).findByTheater(theater);
+
+        // 3. ScreeningSeatRepository.saveAll()이 호출되었는지 확인
+        // 좌석이 2개였으므로 리스트 사이즈가 2인 것을 검증
+        verify(screeningSeatRepository, times(1)).saveAll(anyList());
+    }
     @Test
     @DisplayName("이미 해당 시간에 상영 회차가 존재하면 예외가 발생한다.")
     void createScreening_ConflictException() {
