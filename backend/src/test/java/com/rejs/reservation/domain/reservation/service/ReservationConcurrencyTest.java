@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
-//@Import(TestcontainersConfiguration.class)
+@Import(TestcontainersConfiguration.class)
 @SpringBootTest
 class ReservationConcurrencyTest {
     @Autowired
