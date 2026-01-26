@@ -3,6 +3,8 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import {ApiOneResponse} from "@/src/type/response/apiResponse";
 import {LoginResponse} from "@/src/type/token/tokens";
 
+const BACKEND_HOST = process.env.BACKEND_HOST ?? 'http://localhost:8080/api';
+
 export const authOptions: NextAuthOptions = {
     providers:[
         CredentialsProvider({
@@ -13,7 +15,7 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials, req) {
                 console.log(credentials);
-                const response = await fetch("http://localhost:8080/api/login",{
+                const response = await fetch(`${BACKEND_HOST}/login`,{
                     method:'POST',
                     body:JSON.stringify({
                         username: credentials.username,
@@ -49,7 +51,7 @@ export const authOptions: NextAuthOptions = {
                 return token;
             }else {
                 console.log("REFRESH");
-                const response = await fetch("http://localhost:8080/api/refresh",{
+                const response = await fetch(`${BACKEND_HOST}/refresh`,{
                     method:'POST',
                     body:JSON.stringify({
                         refreshToken:token.refreshToken,

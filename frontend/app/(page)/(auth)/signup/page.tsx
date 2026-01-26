@@ -17,6 +17,7 @@ import {useRouter} from "next/navigation";
 import { signIn } from "next-auth/react";
 import {fetchOne} from "@/src/lib/api/fetchWrapper";
 import {LoginResponse} from "@/src/type/token/tokens";
+import {signUpAction} from "@/src/actions/signUpAction";
 
 export default function SignupPage(){
     const [username, setUsername] = useState("");
@@ -29,13 +30,7 @@ export default function SignupPage(){
         setIsLoading(true);
 
         try {
-            await fetchOne<LoginResponse>({
-                endpoint: "/signup",
-                method: "POST",
-                body: { username, password },
-                withAuth: false
-            })
-
+            await signUpAction({username, password});
             toast.success('회원가입 성공. 자동로그인 전환');
 
             // 자동로그인
