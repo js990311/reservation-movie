@@ -1,20 +1,20 @@
 export type ReservationRequest = {
-    screeningId: number;
+    screeningId: string;
     seats: number[];
 }
 
 export type Reservation = {
-    reservationId: number;
+    reservationId: string;
     status: ReservationStatus;
-    userId: number;
-    screeningId: number;
+    userId: string;
+    screeningId: string;
     reservationSeats: ReservationSeat[];
 }
 
 export type ReservationSeat = {
-    reservationSeatId: number;
-    seatId: number;
-    reservationId: number;
+    reservationSeatId: string;
+    seatId: string;
+    reservationId: string;
 }
 
 export type ReservationDetail = {
@@ -25,15 +25,15 @@ export type ReservationDetail = {
 export type ReservationStatus = "PENDING" | "CONFIRMED" | "CANCELED" | "COMPLETED";
 
 export type ReservationSummary = {
-    reservationId: number;
+    reservationId: string;
     status: ReservationStatus;
     totalAmount: number;
-    screeningId: number;
+    screeningId: string;
     startTime: string;
     endTime: string;
-    movieId: number;
+    movieId: string;
     movieTitle: string;
-    theaterId: number;
+    theaterId: string;
     theaterName: string;
 }
 

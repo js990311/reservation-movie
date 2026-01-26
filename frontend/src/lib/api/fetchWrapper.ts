@@ -37,6 +37,8 @@ async function fetchWrapper<T>({endpoint, method='GET', headers, withAuth, body}
         const requestHeaders = await setHeader({headers, withAuth});
         const url = `${BACKEND_HOST}${endpoint}`;
 
+        console.log(url);
+
         const response = await fetch(url, {
             method: method,
             headers: requestHeaders,
