@@ -1,27 +1,27 @@
 export type Screening = {
-    theaterId: number;
-    screeningId: number;
-    movieId: number;
+    theaterId: string;
+    screeningId: string;
+    movieId: string;
     startTime: string;
     endTime: string;
 }
 
 export type ScreeningWithMovie = {
-    theaterId: number;
-    screeningId: number;
+    theaterId: string;
+    screeningId: string;
     startTime: string;
     endTime: string;
-    movieId: number;
+    movieId: string;
     title: string;
     duration: number;
 }
 
 export type ScreeningWithTheater = {
-    screeningId: number;
+    screeningId: string;
     startTime: string;
     endTime: string;
-    movieId: number;
-    theaterId: number;
+    movieId: string;
+    theaterId: string;
     theaterName: string;
 }
 
