@@ -17,8 +17,8 @@ Database: MariaDB
 ## 주요 기능
 
 - 영화 예매
+  ![에매 gif](./docs/gifs/reservation.gif)
 - 예매 상태에서 결제를 통한 상태 예매 상태 확정
-  ![에매 gif](./docs/gifs/payment.gif)
   ![결제 gif](./docs/gifs/payment.gif)
 
 ## 기술적 결정
