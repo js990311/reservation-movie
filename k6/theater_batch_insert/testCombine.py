@@ -41,7 +41,7 @@ def main():
     output_file = './reports/performance_comparison_final.csv'
     
     # 비교할 타겟 폴더 정의
-    categories = ['identity', 'jdbc', 'tsid']
+    categories = ['identity', 'jdbc', 'tsid', 'sequence-no-cache', 'sequence-cache']
     results = []
 
     for cat in categories:

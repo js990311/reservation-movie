@@ -44,7 +44,7 @@ export default function (data) {
 const adminToken = data.adminToken;
 const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` };
   const theaterRes = http.post(
-    `${BASE_URL}/theaters`,
+    `${BASE_URL}/theaters/test`,
     JSON.stringify({ name: `k6_Theater_${randomString(6)}`, rowSize: THEATER_ROWS, colSize: THEATER_COLS }),
     { headers: authHeaders ,responseType: 'text' }
   );
