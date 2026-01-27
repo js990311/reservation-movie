@@ -6,6 +6,7 @@ import {LoginResponse} from "@/src/type/token/tokens";
 const BACKEND_HOST = process.env.BACKEND_HOST ?? 'http://localhost:8080/api';
 
 export const authOptions: NextAuthOptions = {
+    secret: process.env.NEXTAUTH_SECRET,
     providers:[
         CredentialsProvider({
             name: 'Credentials',
