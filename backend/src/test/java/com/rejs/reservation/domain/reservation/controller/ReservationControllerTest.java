@@ -26,6 +26,7 @@ import com.rejs.reservation.domain.theater.dto.SeatDto;
 import com.rejs.reservation.domain.theater.dto.TheaterDto;
 import com.rejs.reservation.domain.theater.dto.request.TheaterCreateRequest;
 import com.rejs.reservation.domain.theater.service.TheaterService;
+import com.rejs.reservation.domain.user.dto.LoginResponse;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
 import com.rejs.reservation.domain.user.entity.User;
 import com.rejs.reservation.domain.user.repository.UserRepository;
@@ -101,8 +102,8 @@ class ReservationControllerTest extends AbstractControllerTest {
 
     @BeforeEach
     void setup(){
-        Tokens tokens = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
-        accessToken = tokens.getAccessToken();
+        LoginResponse loginResponse = loginService.signup(new LoginRequest(UUID.randomUUID().toString(), "pw"));
+        accessToken = loginResponse.getTokens().getAccessToken().getToken();
 
         // 영화 생성
         MovieCreateRequest movieRequest = new MovieCreateRequest("title", 145);

@@ -12,12 +12,14 @@ import com.rejs.reservation.domain.theater.repository.SeatRepository;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import io.micrometer.observation.annotation.Observed;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Observed
@@ -30,10 +32,17 @@ public class TheaterService {
     private final SeatRepository seatRepository;
 
     @Transactional
+    @WithSpan("create.theater")
     public TheaterDto createTheater(TheaterCreateRequest theaterCreateRequest){
         Theater theater = Theater.create(theaterCreateRequest.getName(), theaterCreateRequest.getRowSize(), theaterCreateRequest.getColSize());
-        theater = theaterRepository.saveAndFlush(theater);
-        seatJdbcRepository.batchInsertSeats(theater.getId(), theaterCreateRequest.getRowSize(), theaterCreateRequest.getColSize());
+        theater = theaterRepository.save(theater);
+        List<Seat> seats = new ArrayList<>();
+        for(int row = 1; row <= theaterCreateRequest.getRowSize();row++){
+            for(int col = 1; col <= theaterCreateRequest.getColSize();col++){
+                seats.add(Seat.create(theater, row, col));
+            }
+        }
+        seatRepository.saveAll(seats);
         return TheaterDto.from(theater);
     }
 

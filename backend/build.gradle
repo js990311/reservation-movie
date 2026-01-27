@@ -71,6 +71,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+	// @Tsid를 위한
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.14.1'
+
 	// trace	// OpenTelemetry
 	//	implementation 'io.micrometer:micrometer-tracing-bridge-otel'
 	//	implementation 'io.opentelemetry:opentelemetry-exporter-otlp'

@@ -1,6 +1,8 @@
 package com.rejs.reservation.domain.user.controller;
 
+import com.rejs.reservation.domain.user.dto.LoginResponse;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.dto.request.RefreshRequest;
 import com.rejs.reservation.global.dto.response.BaseResponse;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import com.rejs.reservation.global.security.service.LoginService;
@@ -18,15 +20,20 @@ public class LoginController {
     private final LoginService loginService;
 
     @PostMapping("/login")
-    public BaseResponse<Tokens> login(@RequestBody LoginRequest request){
-        Tokens tokens = loginService.login(request);
-        return BaseResponse.of(tokens);
+    public BaseResponse<LoginResponse> login(@RequestBody LoginRequest request){
+        LoginResponse loginResponse = loginService.login(request);
+        return BaseResponse.of(loginResponse);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/signup")
-    public BaseResponse<Tokens> signup(@RequestBody LoginRequest request){
-        Tokens tokens = loginService.signup(request);
-        return BaseResponse.of(tokens);
+    public BaseResponse<LoginResponse> signup(@RequestBody LoginRequest request){
+        LoginResponse loginResponse = loginService.signup(request);
+        return BaseResponse.of(loginResponse);
+    }
+
+    @PostMapping("/refresh")
+    public BaseResponse<LoginResponse> refresh(@RequestBody RefreshRequest request){
+        return BaseResponse.of(loginService.refresh(request));
     }
 }

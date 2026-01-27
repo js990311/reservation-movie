@@ -1,18 +1,9 @@
 package com.rejs.reservation.domain.screening.repository;
 
-import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.rejs.reservation.domain.movie.entity.QMovie;
-import com.rejs.reservation.domain.reservation.entity.QReservation;
-import com.rejs.reservation.domain.reservation.entity.QReservationSeat;
-import com.rejs.reservation.domain.reservation.entity.ReservationStatus;
-import com.rejs.reservation.domain.screening.dto.ScreeningDetailDto;
 import com.rejs.reservation.domain.screening.dto.ScreeningSeatDto;
 import com.rejs.reservation.domain.screening.dto.ScreeningWithMovieDto;
 import com.rejs.reservation.domain.screening.dto.ScreeningWithTheaterDto;
@@ -23,16 +14,12 @@ import com.rejs.reservation.domain.screening.entity.ScreeningSeatStatus;
 import com.rejs.reservation.domain.theater.entity.QSeat;
 import com.rejs.reservation.domain.theater.entity.QTheater;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

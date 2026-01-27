@@ -1,11 +1,14 @@
 package com.rejs.reservation.global.security.service;
 
+import com.rejs.reservation.domain.user.dto.LoginResponse;
 import com.rejs.reservation.domain.user.dto.UserDto;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.dto.request.RefreshRequest;
 import com.rejs.reservation.domain.user.exception.UserBusinessExceptionCode;
 import com.rejs.reservation.domain.user.service.UserService;
 import com.rejs.reservation.global.exception.BusinessException;
 import com.rejs.reservation.global.security.exception.AuthenticationExceptionCode;
+import com.rejs.reservation.global.security.jwt.token.ClaimsDto;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import com.rejs.reservation.global.security.jwt.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collection;
 import java.util.Collections;
 
+import static com.rejs.reservation.global.security.jwt.utils.JwtUtils.TYPE_REFRESH;
+
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
@@ -33,17 +38,19 @@ public class LoginService {
     private final JwtUtils jwtUtils;
 
     @Transactional
-    public Tokens signup(LoginRequest request) {
+    public LoginResponse signup(LoginRequest request) {
         String encryptPassword = passwordEncoder.encode(request.getPassword());
         UserDto user = userService.createUser(request.getUsername(), encryptPassword);
-        return jwtUtils.generateToken(user.getUserId().toString(), Collections.singletonList(user.getRole().name()));
+        Tokens tokens = jwtUtils.generateToken(user.getUserId().toString(), Collections.singletonList(user.getRole().name()));
+        return new LoginResponse(tokens, user);
     }
 
-    public Tokens login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         try {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
             // 로그인 실패하면 예외를 발생시킴
-            return jwtUtils.generateToken(authenticate.getName(), authenticate.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
+            Tokens tokens = jwtUtils.generateToken(authenticate.getName(), authenticate.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
+            return new LoginResponse(tokens, authenticate);
         }catch (BusinessException ex){
             if(ex.getCode().equals(UserBusinessExceptionCode.USER_NOT_FOUND)){
                 throw BusinessException.of(AuthenticationExceptionCode.USER_INFO_MISMATCH, ex);
@@ -55,5 +62,17 @@ public class LoginService {
         }catch (RuntimeException ex){
             throw ex;
         }
+    }
+
+    public LoginResponse refresh(RefreshRequest request) {
+        String refreshToken = request.getRefreshToken();
+        if (!jwtUtils.validateRefreshToken(refreshToken)) {
+            throw BusinessException.of(AuthenticationExceptionCode.INVALID_REFRESH_TOKEN);
+        }
+        ClaimsDto claims = jwtUtils.getClaims(refreshToken);
+        long userId = Long.parseLong(claims.getUsername());
+        UserDto user = userService.findById(userId);
+        Tokens tokens = jwtUtils.generateToken(user.getUserId().toString(), Collections.singletonList(user.getRole().name()));
+        return new LoginResponse(tokens, user);
     }
 }

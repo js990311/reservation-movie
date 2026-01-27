@@ -7,8 +7,11 @@ import com.rejs.reservation.controller.docs.BusinessExceptionDocs;
 import com.rejs.reservation.domain.movie.exception.MovieBusinessExceptionCode;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
 import com.rejs.reservation.domain.user.controller.docs.LoginRequestDocs;
+import com.rejs.reservation.domain.user.controller.docs.RefreshRequestDocs;
 import com.rejs.reservation.domain.user.controller.docs.TokenResponseDocs;
+import com.rejs.reservation.domain.user.dto.LoginResponse;
 import com.rejs.reservation.domain.user.dto.request.LoginRequest;
+import com.rejs.reservation.domain.user.dto.request.RefreshRequest;
 import com.rejs.reservation.domain.user.exception.UserBusinessExceptionCode;
 import com.rejs.reservation.domain.user.repository.UserRepository;
 import com.rejs.reservation.global.exception.BusinessException;
@@ -65,8 +68,11 @@ class LoginControllerTest extends AbstractControllerTest {
 
         result
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.accessToken").isString())
-                .andExpect(jsonPath("$.data.refreshToken").isString())
+                .andExpect(jsonPath("$.data.email").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.expiresAt").isNumber())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.expiresAt").isNumber())
         ;
         result.andDo(
                 document((docs)->docs
@@ -127,8 +133,11 @@ class LoginControllerTest extends AbstractControllerTest {
 
         result
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.data.accessToken").isString())
-                .andExpect(jsonPath("$.data.refreshToken").isString())
+                .andExpect(jsonPath("$.data.email").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.expiresAt").isNumber())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.expiresAt").isNumber())
         ;
 
         result.andDo(
@@ -157,6 +166,66 @@ class LoginControllerTest extends AbstractControllerTest {
                                 .requestFields(
                                         LoginRequestDocs.fields()
                                 )
+                )
+        );
+    }
+
+    @Test
+    void refresh() throws Exception {
+        // 1. 먼저 로그인을 통해 유효한 Refresh Token을 확보합니다.
+        LoginRequest loginRequest = new LoginRequest(alreadyUsername, alreadyPassword);
+        LoginResponse loginResponse = loginService.login(loginRequest);
+        String refreshToken = loginResponse.getTokens().getRefreshToken().getToken();
+
+        // 2. Refresh API 호출
+        Map<String, String> request = Map.of("refreshToken", refreshToken);
+        ResultActions result = mockMvc.perform(post("/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
+
+        // 3. 검증
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.email").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.accessToken.expiresAt").isNumber())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.token").isString())
+                .andExpect(jsonPath("$.data.tokens.refreshToken.expiresAt").isNumber())
+        ;
+
+        // 4. 문서화 (RestDocs)
+        result.andDo(
+                document((docs) -> docs
+                        .requestSchema(RefreshRequestDocs.schema())
+                        .requestFields(
+                                RefreshRequestDocs.fields()
+                        )
+                        .responseSchema(TokenResponseDocs.schema())
+                        .responseFields(TokenResponseDocs.fields())
+                )
+        );
+    }
+
+    @Test
+    void refreshFailInvalidToken() throws Exception {
+        // 1. 잘못된 토큰 준비
+        Map<String, String> request = Map.of("refreshToken", "invalid-token-string");
+
+        // 2. Refresh API 호출
+        ResultActions result = mockMvc.perform(post("/refresh")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
+
+        // 3. 예외 검증 (AuthenticationExceptionCode.INVALID_REFRESH_TOKEN)
+        andExpectException(() -> result, AuthenticationExceptionCode.INVALID_REFRESH_TOKEN, "/refresh");
+
+        // 4. 문서화
+        result.andDo(
+                documentWithException((docs) -> docs
+                        .requestSchema(RefreshRequestDocs.schema())
+                        .requestFields(
+                                RefreshRequestDocs.fields()
+                        )
                 )
         );
     }

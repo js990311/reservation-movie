@@ -1,15 +1,18 @@
 package com.rejs.reservation.domain.theater.repository;
 
 import com.rejs.reservation.domain.theater.entity.Seat;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+@Transactional
 @Repository
 @RequiredArgsConstructor
 public class SeatJdbcRepository {
@@ -19,6 +22,7 @@ public class SeatJdbcRepository {
         INSERT INTO seats (theater_id, row_num, col_num, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())
     """;
 
+    @WithSpan("create.theater.batch")
     public void batchInsertSeats(Long theaterId, int rowSize, int colSize){
         int totalSeats = rowSize * colSize;
 

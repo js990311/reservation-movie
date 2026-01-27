@@ -15,6 +15,7 @@ import com.rejs.reservation.domain.screening.repository.ScreeningSeatRepository;
 import com.rejs.reservation.domain.theater.entity.Seat;
 import com.rejs.reservation.domain.theater.entity.Theater;
 import com.rejs.reservation.domain.theater.exception.TheaterExceptionCode;
+import com.rejs.reservation.domain.theater.repository.SeatRepository;
 import com.rejs.reservation.domain.theater.repository.TheaterRepository;
 import com.rejs.reservation.global.exception.BusinessException;
 import io.micrometer.observation.annotation.Observed;
@@ -39,6 +40,7 @@ public class ScreeningService {
     private final TheaterRepository theaterRepository;
     private final ScreeningSeatRepository screeningSeatRepository;
     private final ScreeningSeatJdbcRepository screeningSeatJdbcRepository;
+    private final SeatRepository seatRepository;
 
     // CREATE
 
@@ -52,9 +54,12 @@ public class ScreeningService {
         if(isExists){
             throw BusinessException.of(ScreeningExceptionCode.SCREENING_TIME_CONFLICT);
         }
-        screening = screeningRepository.saveAndFlush(screening);
-        screeningSeatJdbcRepository.batchInsertScreeningSeat(screening.getId(), request.getTheaterId());
-        return ScreeningDto.from(screening);
+        final Screening persistScreening = screeningRepository.saveAndFlush(screening);
+
+        List<Seat> seats = seatRepository.findByTheater(theater);
+        List<ScreeningSeat> screeningSeats = seats.stream().map((seat) -> new ScreeningSeat(persistScreening, seat)).toList();
+        screeningSeatRepository.saveAll(screeningSeats);
+        return ScreeningDto.from(persistScreening);
     }
 
     public Page<ScreeningDto> readScreenings(Pageable pageable) {

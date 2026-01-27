@@ -2,6 +2,7 @@ package com.rejs.reservation.global.security.jwt.utils;
 
 import com.rejs.reservation.domain.user.entity.UserRole;
 import com.rejs.reservation.global.security.jwt.token.ClaimsDto;
+import com.rejs.reservation.global.security.jwt.token.TokenWithExpire;
 import com.rejs.reservation.global.security.jwt.token.Tokens;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -45,10 +46,10 @@ public class JwtUtils {
         );
     }
 
-    private String generateAccessToken(String username, List<String> roles, Date issuedAt){
+    private TokenWithExpire generateAccessToken(String username, List<String> roles, Date issuedAt){
         Date expiryDate = new Date(issuedAt.getTime() + accessTokenExpiration);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setSubject(username)
                 .claim(KEY_ROLE, roles)
                 .claim(KEY_TYPE, TYPE_ACCESS)
@@ -56,18 +57,20 @@ public class JwtUtils {
                 .setExpiration(expiryDate)
                 .signWith(key)
                 .compact();
+        return new TokenWithExpire(token, expiryDate);
     }
 
-    private String generateRefreshToken(String username, Date issuedAt){
+    private TokenWithExpire generateRefreshToken(String username, Date issuedAt){
         Date expiryDate = new Date(issuedAt.getTime() + refreshTokenExpiration);
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setSubject(username)
                 .claim(KEY_TYPE, TYPE_REFRESH)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiryDate)
                 .signWith(key)
                 .compact();
+        return new TokenWithExpire(token, expiryDate);
     }
 
     // 토큰 검증

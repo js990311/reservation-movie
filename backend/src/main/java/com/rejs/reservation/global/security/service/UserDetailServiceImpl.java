@@ -5,6 +5,7 @@ import com.rejs.reservation.domain.user.exception.UserBusinessExceptionCode;
 import com.rejs.reservation.domain.user.service.UserService;
 import com.rejs.reservation.global.exception.BusinessException;
 import com.rejs.reservation.global.security.exception.AuthenticationExceptionCode;
+import com.rejs.reservation.global.security.jwt.token.UserToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -32,7 +33,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
                 throw ex;
             }
         }
-        return new User(user.getUserId().toString(), user.getPassword(), Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name())));
+        return new UserToken(user);
     }
 
 }

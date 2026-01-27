@@ -18,7 +18,7 @@ const TOKEN_COUNT = MAX_VUS;
 export const options = {
 noConnectionReuse: false, 
   noVUConnectionReuse: false,
-  discardResponseBodies: true,
+  // discardResponseBodies: true,
   scenarios: {
     // stress_test: {
     //     executor: 'constant-arrival-rate',
@@ -67,7 +67,7 @@ export function setup() {
   const loginRes = http.post(`${BASE_URL}/login`, JSON.stringify(ADMIN_USER), { headers: jsonHeaders, responseType: 'text' });
   check(loginRes, { 'admin login': (r) => r.status === 200 });
 
-  const adminToken = loginRes.json('data.accessToken');
+  const adminToken = loginRes.json('data.tokens.accessToken.token');
   const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${adminToken}` };
 
   const movieRes = http.post(
@@ -109,7 +109,7 @@ export function setup() {
     const user = generateRandomUser();
     const signupRes = http.post(`${BASE_URL}/signup`, JSON.stringify(user), { headers: jsonHeaders, responseType: 'text' });
     check(signupRes, { 'signup ok': (r) => r.status === 201 || r.status === 200 });
-    tokens[i] = signupRes.json('data.accessToken');
+    tokens[i] = signupRes.json('data.tokens.accessToken.token');
   }
 
   console.log('====================================================');
@@ -142,6 +142,31 @@ export default function (data) {
     if (res.status === 201) ReservationSuccess.add(1);
     else ReservationFail.add(1);
 
-    check(res, { 'status is 201 or 400': (r) => r.status === 201 || r.status === 400 });    sleep(0.1);
+    check(res, { 
+      'status is 201 or 400': (r) => r.status === 201 || r.status === 400,
+      'correct seats reserved': (r) => {
+        if (res.status !== 201) return true; // 400 실패는 이 체크의 대상이 아님 (이미 실패했으므로)
+        
+        try {
+          const reservedSeats = r.json('data.reservationSeats'); 
+          
+          const reqIds = selectedSeats.map(id => String(id)).sort();
+          const resIds = reservedSeats.map(s => {
+            const id = typeof s === 'object' ? s.seatId : s;
+            return String(id);
+          }).sort();
+
+          if (reqIds.length !== resIds.length) {
+            return false;
+          }
+
+          const isCorrect = reqIds.every((id, idx) => id === resIds[idx]);
+          return isCorrect;        
+        } catch (e) {
+          return false;
+        }
+      },      
+    });   
+    sleep(0.1);
   }
 }

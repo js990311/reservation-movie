@@ -72,20 +72,9 @@ public class Screening extends BaseEntity {
         return theater != null ? theater.getId() : null;
     }
 
-    @Deprecated
     public void mapTheater(Theater theater){
         this.theater = theater;
     }
-
-    public void assignTheater(Theater theater){
-        if(this.theater != null){
-            this.theater.removeScreenings(this);
-        }
-        if(theater != null){
-            theater.addScreenings(this);
-        }
-    }
-
 
     public Screening(LocalDateTime startTime, Theater theater, Movie movie) {
         this.movie = movie;
